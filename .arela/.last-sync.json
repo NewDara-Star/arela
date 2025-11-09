@@ -1,0 +1,85 @@
+{
+  "presetVersion": "0.3.0",
+  "files": {
+    "workflows/engineer-ticket.prompt.md": {
+      "templateHash": "edb2cf986cea2f6bbacb06835782ada1f09aeedc",
+      "localHash": "edb2cf986cea2f6bbacb06835782ada1f09aeedc"
+    },
+    "workflows/architect-spec.prompt.md": {
+      "templateHash": "4c1d1ae90a58d575b54e2cb46cd5137393ebb0aa",
+      "localHash": "4c1d1ae90a58d575b54e2cb46cd5137393ebb0aa"
+    },
+    "rules/090-adr-discipline.md": {
+      "templateHash": "5edcdd17f9a5f2f1343e3daa4a4b480d9ebab038",
+      "localHash": "5edcdd17f9a5f2f1343e3daa4a4b480d9ebab038"
+    },
+    "rules/080-observability-minimums.md": {
+      "templateHash": "1991ea3997ef260951c138de5867b271d5fddd37",
+      "localHash": "1991ea3997ef260951c138de5867b271d5fddd37"
+    },
+    "rules/070-testing-pyramid.md": {
+      "templateHash": "4b3dfa5407bca2638c1fb430407f5eebad0a6939",
+      "localHash": "4b3dfa5407bca2638c1fb430407f5eebad0a6939"
+    },
+    "rules/040-code-review-gates.md": {
+      "templateHash": "5be03b82600b14789c3b32a1d72df26efe36663f",
+      "localHash": "5be03b82600b14789c3b32a1d72df26efe36663f"
+    },
+    "rules/030-ticket-format.md": {
+      "templateHash": "e7a9dbaf0275df1e04bc04d9c9bef5fbd765940d",
+      "localHash": "e7a9dbaf0275df1e04bc04d9c9bef5fbd765940d"
+    },
+    "rules/020-context-integrity.md": {
+      "templateHash": "eaa33d2b9f444044f1c9ad987473365d7de5a7a9",
+      "localHash": "eaa33d2b9f444044f1c9ad987473365d7de5a7a9"
+    },
+    "rules/010-pragmatic-visionary.md": {
+      "templateHash": "0643eb146b96f66336ded904cb272a97b66fc1bf",
+      "localHash": "0643eb146b96f66336ded904cb272a97b66fc1bf"
+    },
+    "memories/seed.jsonc": {
+      "templateHash": "e8f9386a5ce16f1fef7f498bf049ffec7221e490",
+      "localHash": "e8f9386a5ce16f1fef7f498bf049ffec7221e490"
+    },
+    "workflows/mom-test-interview.prompt.md": {
+      "templateHash": "324c2a050828a45d95b22d8979be8cfa95401862",
+      "localHash": "324c2a050828a45d95b22d8979be8cfa95401862"
+    },
+    "workflows/cto-decision-adr.prompt.md": {
+      "templateHash": "b47d5c4341175b6dcf5ce52d9ad3bfb9e5346c7d",
+      "localHash": "b47d5c4341175b6dcf5ce52d9ad3bfb9e5346c7d"
+    },
+    "rules/096-context-engineering.md": {
+      "templateHash": "cf5f37fb51ca45795989ef8c13cdfe7867fef64b",
+      "localHash": "cf5f37fb51ca45795989ef8c13cdfe7867fef64b"
+    },
+    "rules/095-responsible-ai.md": {
+      "templateHash": "813d3f17708ad68a21b9799b7702e01b3eb40aa6",
+      "localHash": "813d3f17708ad68a21b9799b7702e01b3eb40aa6"
+    },
+    "rules/070-testing-trophy.md": {
+      "templateHash": "4c3620e40034dde7f67add1a13f22203bda82777",
+      "localHash": "4c3620e40034dde7f67add1a13f22203bda82777"
+    },
+    "rules/017-dora-metrics.md": {
+      "templateHash": "61f077a897a0a81bbd4dfbda9c706427bcc3a3bd",
+      "localHash": "61f077a897a0a81bbd4dfbda9c706427bcc3a3bd"
+    },
+    "rules/016-trunk-based-dev.md": {
+      "templateHash": "d60afe3f46ca98b746c68928ea9e275831c2e2ae",
+      "localHash": "d60afe3f46ca98b746c68928ea9e275831c2e2ae"
+    },
+    "rules/015-modular-monolith.md": {
+      "templateHash": "282299ec97482733f0d45bfa92f52c863f28d785",
+      "localHash": "282299ec97482733f0d45bfa92f52c863f28d785"
+    },
+    "evals/rubric.json": {
+      "templateHash": "39e5f781f0298682c7a151218bada534b9aecba6",
+      "localHash": "39e5f781f0298682c7a151218bada534b9aecba6"
+    },
+    "BOOTSTRAP.readme.md": {
+      "templateHash": "51d82a771cb95afd157040f025e6027b985e5e76",
+      "localHash": "51d82a771cb95afd157040f025e6027b985e5e76"
+    }
+  }
+}

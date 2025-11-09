@@ -13,6 +13,18 @@ npx arela upgrade
 npx arela doctor
 ```
 
+### Non-Negotiables
+
+Arela enforces three guardrails on every run and fails CI if they drift:
+- Context integrity (`arela.context_integrity`) to ensure every prompt ships with valid front-matter.
+- Ticket schema (`arela.ticket_format`) so every change request links back to real work.
+- Review gates (`arela.code_review_gates`) that block merges without dual sign-off.
+
+### Postinstall Opt-Out
+
+The preset auto-initializes `.arela/` during `pnpm i`. When bootstrapping tooling or vendoring the preset,
+skip that behavior by exporting `ARELA_SKIP_POSTINSTALL=1 pnpm add -D @arela/preset-cto`.
+
 ### Local Overrides
 
 Drop `*.local.md` files next to preset rules or workflows to document overrides. The CLI never overwrites
