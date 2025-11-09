@@ -108,9 +108,13 @@ async function approveBuildsIfPnpm(pm: PackageManager, cwd: string): Promise<voi
 
   try {
     console.log(pc.cyan("Approving pnpm builds..."));
-    await execa("pnpm", ["approve-builds", "@newdara/preset-cto"], { cwd });
-    await execa("pnpm", ["rebuild"], { cwd });
-    console.log(pc.green("✓ Approved and rebuilt"));
+    await execa("pnpm", ["approve-builds", "@newdara/preset-cto"], { cwd, timeout: 5000 });
+    // Skip rebuild in monorepos - too slow and usually not needed
+    const isPnpmWorkspace = await fs.pathExists(path.join(cwd, "pnpm-workspace.yaml"));
+    if (!isPnpmWorkspace) {
+      await execa("pnpm", ["rebuild", "@newdara/preset-cto"], { cwd, timeout: 10000 });
+    }
+    console.log(pc.green("✓ Approved builds"));
   } catch (error) {
     console.log(pc.yellow("⚠ Could not approve builds (may not be needed)"));
   }
