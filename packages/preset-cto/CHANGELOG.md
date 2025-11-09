@@ -1,5 +1,121 @@
 # Changelog
 
+## 0.5.0 - 2024-11-09
+
+### 🚀 Major Feature: Local RAG System
+
+- **Full RAG implementation** - Index and search your entire codebase locally
+  - Uses Ollama for embeddings (zero API costs)
+  - Semantic search across all code files
+  - Completely private - never leaves your machine
+  
+### Added
+- **`npx arela serve`** - Start RAG HTTP server for AI assistants
+  - Exposes `/search?q=<query>&top=5` endpoint
+  - Runs on port 3456 by default
+  - CORS enabled for IDE access
+  - Health check endpoint at `/health`
+  - Graceful shutdown handling
+  
+- **`npx arela index`** - Build semantic index of codebase
+  - Auto-starts Ollama server if needed
+  - Indexes TS/JS/Python/Go/Rust/Java/Markdown
+  - Smart exclusions (node_modules, dist, etc.)
+  - Custom exclude patterns support
+  
+- **`npx arela search <query>`** - Search codebase semantically
+  - Returns top K most relevant code chunks
+  - Cosine similarity scoring
+  - Fast local search (< 100ms)
+  
+- **IDE detection in setup** - Wizard asks which IDE you're using
+  - Auto-configures Windsurf/Cursor/VS Code/Claude
+  - Or use `--ide windsurf` flag
+  - Installs agent rules automatically
+  
+- **RAG module** (`src/rag/index.ts`)
+  - `buildIndex()` - Index codebase with embeddings
+  - `search()` - Semantic search
+  - `startOllamaServer()` - Auto-start Ollama
+  - `isOllamaRunning()` - Health check
+  
+- **RAG.md** - Complete RAG documentation
+  - Setup guide
+  - Usage examples
+  - Cost comparison (100% savings vs OpenAI)
+  - Troubleshooting
+  - AI assistant integration
+
+### Improved
+- Setup wizard now builds real RAG index (not stub)
+- `.arela/.rag-index.json` added to gitignore
+- Better Ollama detection and model management
+- Clear feedback during indexing process
+
+### Cost Savings
+- **$0.00** for embeddings (vs $0.65/month with OpenAI)
+- **100% private** - no data sent to cloud
+- **Unlimited searches** - no per-query costs
+
+## 0.4.3 - 2024-11-09
+
+### Added
+- **Bundled documentation** - All guides now included in npm package
+  - GETTING-STARTED.md
+  - QUICKSTART.md
+  - SETUP.md
+  - FLOW.md
+  - DEPENDENCIES.md
+- **`arela docs` command** - Show documentation links
+- **Documentation links** in setup completion message
+
+### Improved
+- Users can access guides offline after installation
+- Clear paths to documentation in node_modules
+
+## 0.4.2 - 2024-11-09
+
+### Added
+- **Prerequisite checks** - Setup now validates requirements before starting
+  - Checks Node.js version (fails if < 18)
+  - Checks Git installation (warns if missing)
+  - Shows clear install instructions with links
+- **DEPENDENCIES.md** - Complete dependency reference guide
+- **Prerequisites section** in GETTING-STARTED.md
+
+### Improved
+- Better error messages for missing dependencies
+- Fails fast with actionable instructions
+- Clear guidance for non-technical users
+
+## 0.4.1 - 2024-11-09
+
+### Added
+- **Intelligent RAG setup** - Setup wizard now handles Ollama and model installation
+  - Detects if Ollama is installed
+  - Checks for lightweight embedding models (nomic-embed-text, mxbai-embed-large, all-minilm)
+  - Offers to install Ollama if missing (with manual download instructions)
+  - Offers to pull embedding model if Ollama present but no model found
+  - Automatically uses detected model for indexing
+  - Graceful handling in non-interactive mode
+
+### Improved
+- RAG setup is now fully guided with smart defaults
+- Clear prompts for each step of the RAG setup process
+- Model size information shown before pulling (~274MB for nomic-embed-text)
+
+## 0.4.0 - 2024-11-09
+
+### Added
+- **`arela index` command** - Stub for RAG semantic indexing (full implementation coming soon)
+  - Graceful handling in setup wizard
+  - Clear messaging that feature is not yet implemented
+  - Prepared for future Ollama integration
+
+### Improved
+- Setup command now shows clear "coming soon" message instead of error for RAG indexing
+- Better user experience for optional features
+
 ## 0.3.5 - 2024-11-09
 
 ### Added

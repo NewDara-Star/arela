@@ -59,6 +59,7 @@ program
   .option("--skip-rag", "Don't build semantic index", false)
   .option("--skip-ci", "Don't write GitHub Action", false)
   .option("--skip-hooks", "Don't touch Husky", false)
+  .option("--ide <name>", "IDE to configure: windsurf, cursor, claude, generic")
   .option("--cwd <dir>", "Directory to operate in", process.cwd())
   .action(async (opts) => {
     const cwd = resolveCommandCwd(opts.cwd);
@@ -70,6 +71,7 @@ program
         skipRag: opts.skipRag,
         skipCi: opts.skipCi,
         skipHooks: opts.skipHooks,
+        ide: opts.ide,
       });
     } catch (error) {
       console.error(pc.red(`Setup failed: ${(error as Error).message}`));
@@ -254,6 +256,144 @@ program
       console.error(pc.red(`Harden failed: ${(error as Error).message}`));
       process.exitCode = 1;
     }
+  });
+
+program
+  .command("index")
+  .description("Build semantic index for RAG (requires Ollama)")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--model <name>", "Ollama model to use", "nomic-embed-text")
+  .option("--exclude <patterns...>", "Additional glob patterns to exclude")
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const { buildIndex } = await import("./rag/index.js");
+      
+      console.log(pc.cyan("Building semantic index..."));
+      console.log(pc.dim(`Model: ${opts.model}`));
+      console.log(pc.dim(`Directory: ${cwd}`));
+      console.log("");
+      
+      const stats = await buildIndex({
+        cwd,
+        model: opts.model,
+        excludePatterns: opts.exclude || [],
+      });
+      
+      console.log("");
+      console.log(pc.green("✓ Index built successfully"));
+      console.log(pc.dim(`  Files indexed: ${stats.filesIndexed}`));
+      console.log(pc.dim(`  Total chunks: ${stats.totalChunks}`));
+      console.log(pc.dim(`  Time: ${(stats.timeMs / 1000).toFixed(1)}s`));
+      console.log("");
+      console.log(pc.dim("Index saved to: .arela/.rag-index.json"));
+      console.log(pc.dim("AI assistants can now search your codebase locally!"));
+    } catch (error) {
+      console.error(pc.red(`Index failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("serve")
+  .description("Start RAG HTTP server for AI assistants")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--port <number>", "Port to listen on", "3456")
+  .option("--model <name>", "Ollama model to use", "nomic-embed-text")
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const { startServer } = await import("./rag/server.js");
+      
+      const server = await startServer({
+        cwd,
+        port: parseInt(opts.port),
+        model: opts.model,
+      });
+      
+      // Handle graceful shutdown
+      process.on("SIGINT", async () => {
+        const { stopServer } = await import("./rag/server.js");
+        await stopServer(server);
+        process.exit(0);
+      });
+      
+      process.on("SIGTERM", async () => {
+        const { stopServer } = await import("./rag/server.js");
+        await stopServer(server);
+        process.exit(0);
+      });
+    } catch (error) {
+      console.error(pc.red(`Server failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("search <query>")
+  .description("Search codebase using RAG")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--model <name>", "Ollama model to use", "nomic-embed-text")
+  .option("--top <k>", "Number of results to return", "5")
+  .action(async (query, opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const { search } = await import("./rag/index.js");
+      
+      console.log(pc.cyan(`Searching for: "${query}"`));
+      console.log("");
+      
+      const results = await search(query, {
+        cwd,
+        model: opts.model,
+      }, parseInt(opts.top));
+      
+      if (results.length === 0) {
+        console.log(pc.yellow("No results found"));
+        return;
+      }
+      
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        console.log(pc.bold(`${i + 1}. ${result.file}`));
+        console.log(pc.dim(`   Score: ${result.score.toFixed(4)}`));
+        console.log(pc.dim(`   ${result.chunk.substring(0, 200)}...`));
+        console.log("");
+      }
+    } catch (error) {
+      console.error(pc.red(`Search failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("docs")
+  .description("Show documentation links")
+  .option("--open <guide>", "Open specific guide: getting-started, quickstart, setup, flow, dependencies")
+  .action(async (opts) => {
+    const packageRoot = path.dirname(new URL(import.meta.url).pathname);
+    const docsPath = path.join(packageRoot, "..");
+    
+    console.log(pc.bold(pc.cyan("\n📖 Arela Documentation\n")));
+    
+    const docs = [
+      { name: "Getting Started", file: "GETTING-STARTED.md", desc: "For non-technical users" },
+      { name: "Quick Reference", file: "QUICKSTART.md", desc: "Command cheat sheet" },
+      { name: "Setup Guide", file: "SETUP.md", desc: "Complete technical documentation" },
+      { name: "Flow Diagram", file: "FLOW.md", desc: "Visual setup flow" },
+      { name: "Dependencies", file: "DEPENDENCIES.md", desc: "Dependency reference" },
+    ];
+    
+    for (const doc of docs) {
+      const fullPath = path.join(docsPath, doc.file);
+      console.log(pc.bold(doc.name));
+      console.log(pc.dim(`  ${doc.desc}`));
+      console.log(pc.dim(`  ${fullPath}`));
+      console.log("");
+    }
+    
+    console.log(pc.dim("View online: https://www.npmjs.com/package/@newdara/preset-cto"));
+    console.log("");
   });
 
 const researchCommand = program.command("research").description("Research utilities");

@@ -267,7 +267,7 @@ After running setup:
 
 ## Version
 
-Released as **v0.3.5** on 2024-11-09
+Released as **v0.4.0** on 2024-11-09
 
 ---
 

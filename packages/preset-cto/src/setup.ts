@@ -12,6 +12,7 @@ export interface SetupOptions {
   skipRag?: boolean;
   skipCi?: boolean;
   skipHooks?: boolean;
+  ide?: string;
 }
 
 type PackageManager = "pnpm" | "npm" | "yarn";
@@ -196,16 +197,21 @@ async function runDoctorBaseline(cwd: string): Promise<void> {
 
 async function ensureGitignore(cwd: string): Promise<void> {
   const gitignorePath = path.join(cwd, ".gitignore");
-  const entry = ".arela/.last-report.json";
+  const entries = [
+    ".arela/.last-report.json",
+    ".arela/.rag-index.json",
+  ];
   
   if (await fs.pathExists(gitignorePath)) {
     const content = await fs.readFile(gitignorePath, "utf-8");
-    if (!content.includes(entry)) {
-      await fs.appendFile(gitignorePath, `\n${entry}\n`);
-      console.log(pc.green("✓ Added .arela/.last-report.json to .gitignore"));
+    const toAdd = entries.filter(entry => !content.includes(entry));
+    
+    if (toAdd.length > 0) {
+      await fs.appendFile(gitignorePath, `\n${toAdd.join("\n")}\n`);
+      console.log(pc.green(`✓ Updated .gitignore`));
     }
   } else {
-    await fs.writeFile(gitignorePath, `${entry}\n`);
+    await fs.writeFile(gitignorePath, `${entries.join("\n")}\n`);
     console.log(pc.green("✓ Created .gitignore"));
   }
 }
@@ -219,13 +225,72 @@ async function hasOllama(): Promise<boolean> {
   }
 }
 
-async function runRagIndex(cwd: string): Promise<void> {
-  console.log(pc.cyan("Building semantic index..."));
+async function getOllamaModels(): Promise<string[]> {
   try {
-    await execa("npx", ["arela", "index"], { cwd, stdio: "inherit" });
+    const result = await execa("ollama", ["list"]);
+    const lines = result.stdout.split("\n").slice(1); // Skip header
+    return lines
+      .filter((line) => line.trim())
+      .map((line) => line.split(/\s+/)[0]); // Get model name
+  } catch {
+    return [];
+  }
+}
+
+async function hasEmbeddingModel(): Promise<{ has: boolean; model?: string }> {
+  const models = await getOllamaModels();
+  
+  // Preferred lightweight embedding models in order
+  const preferredModels = [
+    "nomic-embed-text",
+    "mxbai-embed-large",
+    "all-minilm",
+  ];
+  
+  for (const preferred of preferredModels) {
+    const found = models.find((m) => m.includes(preferred));
+    if (found) {
+      return { has: true, model: found };
+    }
+  }
+  
+  return { has: false };
+}
+
+async function installOllama(): Promise<boolean> {
+  console.log(pc.cyan("Installing Ollama..."));
+  console.log(pc.dim("Visit https://ollama.com to download and install"));
+  console.log(pc.yellow("⚠ Ollama installation requires manual download"));
+  console.log(pc.dim("After installing, run: ollama pull nomic-embed-text"));
+  return false;
+}
+
+async function pullEmbeddingModel(model = "nomic-embed-text"): Promise<boolean> {
+  try {
+    console.log(pc.cyan(`Pulling ${model} model...`));
+    console.log(pc.dim("This may take a few minutes..."));
+    await execa("ollama", ["pull", model], { stdio: "inherit" });
+    console.log(pc.green(`✓ ${model} model installed`));
+    return true;
+  } catch (error) {
+    console.log(pc.red(`✗ Failed to pull ${model} model`));
+    return false;
+  }
+}
+
+async function runRagIndex(cwd: string, model?: string): Promise<void> {
+  try {
+    const args = ["arela", "index", "--cwd", cwd];
+    if (model) {
+      args.push("--model", model);
+    }
+    
+    await execa("npx", args, { cwd, stdio: "inherit" });
     console.log(pc.green("✓ Semantic index built"));
+    console.log(pc.dim("  Your codebase is now searchable via local Ollama!"));
   } catch (error) {
     console.log(pc.yellow("⚠ Could not build semantic index"));
+    console.log(pc.dim("  Run 'npx arela index' manually when ready"));
   }
 }
 
@@ -249,10 +314,90 @@ async function confirm(message: string, defaultValue = false): Promise<boolean> 
   return response.value ?? defaultValue;
 }
 
+async function selectIDE(): Promise<string | null> {
+  const response = await prompts({
+    type: "select",
+    name: "ide",
+    message: "Which IDE/editor are you using?",
+    choices: [
+      { title: "Windsurf", value: "windsurf" },
+      { title: "Cursor", value: "cursor" },
+      { title: "VS Code", value: "generic" },
+      { title: "Claude Desktop", value: "claude" },
+      { title: "Other / Skip", value: "skip" },
+    ],
+    initial: 0,
+  });
+  return response.ide === "skip" ? null : response.ide;
+}
+
+async function installAgentRules(cwd: string, agent: string): Promise<void> {
+  try {
+    console.log(pc.cyan(`Installing Arela rules for ${agent}...`));
+    const { installAgentAssets, getBootstrapBundle } = await import("./loaders.js");
+    
+    const bundle = await getBootstrapBundle({ cwd });
+    
+    if (agent === "claude" || agent === "generic") {
+      console.log(pc.dim("\nCopy this prompt to your AI assistant:"));
+      console.log(pc.dim("─".repeat(50)));
+      console.log(bundle.prompt);
+      console.log(pc.dim("─".repeat(50)));
+    } else {
+      await installAgentAssets({ cwd, agent: agent as any, prompt: bundle.prompt, files: bundle.files });
+      console.log(pc.green(`✓ ${agent} configured with Arela rules`));
+    }
+  } catch (error) {
+    console.log(pc.yellow(`⚠ Could not install agent rules: ${(error as Error).message}`));
+  }
+}
+
+async function checkPrerequisites(): Promise<{ node: boolean; git: boolean }> {
+  let nodeOk = false;
+  let gitOk = false;
+
+  // Check Node.js version
+  try {
+    const nodeVersion = process.version;
+    const major = parseInt(nodeVersion.slice(1).split(".")[0]);
+    nodeOk = major >= 18;
+    if (!nodeOk) {
+      console.log(pc.red(`✗ Node.js ${nodeVersion} detected. Requires >= 18`));
+    }
+  } catch {
+    console.log(pc.red("✗ Node.js not found"));
+  }
+
+  // Check Git
+  try {
+    await execa("git", ["--version"]);
+    gitOk = true;
+  } catch {
+    console.log(pc.red("✗ Git not found"));
+  }
+
+  return { node: nodeOk, git: gitOk };
+}
+
 export async function runSetup(opts: SetupOptions): Promise<void> {
   const { cwd, yes = false, nonInteractive = false, skipRag = false, skipCi = false, skipHooks = false } = opts;
 
   console.log(pc.bold(pc.cyan("\n🚀 Arela Setup Wizard\n")));
+
+  // 0. Check prerequisites
+  const prereqs = await checkPrerequisites();
+  if (!prereqs.node) {
+    console.log(pc.red("\n❌ Node.js >= 18 is required"));
+    console.log(pc.dim("Install from: https://nodejs.org"));
+    throw new Error("Node.js >= 18 required");
+  }
+  if (!prereqs.git) {
+    console.log(pc.yellow("\n⚠ Git not found"));
+    console.log(pc.dim("Install from: https://git-scm.com"));
+    if (nonInteractive) {
+      throw new Error("Git required");
+    }
+  }
 
   // 1. Detect package manager
   const pm = await detectPackageManager(cwd);
@@ -322,15 +467,61 @@ export async function runSetup(opts: SetupOptions): Promise<void> {
   await ensureGitignore(cwd);
 
   // 10. Optional RAG index
-  if (!skipRag && (await hasOllama())) {
-    const shouldIndex = yes || nonInteractive || (await confirm("Build semantic index now (requires Ollama)?", false));
-    if (shouldIndex) {
-      await runRagIndex(cwd);
+  if (!skipRag) {
+    const ollamaInstalled = await hasOllama();
+    
+    if (!ollamaInstalled) {
+      // Ollama not installed
+      if (nonInteractive) {
+        console.log(pc.yellow("⚠ Ollama not installed, skipping RAG indexing"));
+      } else {
+        const shouldInstall = yes || (await confirm("Ollama not found. Would you like to install it for RAG indexing?", false));
+        if (shouldInstall) {
+          await installOllama();
+          console.log(pc.dim("Run setup again after installing Ollama to enable RAG"));
+        }
+      }
+    } else {
+      // Ollama installed, check for embedding model
+      const { has: hasModel, model } = await hasEmbeddingModel();
+      
+      if (!hasModel) {
+        // No embedding model found
+        if (nonInteractive) {
+          console.log(pc.yellow("⚠ No embedding model found, skipping RAG indexing"));
+        } else {
+          const shouldPull = yes || (await confirm("No embedding model found. Pull nomic-embed-text (~274MB)?", false));
+          if (shouldPull) {
+            const pulled = await pullEmbeddingModel("nomic-embed-text");
+            if (pulled) {
+              await runRagIndex(cwd, "nomic-embed-text");
+            }
+          }
+        }
+      } else {
+        // Model found, run indexing
+        console.log(pc.dim(`Using embedding model: ${model}`));
+        const shouldIndex = yes || nonInteractive || (await confirm("Build semantic index now?", false));
+        if (shouldIndex) {
+          await runRagIndex(cwd, model);
+        }
+      }
     }
   }
 
   // 11. Commit changes
   await gitAddAndCommit(cwd, "chore(arela): setup rules, hooks, CI, baseline");
+
+  // 12. IDE configuration
+  if (!nonInteractive && !opts.ide) {
+    console.log("");
+    const ide = await selectIDE();
+    if (ide) {
+      await installAgentRules(cwd, ide);
+    }
+  } else if (opts.ide) {
+    await installAgentRules(cwd, opts.ide);
+  }
 
   console.log(pc.bold(pc.green("\n✅ Arela setup complete!\n")));
   console.log("Your repository now has:");
@@ -338,5 +529,17 @@ export async function runSetup(opts: SetupOptions): Promise<void> {
   if (!skipHooks) console.log("  • Pre-commit hooks via Husky");
   if (!skipCi) console.log("  • GitHub Actions CI workflow");
   console.log("  • Baseline evaluation report");
-  console.log("\nRun 'npx arela doctor --eval' anytime to check compliance.\n");
+  console.log("\nRun 'npx arela doctor --eval' anytime to check compliance.");
+  console.log(pc.dim("\n📖 Documentation:"));
+  console.log(pc.dim("  • Getting Started: node_modules/@newdara/preset-cto/GETTING-STARTED.md"));
+  console.log(pc.dim("  • Quick Reference: node_modules/@newdara/preset-cto/QUICKSTART.md"));
+  console.log(pc.dim("  • Full Setup Guide: node_modules/@newdara/preset-cto/SETUP.md"));
+  console.log(pc.dim("  • RAG Guide: node_modules/@newdara/preset-cto/RAG.md"));
+  console.log("");
+  
+  if (!skipRag) {
+    console.log(pc.dim("💡 Start RAG server: npx arela serve"));
+    console.log(pc.dim("   Your IDE can then query: http://localhost:3456/search"));
+    console.log("");
+  }
 }

@@ -20,7 +20,12 @@ npx @newdara/preset-cto setup --non-interactive --yes  # CI mode
 npx @newdara/preset-cto setup --skip-rag --skip-ci     # skip optional steps
 ```
 
-See [SETUP.md](./SETUP.md) for complete documentation.
+### Documentation
+
+- 📖 **[GETTING-STARTED.md](./GETTING-STARTED.md)** - For non-technical users
+- 🔄 **[FLOW.md](./FLOW.md)** - Visual setup flow and decision tree
+- 📚 **[SETUP.md](./SETUP.md)** - Complete technical documentation
+- ⚡ **[QUICKSTART.md](./QUICKSTART.md)** - Command reference
 
 ## Manual Setup
 
