@@ -3,14 +3,13 @@
 Arela packages a curated set of CTO-level rules, workflows, and memories that keep projects aligned.
 Use the `arela` CLI to bootstrap a `.arela/` folder, sync templates, run upgrades, and audit content.
 
-## Install & Use
-
-```sh
-pnpm add -D @arela/preset-cto
+### Install
+```bash
+pnpm add -D @newdara/preset-cto
 npx arela init
-npx arela sync
-npx arela upgrade
-npx arela doctor
+npx arela harden
+npx arela agent bootstrap   # paste into your agent’s system prompt
+npx arela doctor --eval
 ```
 
 ### Non-Negotiables
