@@ -1,6 +1,6 @@
 {
-  "name": "@arela/preset-cto",
-  "version": "0.3.1",
+  "name": "@newdara/preset-cto",
+  "version": "0.3.2",
   "type": "module",
   "bin": {
     "arela": "dist/cli.js"
