@@ -1,5 +1,331 @@
 # Changelog
 
+## 1.6.0 - 2025-11-09
+
+### ⏰ Dynamic Context Awareness
+
+**Future-proof!** Arela now automatically uses current date/time for all research and searches.
+
+#### What's New
+
+**No more hardcoded years!** The system moves with time automatically.
+
+```bash
+npx arela agents
+```
+
+**Output:**
+```
+🔍 Discovering Available AI Agents...
+
+Current: 2025-11-09 (2025 Q4)  ← Dynamic!
+
+✓ OpenAI (Codex CLI) - 2025 Q4  ← Shows when discovered!
+```
+
+#### New Utility: Current Context
+
+```typescript
+import { getCurrentContext, buildSearchQuery } from './utils/current-context';
+
+// Get current context
+const ctx = getCurrentContext();
+console.log(ctx.year);     // 2025
+console.log(ctx.quarter);  // "Q4"
+console.log(ctx.fullDate); // "2025-11-09"
+
+// Build dynamic search queries
+const query = buildSearchQuery("AI models");
+// Result: "AI models 2025 latest"
+
+// In 2026, automatically becomes:
+// "AI models 2026 latest"
+```
+
+#### New Rule: 140 - Current Context Awareness
+
+Teaches agents to:
+- ✅ Always check current date before research
+- ✅ Never hardcode years
+- ✅ Use dynamic search queries
+- ✅ Warn about stale data
+
+**Key Functions:**
+- `getCurrentContext()` - Get current year, quarter, date
+- `buildSearchQuery()` - Build searches with current context
+- `isDataStale()` - Check if data is outdated
+- `getStaleDataWarning()` - Warn about old information
+- `formatCurrentContext()` - Display current context
+
+#### Why This Matters
+
+**Before:**
+```typescript
+// Hardcoded - breaks in 2026
+const query = "AI models 2025";
+```
+
+**After:**
+```typescript
+// Dynamic - works forever
+const query = buildSearchQuery("AI models");
+// Automatically: "AI models 2025 latest"
+```
+
+#### Integration
+
+**Agent Discovery:**
+- Shows current date: `Current: 2025-11-09 (2025 Q4)`
+- Agent names include context: `OpenAI (Codex CLI) - 2025 Q4`
+- Automatically updates with system time
+
+**Search Queries:**
+- Always include current year
+- Add quarter for precision
+- Include "latest" for freshness
+
+**Data Validation:**
+- Check if information is stale
+- Warn users about outdated data
+- Track when data was gathered
+
+### New Files
+
+**Utilities:**
+- `src/utils/current-context.ts` - Dynamic date/time context
+
+**Rules:**
+- `templates/.arela/rules/140-current-context-awareness.md` - Context awareness rule
+
+### Breaking Changes
+
+None. Fully backward compatible.
+
+### Migration
+
+Update to get dynamic context:
+```bash
+npm install -g @newdara/preset-cto@latest
+```
+
+All searches and discoveries now use current date automatically!
+
+## 1.5.3 - 2025-11-09
+
+### 🌐 Comprehensive Multi-Provider Agent Discovery
+
+**Massive expansion!** Now detects ALL major AI providers and their 2025 models.
+
+#### What's New
+
+Arela now discovers agents from **10+ providers**:
+
+```bash
+npx arela agents
+```
+
+**Detects:**
+- ✅ **OpenAI** - GPT-5, o4-mini, o3, GPT-4o (19 models)
+- ✅ **Anthropic Claude** - Claude 4.5, 4, 3.7, 3.5 (10 models)
+- ✅ **Google Gemini** - Gemini 2.5, 2.0, 1.5 (7 models)
+- ✅ **DeepSeek** - V3.2, R1, Coder (6 models)
+- ✅ **Mistral AI** - Large 3, Codestral, Pixtral (7 models)
+- ✅ **Cohere** - Command R+, Embed, Rerank (5 models)
+- ✅ **xAI Grok** - Grok 3, 2.5 (3 models)
+- ✅ **Meta Llama** - Llama 4, 3.3 (6 models)
+- ✅ **Ollama** - All local models
+- ✅ **Cursor & Windsurf** - IDEs
+
+#### 2025 Models Included
+
+**OpenAI:**
+- GPT-5 family: gpt-5, gpt-5-pro, gpt-5-mini, gpt-5-nano, gpt-5-chat, gpt-5-codex
+- o-series: o4-mini, o3-mini, o3-pro, o1, o1-preview, o1-mini
+- GPT-4o: gpt-4o, gpt-4o-mini
+
+**Claude (Anthropic):**
+- Claude 4: claude-sonnet-4.5, claude-sonnet-4, claude-opus-4
+- Claude 3.7: claude-sonnet-3.7 (hybrid reasoning)
+- Claude 3.5: claude-sonnet-3.5, claude-opus-3.5, claude-haiku-3.5
+
+**Google Gemini:**
+- Gemini 2.5: gemini-2.5-pro, gemini-2.5-flash
+- Gemini 2.0: gemini-2.0-flash, gemini-2.0-flash-thinking
+- Specialized: gemini-robotics
+
+**DeepSeek:**
+- DeepSeek V3: deepseek-v3.2, deepseek-v3
+- DeepSeek R1: deepseek-r1 (reasoning)
+- DeepSeek Coder: deepseek-coder-v2
+
+**Mistral AI:**
+- Mistral Large: mistral-large-3, mistral-large-2.1
+- Codestral: codestral-2508, codestral-2501
+- Pixtral: pixtral-large (multimodal)
+
+**And more!**
+
+#### Why This Matters
+
+**Before:**
+- Only detected OpenAI, Claude, Ollama
+- Missing 7+ major providers
+- No 2025 model awareness
+
+**After:**
+- Detects 10+ providers
+- 70+ models across all providers
+- Current as of November 2025
+- Shows exactly what YOU have installed
+
+### Breaking Changes
+
+None. Fully backward compatible.
+
+### Migration
+
+Update to get comprehensive detection:
+```bash
+npm install -g @newdara/preset-cto@latest
+npx arela agents
+```
+
+## 1.5.2 - 2024-11-09
+
+### 🔍 Agent Discovery
+
+**New feature:** Automatically discover which AI agents you have installed!
+
+#### What's New
+
+Never guess which agents you have - Arela now auto-detects them:
+
+```bash
+npx arela agents
+```
+
+**Output:**
+```
+🔍 Discovering Available AI Agents...
+
+Available Agents:
+
+✓ Claude CLI
+  Type: cli
+  Command: claude
+  Version: 2.0.33
+
+✓ Ollama (Local Models)
+  Type: local
+  Command: ollama
+  Models: 8 available
+    • qwen2.5-coder:1.5b-base
+    • llama3.1:8b
+    • nomic-embed-text:latest
+    ... and 5 more
+
+✓ Windsurf (Cascade)
+  Type: ide
+  Command: windsurf
+
+Total: 3 agent(s) available
+```
+
+#### Get Recommendations
+
+```bash
+npx arela agents --recommend
+```
+
+Shows which agents you should install based on what you're missing.
+
+#### What It Detects
+
+**CLI Agents:**
+- ✅ GitHub Copilot CLI (Codex)
+- ✅ Claude CLI
+- ✅ DeepSeek
+
+**Local Models:**
+- ✅ Ollama (with all installed models)
+
+**IDEs:**
+- ✅ Cursor
+- ✅ Windsurf (Cascade)
+
+#### Why This Matters
+
+**Before:**
+- Create tickets for agents you don't have
+- Wonder why orchestration fails
+- Manually check what's installed
+
+**After:**
+- See exactly what you have
+- Get recommendations for missing agents
+- Only create tickets for available agents
+
+### New Files
+
+- `src/agent-discovery.ts` - Agent detection engine
+
+### New Commands
+
+```bash
+npx arela agents              # Show available agents
+npx arela agents --recommend  # Show recommendations
+```
+
+### Breaking Changes
+
+None. Fully backward compatible.
+
+## 1.5.1 - 2024-11-09
+
+### 🐛 Bugfix: CLI Duplicate Command
+
+**Fixed critical CLI bug** that prevented several commands from working.
+
+#### What Was Broken
+
+The `search` command was registered twice in the CLI, causing Commander.js to throw an error:
+
+```
+Error: Cannot add command 'search': command already exists
+```
+
+This broke the following commands:
+- ❌ `npx arela sync`
+- ❌ `npx arela install-auto-index`
+- ❌ `npx arela auto-index-status`
+- ❌ `npx arela check-auto-index`
+- ❌ All commands after the duplicate
+
+#### What Was Fixed
+
+Removed the old direct Ollama search command (line 354) and kept only the RAG server search command (line 726).
+
+**Now working:**
+- ✅ `npx arela search <query>` - RAG server search
+- ✅ `npx arela install-auto-index` - Install auto-index hook
+- ✅ `npx arela auto-index-status` - Check auto-index status
+- ✅ `npx arela check-auto-index` - Manual trigger check
+- ✅ All other commands
+
+#### Migration
+
+If you installed v1.5.0, simply update:
+
+```bash
+npm install -g @newdara/preset-cto@latest
+```
+
+All commands now work correctly.
+
+### Breaking Changes
+
+None. This is a pure bugfix.
+
 ## 1.5.0 - 2024-11-09
 
 ### 🧠 Smart Auto-Indexing

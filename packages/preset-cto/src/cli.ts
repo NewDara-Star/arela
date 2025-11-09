@@ -32,6 +32,10 @@ import {
   installAutoIndexHook,
   showAutoIndexStatus,
 } from "./auto-index.js";
+import {
+  showDiscoveredAgents,
+  showRecommendedAgents,
+} from "./agent-discovery.js";
 
 const program = new Command();
 const version: string = (pkg as { version?: string }).version ?? "0.0.0";
@@ -350,42 +354,7 @@ program
     }
   });
 
-program
-  .command("search <query>")
-  .description("Search codebase using RAG")
-  .option("--cwd <dir>", "Directory to operate in", process.cwd())
-  .option("--model <name>", "Ollama model to use", "nomic-embed-text")
-  .option("--top <k>", "Number of results to return", "5")
-  .action(async (query, opts) => {
-    const cwd = resolveCommandCwd(opts.cwd);
-    try {
-      const { search } = await import("./rag/index.js");
-      
-      console.log(pc.cyan(`Searching for: "${query}"`));
-      console.log("");
-      
-      const results = await search(query, {
-        cwd,
-        model: opts.model,
-      }, parseInt(opts.top));
-      
-      if (results.length === 0) {
-        console.log(pc.yellow("No results found"));
-        return;
-      }
-      
-      for (let i = 0; i < results.length; i++) {
-        const result = results[i];
-        console.log(pc.bold(`${i + 1}. ${result.file}`));
-        console.log(pc.dim(`   Score: ${result.score.toFixed(4)}`));
-        console.log(pc.dim(`   ${result.chunk.substring(0, 200)}...`));
-        console.log("");
-      }
-    } catch (error) {
-      console.error(pc.red(`Search failed: ${(error as Error).message}`));
-      process.exitCode = 1;
-    }
-  });
+// Removed duplicate search command - using RAG server version below
 
 program
   .command("docs")
@@ -854,6 +823,24 @@ program
       await installAutoIndexHook(cwd);
     } catch (error) {
       console.error(pc.red(`Failed to install hook: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// Agent discovery commands
+program
+  .command("agents")
+  .description("Discover available AI agents on your system")
+  .option("--recommend", "Show recommended agents to install", false)
+  .action(async (opts) => {
+    try {
+      if (opts.recommend) {
+        await showRecommendedAgents();
+      } else {
+        await showDiscoveredAgents();
+      }
+    } catch (error) {
+      console.error(pc.red(`Agent discovery failed: ${(error as Error).message}`));
       process.exitCode = 1;
     }
   });
