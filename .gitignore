@@ -11,3 +11,8 @@ coverage
 .arela/memories/*
 .arela/*.new
 .arela/.last-report.json
+
+!.arela/**
+.arela/memories/*
+.arela/*.new
+.arela/.last-report.json
