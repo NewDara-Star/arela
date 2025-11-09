@@ -178,6 +178,8 @@ type CopySummary = {
   staged: string[];
   skipped: string[];
   identical: string[];
+  conflicts: string[];
+  updatedHashes: Record<string, LastSyncEntry>;
 };
 
 export async function copyTemplates(opts: {
@@ -185,29 +187,50 @@ export async function copyTemplates(opts: {
   force?: boolean;
   dryRun?: boolean;
   strategy?: CopyStrategy;
+  state?: LastSyncState;
 }): Promise<CopySummary> {
   const strategy = opts.strategy ?? "sync";
   const templateRoot = readTemplateDir();
   const files = await glob("**/*", { cwd: templateRoot, nodir: true, dot: true });
-  const summary: CopySummary = { written: [], staged: [], skipped: [], identical: [] };
+  const summary: CopySummary = {
+    written: [],
+    staged: [],
+    skipped: [],
+    identical: [],
+    conflicts: [],
+    updatedHashes: {},
+  };
+
+  const recordUpdate = (rel: string, entry: LastSyncEntry): void => {
+    summary.updatedHashes[rel] = entry;
+  };
 
   for (const rel of files) {
     const templateFile = path.join(templateRoot, rel);
     const destFile = path.join(opts.cwd, ARELA_DIR, rel);
     const destDir = path.dirname(destFile);
     const exists = await fs.pathExists(destFile);
+    const templateHash = await hashFile(templateFile);
+    const currentHash = exists ? await hashFile(destFile) : "";
+    const recordedEntry = opts.state?.files?.[rel];
+    const recordedHash = recordedEntry?.localHash ?? "";
+    const hasRecorded = Boolean(recordedHash);
 
-    if (!exists) {
+    const copyIntoPlace = async (): Promise<void> => {
       if (!opts.dryRun) {
         await fs.ensureDir(destDir);
         await fs.copy(templateFile, destFile, { overwrite: true });
+        recordUpdate(rel, { templateHash, localHash: templateHash });
       }
       summary.written.push(rel);
+    };
+
+    if (!exists) {
+      await copyIntoPlace();
       continue;
     }
 
-    const [templateHash, destHash] = await Promise.all([hashFile(templateFile), hashFile(destFile)]);
-    if (templateHash === destHash) {
+    if (templateHash === currentHash) {
       summary.identical.push(rel);
       continue;
     }
@@ -217,21 +240,30 @@ export async function copyTemplates(opts: {
       continue;
     }
 
-    if (opts.force) {
-      if (!opts.dryRun) {
-        await fs.ensureDir(destDir);
-        await fs.copy(templateFile, destFile, { overwrite: true });
+    const localMatchesRecorded = hasRecorded && recordedHash === currentHash;
+    const localMatchesTemplate = currentHash === templateHash;
+
+    if (!opts.force && strategy === "sync") {
+      if (hasRecorded) {
+        if (!localMatchesRecorded && !localMatchesTemplate) {
+          if (!opts.dryRun) {
+            await fs.ensureDir(destDir);
+            await fs.copy(templateFile, `${destFile}.new`, { overwrite: true });
+          }
+          summary.conflicts.push(`${rel}.new`);
+          continue;
+        }
+      } else {
+        if (!opts.dryRun) {
+          await fs.ensureDir(destDir);
+          await fs.copy(templateFile, `${destFile}.new`, { overwrite: true });
+        }
+        summary.staged.push(`${rel}.new`);
+        continue;
       }
-      summary.written.push(rel);
-      continue;
     }
 
-    const stagedFile = `${destFile}.new`;
-    if (!opts.dryRun) {
-      await fs.ensureDir(destDir);
-      await fs.copy(templateFile, stagedFile, { overwrite: true });
-    }
-    summary.staged.push(`${rel}.new`);
+    await copyIntoPlace();
   }
 
   return summary;
@@ -265,43 +297,41 @@ async function writeLastSyncState(cwd: string, state: LastSyncState): Promise<vo
   await fs.outputJson(file, state, { spaces: 2 });
 }
 
-async function snapshotSyncState(cwd: string, opts?: { dryRun?: boolean }): Promise<void> {
+async function mergeLastSyncEntries(
+  cwd: string,
+  updates: Record<string, LastSyncEntry>,
+  opts?: { dryRun?: boolean },
+): Promise<void> {
   if (opts?.dryRun) return;
-  const templateRoot = readTemplateDir();
-  const files = await glob("**/*", { cwd: templateRoot, nodir: true, dot: true });
+  const entries = Object.entries(updates);
+  if (!entries.length) return;
   const state = await readLastSyncState(cwd);
   state.presetVersion = PRESET_VERSION;
-
-  for (const rel of files) {
-    const templateFile = path.join(templateRoot, rel);
-    const localFile = path.join(cwd, ARELA_DIR, rel);
-    if (!(await fs.pathExists(localFile))) {
-      continue;
-    }
-    const [templateHash, localHash] = await Promise.all([
-      hashFile(templateFile),
-      hashFile(localFile),
-    ]);
-    if (templateHash && templateHash === localHash) {
-      state.files[rel] = {
-        templateHash,
-        localHash,
-      };
-    }
+  for (const [rel, entry] of entries) {
+    state.files[rel] = entry;
   }
-
   await writeLastSyncState(cwd, state);
 }
 
 export async function threeWayMerge(opts: {
   cwd: string;
   dryRun?: boolean;
-}): Promise<{ conflicts: string[]; updated: string[] }> {
+}): Promise<{ conflicts: string[]; updated: string[]; updatedHashes: Record<string, LastSyncEntry> }> {
   const templateRoot = readTemplateDir();
   const files = await glob("**/*", { cwd: templateRoot, nodir: true, dot: true });
   const state = await readLastSyncState(opts.cwd);
   const conflicts: string[] = [];
   const updated: string[] = [];
+  const updatedHashes: Record<string, LastSyncEntry> = {};
+
+  const stageConflict = async (templateFile: string, localFile: string, rel: string): Promise<void> => {
+    const stagedFile = `${localFile}.new`;
+    if (!opts.dryRun) {
+      await fs.ensureDir(path.dirname(stagedFile));
+      await fs.copy(templateFile, stagedFile, { overwrite: true });
+    }
+    conflicts.push(`${rel}.new`);
+  };
 
   for (const rel of files) {
     const templateFile = path.join(templateRoot, rel);
@@ -309,23 +339,46 @@ export async function threeWayMerge(opts: {
     const templateHash = await hashFile(templateFile);
     const localExists = await fs.pathExists(localFile);
     const localHash = localExists ? await hashFile(localFile) : "";
-    const prev = state.files[rel];
-    const templateChanged = !prev || prev.templateHash !== templateHash;
-    const localChanged = prev ? prev.localHash !== localHash : false;
+    const recorded = state.files[rel];
+    const recordedHash = recorded?.localHash ?? "";
+    const hasRecorded = Boolean(recordedHash);
 
-    if (templateChanged && localChanged && localExists) {
-      conflicts.push(rel);
+    if (!localExists) {
+      if (!opts.dryRun) {
+        await fs.ensureDir(path.dirname(localFile));
+        await fs.copy(templateFile, localFile, { overwrite: true });
+        updatedHashes[rel] = { templateHash, localHash: templateHash };
+      }
+      updated.push(rel);
+      continue;
+    }
+
+    if (templateHash === localHash) {
+      continue;
+    }
+
+    const localMatchesRecorded = hasRecorded && recordedHash === localHash;
+    const localMatchesTemplate = localHash === templateHash;
+
+    if (hasRecorded) {
+      if (!localMatchesRecorded && !localMatchesTemplate) {
+        await stageConflict(templateFile, localFile, rel);
+        continue;
+      }
+    } else {
+      await stageConflict(templateFile, localFile, rel);
       continue;
     }
 
     if (!opts.dryRun) {
       await fs.ensureDir(path.dirname(localFile));
       await fs.copy(templateFile, localFile, { overwrite: true });
+      updatedHashes[rel] = { templateHash, localHash: templateHash };
     }
     updated.push(rel);
   }
 
-  return { conflicts, updated };
+  return { conflicts, updated, updatedHashes };
 }
 
 export async function init(opts: { cwd: string; from?: string; dryRun?: boolean }): Promise<{
@@ -335,11 +388,13 @@ export async function init(opts: { cwd: string; from?: string; dryRun?: boolean 
 }> {
   const cwd = resolveCwd(opts.cwd);
   const createdDirs = await ensureDirs(cwd, { dryRun: opts.dryRun });
+  const state = await readLastSyncState(cwd);
   const templateSummary = await copyTemplates({
     cwd,
     force: false,
     dryRun: opts.dryRun,
     strategy: "init",
+    state,
   });
 
   const generatedRules: string[] = [];
@@ -357,7 +412,7 @@ export async function init(opts: { cwd: string; from?: string; dryRun?: boolean 
     }
   }
 
-  await snapshotSyncState(cwd, { dryRun: opts.dryRun });
+  await mergeLastSyncEntries(cwd, templateSummary.updatedHashes, { dryRun: opts.dryRun });
 
   return { createdDirs, templateSummary, generatedRules };
 }
@@ -365,26 +420,27 @@ export async function init(opts: { cwd: string; from?: string; dryRun?: boolean 
 export async function sync(opts: { cwd: string; force?: boolean; dryRun?: boolean }): Promise<CopySummary> {
   const cwd = resolveCwd(opts.cwd);
   await ensureDirs(cwd, { dryRun: opts.dryRun });
+  const state = await readLastSyncState(cwd);
   const summary = await copyTemplates({
     cwd,
     force: opts.force,
     dryRun: opts.dryRun,
     strategy: "sync",
+    state,
   });
-  await snapshotSyncState(cwd, { dryRun: opts.dryRun });
+  await mergeLastSyncEntries(cwd, summary.updatedHashes, { dryRun: opts.dryRun });
   return summary;
 }
 
 export async function upgrade(opts: { cwd: string; dryRun?: boolean }): Promise<{
   conflicts: string[];
   updated: string[];
+  updatedHashes: Record<string, LastSyncEntry>;
 }> {
   const cwd = resolveCwd(opts.cwd);
   await ensureDirs(cwd, { dryRun: opts.dryRun });
   const result = await threeWayMerge({ cwd, dryRun: opts.dryRun });
-  if (result.conflicts.length === 0) {
-    await snapshotSyncState(cwd, { dryRun: opts.dryRun });
-  }
+  await mergeLastSyncEntries(cwd, result.updatedHashes, { dryRun: opts.dryRun });
   return result;
 }
 
