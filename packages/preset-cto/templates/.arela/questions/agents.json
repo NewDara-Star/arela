@@ -1,0 +1,26 @@
+{
+  "topic": "agents",
+  "questions": [
+    {
+      "id": "agents.use_ai",
+      "type": "confirm",
+      "prompt": "Use AI agents for code tasks?",
+      "default": false,
+      "writes": ["agents.use_ai"]
+    },
+    {
+      "id": "agents.preferred",
+      "type": "multiselect",
+      "prompt": "Preferred AI agents?",
+      "choices": ["ollama", "openai", "anthropic", "cursor", "windsurf", "none"],
+      "writes": ["agents.preferred"]
+    },
+    {
+      "id": "agents.auto_fix",
+      "type": "confirm",
+      "prompt": "Allow agents to auto-fix issues?",
+      "default": false,
+      "writes": ["agents.auto_fix"]
+    }
+  ]
+}

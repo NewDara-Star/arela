@@ -1,0 +1,34 @@
+{
+  "topic": "tests",
+  "questions": [
+    {
+      "id": "tests.strategy",
+      "type": "select",
+      "prompt": "Testing strategy?",
+      "choices": ["pyramid", "trophy", "ice-cream-cone", "none"],
+      "default": "trophy",
+      "writes": ["tests.strategy"]
+    },
+    {
+      "id": "tests.frameworks",
+      "type": "multiselect",
+      "prompt": "Test frameworks in use?",
+      "choices": ["jest", "vitest", "mocha", "pytest", "rspec", "go-test", "none"],
+      "writes": ["tests.frameworks"]
+    },
+    {
+      "id": "tests.coverage_target",
+      "type": "number",
+      "prompt": "Target code coverage % (0-100)",
+      "default": 80,
+      "writes": ["tests.coverage_target"]
+    },
+    {
+      "id": "tests.e2e",
+      "type": "confirm",
+      "prompt": "Do you run E2E tests?",
+      "default": false,
+      "writes": ["tests.e2e"]
+    }
+  ]
+}

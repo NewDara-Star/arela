@@ -1,0 +1,33 @@
+{
+  "topic": "deployment",
+  "questions": [
+    {
+      "id": "deploy.envs",
+      "type": "multiselect",
+      "prompt": "Where is this deployed for testing/staging/prod?",
+      "choices": ["none", "local", "render", "vercel", "flyio", "netlify", "aws", "gcp", "azure", "docker-swarm", "k8s", "other"],
+      "writes": ["deploy.envs"]
+    },
+    {
+      "id": "deploy.staging_url",
+      "type": "text",
+      "prompt": "Staging base URL (if any)",
+      "default": "",
+      "writes": ["deploy.staging_url"]
+    },
+    {
+      "id": "deploy.prod_url",
+      "type": "text",
+      "prompt": "Production base URL (if any)",
+      "default": "",
+      "writes": ["deploy.prod_url"]
+    },
+    {
+      "id": "deploy.auto_deploy",
+      "type": "confirm",
+      "prompt": "Auto-deploy on merge to main?",
+      "default": false,
+      "writes": ["deploy.auto_deploy"]
+    }
+  ]
+}

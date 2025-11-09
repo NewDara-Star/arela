@@ -26,6 +26,22 @@ export async function hashFile(filePath: string): Promise<string> {
   return hash;
 }
 
+export function loadProfile(cwd: string = process.cwd()): Record<string, any> {
+  const p = path.join(cwd, ".arela", "profile.json");
+  if (fs.existsSync(p)) {
+    return JSON.parse(fs.readFileSync(p, "utf8"));
+  }
+  return {};
+}
+
+export function loadAnswers(cwd: string = process.cwd()): Record<string, any> {
+  const p = path.join(cwd, ".arela", "answers.json");
+  if (fs.existsSync(p)) {
+    return JSON.parse(fs.readFileSync(p, "utf8"));
+  }
+  return {};
+}
+
 const ARELA_DIR = ".arela";
 const RULES_DIR = path.join(ARELA_DIR, "rules");
 const WORKFLOW_DIR = path.join(ARELA_DIR, "workflows");
@@ -459,11 +475,20 @@ export async function doctor(opts: {
   rules: LoadResult<ArelaRule>;
   workflows: LoadResult<ArelaWorkflow>;
   evalResult?: EvalCheckResult;
+  issues?: string[];
 }> {
   const cwd = resolveCwd(opts.cwd);
+  const issues: string[] = [];
+  
+  // Check for missing profile
+  const profilePath = path.join(cwd, ".arela", "profile.json");
+  if (!fs.existsSync(profilePath)) {
+    issues.push("Missing .arela/profile.json (run `npx arela configure`)");
+  }
+  
   const [rules, workflows] = await Promise.all([loadLocalRules(cwd), loadLocalWorkflows(cwd)]);
   const evalResult = opts.evalMode ? await runEvalCheck(cwd) : undefined;
-  return { rules, workflows, evalResult };
+  return { rules, workflows, evalResult, issues: issues.length > 0 ? issues : undefined };
 }
 
 async function runEvalCheck(cwd: string): Promise<EvalCheckResult> {
@@ -611,13 +636,19 @@ function buildPromptText(opts: {
   const testingDirective = opts.rulePaths.some((file) => file.includes("testing-trophy"))
     ? "arela.testing_trophy"
     : "arela.testing_pyramid";
+  
+  // Load profile and answers
+  const profile = loadProfile(opts.cwd);
+  const answers = loadAnswers(opts.cwd);
+  
   const header = `SYSTEM: Arela Bootstrap (${opts.repoName})`;
   const ruleLines = relRules.map((rule) => `- ${rule}`).join("\n") || "- (add rules via npx arela init)";
   const workflowLines = relWorkflows.map((wf) => `- ${wf}`).join("\n") || "- (no workflows found)";
   const policyBlock =
     "Enforce: arela.context_integrity, arela.ticket_format, arela.code_review_gates, " +
     `${testingDirective}, arela.observability_minimums.`;
-  return [
+  
+  const parts = [
     header,
     "Load `.arela/rules/*` and `.arela/workflows/*`. If any file is missing, ask for it before proceeding.",
     "Rules:",
@@ -627,7 +658,21 @@ function buildPromptText(opts: {
     policyBlock,
     "Maintain arela.context_integrity; halt and run a Context Integrity Check on drift.",
     "For every task, return a Report (summary, acceptance checklist status, test outputs, UI proof if applicable).",
-  ].join("\n\n");
+  ];
+  
+  // Embed profile if exists
+  if (Object.keys(profile).length > 0) {
+    parts.push("=== PROFILE ===");
+    parts.push(JSON.stringify(profile, null, 2));
+  }
+  
+  // Embed answers if exists
+  if (Object.keys(answers).length > 0) {
+    parts.push("=== ANSWERS ===");
+    parts.push(JSON.stringify(answers, null, 2));
+  }
+  
+  return parts.join("\n\n");
 }
 
 async function generateBootstrapBundle(cwd: string): Promise<BootstrapBundle> {
@@ -872,7 +917,22 @@ export async function installAgentAssets(opts: {
     identical: result.identical,
   };
 
-  const fullPrompt = formatPromptWithFiles(opts.prompt, opts.files, cwd);
+  // Enhanced prompt with profile/answers references
+  const enhancedPrompt = [
+    "# Arela Bootstrap",
+    "",
+    "Load and respect these files:",
+    "- .arela/profile.json",
+    "- .arela/answers.json",
+    "- .arela/rules/*",
+    "- .arela/workflows/*",
+    "",
+    "If a value is missing, ask via \"Arela Q&A\".",
+    "",
+    opts.prompt,
+  ].join("\n");
+
+  const fullPrompt = formatPromptWithFiles(enhancedPrompt, opts.files, cwd);
 
   const recordResult = async (targetPath: string): Promise<void> => {
     const writeResult = await safeWriteFile(targetPath, fullPrompt);

@@ -1,0 +1,56 @@
+{
+  "summary": {
+    "score": 73,
+    "sev0": 0,
+    "sev1": 2,
+    "sev2": 1,
+    "sev3": 1
+  },
+  "findings": [
+    {
+      "id": "ci.missing_pr_eval",
+      "severity": "high",
+      "category": "governance",
+      "why": "PRs skip Arela governance checks",
+      "evidence": [
+        ".github/workflows/arela-doctor.yml:1"
+      ],
+      "fix": "Add 'npx arela doctor --eval' step to PR workflow",
+      "autoFixable": true
+    },
+    {
+      "id": "test.missing_tests",
+      "severity": "high",
+      "category": "quality",
+      "why": "No test files found in repository",
+      "evidence": [
+        "./"
+      ],
+      "fix": "Add test files following testing-pyramid or testing-trophy strategy",
+      "autoFixable": false
+    },
+    {
+      "id": "obs.no_structured_logging",
+      "severity": "med",
+      "category": "observability",
+      "why": "No structured logging library detected",
+      "evidence": [
+        "package.json:1"
+      ],
+      "fix": "Add winston or pino for structured JSON logging",
+      "autoFixable": true
+    },
+    {
+      "id": "docs.no_feature_flags_doc",
+      "severity": "low",
+      "category": "documentation",
+      "why": "Feature flags used but not documented",
+      "evidence": [
+        "./"
+      ],
+      "fix": "Add docs/feature-flags.md documenting all flags",
+      "autoFixable": false
+    }
+  ],
+  "ts": "2025-11-09T15:32:22.105Z"
+}

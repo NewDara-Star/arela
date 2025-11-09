@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "domains": [
+    "registry.npmjs.org",
+    "docs.npmjs.com",
+    "nodejs.org",
+    "react.dev",
+    "reactrouter.com",
+    "tailwindcss.com",
+    "supabase.com",
+    "readthedocs.io",
+    "python.org",
+    "mdn.mozilla.org",
+    "vitejs.dev",
+    "github.com",
+    "raw.githubusercontent.com"
+  ],
+  "rate_limit_per_min": 20,
+  "timeout_ms": 15000,
+  "max_bytes": 2097152
+}

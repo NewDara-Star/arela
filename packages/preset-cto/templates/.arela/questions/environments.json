@@ -1,0 +1,28 @@
+{
+  "topic": "environments",
+  "questions": [
+    {
+      "id": "env.has_staging",
+      "type": "confirm",
+      "prompt": "Do you have a staging environment?",
+      "default": true,
+      "writes": ["env.has_staging"]
+    },
+    {
+      "id": "env.secrets_manager",
+      "type": "select",
+      "prompt": "How are secrets managed?",
+      "choices": ["env-vars", "vault", "aws-secrets", "gcp-secrets", "doppler", "infisical", "none"],
+      "default": "env-vars",
+      "writes": ["env.secrets_manager"]
+    },
+    {
+      "id": "env.config_format",
+      "type": "select",
+      "prompt": "Config file format?",
+      "choices": [".env", "yaml", "json", "toml", "none"],
+      "default": ".env",
+      "writes": ["env.config_format"]
+    }
+  ]
+}

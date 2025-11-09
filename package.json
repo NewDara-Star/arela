@@ -12,5 +12,9 @@
   "packageManager": "pnpm@9.11.0",
   "devDependencies": {
     "husky": "^8.0.0"
+  },
+  "dependencies": {
+    "@types/prompts": "^2.4.9",
+    "prompts": "^2.4.2"
   }
 }

@@ -1,0 +1,13 @@
+{
+  "ci.provider": {
+    "id": "ci.provider",
+    "assumption": "GitHub Actions detected",
+    "evidence": [
+      ".github/workflows/arela-doctor.yml"
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "createdAt": "2025-11-09T15:32:22.004Z",
+    "updatedAt": "2025-11-09T15:32:22.005Z"
+  }
+}

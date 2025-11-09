@@ -1,0 +1,34 @@
+{
+  "topic": "ci",
+  "questions": [
+    {
+      "id": "ci.provider",
+      "type": "select",
+      "prompt": "Which CI provider?",
+      "choices": ["github-actions", "gitlab-ci", "circle-ci", "travis", "jenkins", "none", "other"],
+      "default": "github-actions",
+      "writes": ["ci.provider"]
+    },
+    {
+      "id": "ci.runs_on_pr",
+      "type": "confirm",
+      "prompt": "Does CI run on every PR?",
+      "default": true,
+      "writes": ["ci.runs_on_pr"]
+    },
+    {
+      "id": "ci.blocks_merge",
+      "type": "confirm",
+      "prompt": "Does CI block merge if failing?",
+      "default": true,
+      "writes": ["ci.blocks_merge"]
+    },
+    {
+      "id": "ci.runs_tests",
+      "type": "confirm",
+      "prompt": "Does CI run tests?",
+      "default": true,
+      "writes": ["ci.runs_tests"]
+    }
+  ]
+}

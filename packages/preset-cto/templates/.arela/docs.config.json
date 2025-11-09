@@ -1,0 +1,11 @@
+{
+  "index": ".arela/cache/docs.idx.json",
+  "packages": "auto",
+  "extras": [
+    {
+      "name": "arela",
+      "docs": "https://github.com/newdara/arela"
+    }
+  ],
+  "prefer": ["official", "mdn", "maintainer"]
+}
