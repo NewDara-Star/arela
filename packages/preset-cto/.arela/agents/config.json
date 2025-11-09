@@ -1,0 +1,65 @@
+{
+  "agents": {
+    "codex": {
+      "name": "Codex",
+      "type": "cli",
+      "command": "codex exec --full-auto",
+      "cost_per_1k_tokens": 0.002,
+      "enabled": true,
+      "description": "GitHub Copilot CLI - Fast implementation"
+    },
+    "claude": {
+      "name": "Claude",
+      "type": "cli",
+      "command": "claude",
+      "cost_per_1k_tokens": 0.015,
+      "enabled": true,
+      "description": "Anthropic Claude - Deep reasoning"
+    },
+    "deepseek": {
+      "name": "DeepSeek",
+      "type": "cli",
+      "command": "deepseek",
+      "cost_per_1k_tokens": 0.001,
+      "enabled": true,
+      "description": "DeepSeek Coder - Optimization"
+    },
+    "cascade": {
+      "name": "Cascade (Windsurf)",
+      "type": "ide",
+      "command": null,
+      "cost_per_1k_tokens": 0,
+      "enabled": true,
+      "description": "Windsurf Cascade - Orchestration"
+    },
+    "local-llama": {
+      "name": "Local Llama (Ollama)",
+      "type": "local",
+      "command": "ollama run codellama:13b",
+      "cost_per_1k_tokens": 0,
+      "enabled": false,
+      "description": "Local Ollama model - Free!"
+    },
+    "gemini": {
+      "name": "Google Gemini",
+      "type": "api",
+      "command": "gemini-cli",
+      "cost_per_1k_tokens": 0.001,
+      "enabled": false,
+      "description": "Google Gemini - Multimodal"
+    },
+    "custom": {
+      "name": "Custom Agent",
+      "type": "custom",
+      "command": ".arela/agents/custom/run.sh",
+      "cost_per_1k_tokens": 0,
+      "enabled": false,
+      "description": "Your custom agent script"
+    }
+  },
+  "default_agent": "codex",
+  "parallel_execution": true,
+  "max_parallel": 5,
+  "retry_on_failure": true,
+  "max_retries": 2
+}

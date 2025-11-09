@@ -1,0 +1,13 @@
+{
+  "tickets": {},
+  "summary": {
+    "total": 0,
+    "open": 0,
+    "in_progress": 0,
+    "completed": 0,
+    "failed": 0,
+    "total_cost": 0,
+    "estimated_remaining_cost": 0
+  },
+  "last_updated": null
+}
