@@ -1,0 +1,10 @@
+node_modules
+pnpm-lock.yaml
+dist
+.DS_Store
+.pnpm-store
+coverage
+.env
+.vscode
+.idea
+.arela

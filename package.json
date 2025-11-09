@@ -1,0 +1,16 @@
+{
+  "name": "arela",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "build": "pnpm -F @arela/preset-cto build",
+    "dev": "pnpm -F @arela/preset-cto dev",
+    "doctor": "node packages/preset-cto/dist/cli.js doctor",
+    "init:local": "node packages/preset-cto/dist/cli.js init",
+    "prepare": "husky install"
+  },
+  "packageManager": "pnpm@9.11.0",
+  "devDependencies": {
+    "husky": "^8.0.0"
+  }
+}
