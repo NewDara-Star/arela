@@ -1,22 +1,12 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-set -e
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
 
-run_arela() {
-  if command -v arela >/dev/null 2>&1; then
-    arela doctor --eval
-    return
-  fi
-  if [ -f node_modules/@arela/preset-cto/dist/cli.js ]; then
-    node node_modules/@arela/preset-cto/dist/cli.js doctor --eval
-    return
-  fi
-  if [ -f packages/preset-cto/dist/cli.js ]; then
-    node packages/preset-cto/dist/cli.js doctor --eval
-    return
-  fi
+set -e
+if [ -f node_modules/@newdara/preset-cto/dist/cli.js ]; then
+  node node_modules/@newdara/preset-cto/dist/cli.js doctor --eval
+elif [ -f node_modules/@arela/preset-cto/dist/cli.js ]; then
+  node node_modules/@arela/preset-cto/dist/cli.js doctor --eval
+else
   echo "Arela CLI not found. Failing pre-commit." >&2
   exit 1
-}
-
-run_arela
+fi

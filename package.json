@@ -1,0 +1,5 @@
+{
+	"devDependencies": {
+		"@newdara/preset-cto": "^0.3.4"
+	}
+}
