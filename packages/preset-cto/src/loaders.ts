@@ -66,6 +66,20 @@ const VSCODE_SETTINGS_CONTENT = JSON.stringify(
 
 const HUSKY_DOCTOR_COMMAND = LOCAL_DOCTOR_COMMAND;
 
+const HUSKY_HOOK_CONTENT = `#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+set -e
+if [ -f node_modules/@newdara/preset-cto/dist/cli.js ]; then
+  node node_modules/@newdara/preset-cto/dist/cli.js doctor --eval
+elif [ -f node_modules/@arela/preset-cto/dist/cli.js ]; then
+  node node_modules/@arela/preset-cto/dist/cli.js doctor --eval
+else
+  echo "Arela CLI not found. Failing pre-commit." >&2
+  exit 1
+fi
+`;
+
 function slugify(value: string, fallback = "summary"): string {
   const base = value
     .toLowerCase()
@@ -665,12 +679,14 @@ async function appendHuskyDoctorHook(cwd: string): Promise<"appended" | "already
   }
 
   const content = await fs.readFile(hookPath, "utf8");
-  if (content.includes(HUSKY_DOCTOR_COMMAND)) {
+  
+  // Check if already has the proper Arela hook
+  if (content.includes("Arela CLI not found")) {
     return "already";
   }
 
-  const needsNewline = content.endsWith("\n") ? "" : "\n";
-  await fs.appendFile(hookPath, `${needsNewline}${HUSKY_DOCTOR_COMMAND}\n`);
+  // Replace entire hook content with Arela check
+  await fs.writeFile(hookPath, HUSKY_HOOK_CONTENT);
   await fs.chmod(hookPath, 0o755);
   return "appended";
 }
