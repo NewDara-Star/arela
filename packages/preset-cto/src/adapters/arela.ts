@@ -28,6 +28,21 @@ export function readTemplateDir(): string {
   return dir;
 }
 
+export async function readTemplateFiles(): Promise<Record<string, string>> {
+  const templateRoot = readTemplateDir();
+  const { glob } = await import("glob");
+  const files = await glob("**/*", { cwd: templateRoot, nodir: true, dot: true });
+  const result: Record<string, string> = {};
+
+  for (const file of files) {
+    const fullPath = path.join(templateRoot, file);
+    const content = await fs.readFile(fullPath, "utf8");
+    result[file] = content;
+  }
+
+  return result;
+}
+
 export async function writeRule(
   cwd: string,
   rule: ArelaRule,
