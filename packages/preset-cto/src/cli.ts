@@ -24,8 +24,14 @@ import {
   resetTicket,
   resetAllTickets,
 } from "./ticket-status.js";
+import { orchestrate } from "./orchestrate.js";
 import { globalConfig } from "./global-config.js";
 import { SyncManager } from "./sync.js";
+import {
+  checkAutoIndex,
+  installAutoIndexHook,
+  showAutoIndexStatus,
+} from "./auto-index.js";
 
 const program = new Command();
 const version: string = (pkg as { version?: string }).version ?? "0.0.0";
@@ -778,6 +784,76 @@ program
       }
     } catch (error) {
       console.error(pc.red(`Search failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// Orchestrate command
+program
+  .command("orchestrate")
+  .description("Run all tickets with multi-agent orchestration")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--agent <agent>", "Run tickets for specific agent only")
+  .option("--parallel", "Run tickets in parallel", false)
+  .option("--force", "Re-run completed tickets", false)
+  .option("--dry-run", "Show what would run without executing", false)
+  .option("--max-parallel <n>", "Maximum parallel executions", "5")
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      await orchestrate({
+        cwd,
+        agent: opts.agent,
+        parallel: opts.parallel,
+        force: opts.force,
+        dryRun: opts.dryRun,
+        maxParallel: parseInt(opts.maxParallel, 10),
+      });
+    } catch (error) {
+      console.error(pc.red(`Orchestration failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// Auto-index commands
+program
+  .command("check-auto-index")
+  .description("Check if auto-indexing should trigger")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      await checkAutoIndex(cwd);
+    } catch (error) {
+      console.error(pc.red(`Auto-index check failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("auto-index-status")
+  .description("Show auto-indexing status and thresholds")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      await showAutoIndexStatus(cwd);
+    } catch (error) {
+      console.error(pc.red(`Failed to show status: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("install-auto-index")
+  .description("Install post-commit hook for auto-indexing")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      await installAutoIndexHook(cwd);
+    } catch (error) {
+      console.error(pc.red(`Failed to install hook: ${(error as Error).message}`));
       process.exitCode = 1;
     }
   });
