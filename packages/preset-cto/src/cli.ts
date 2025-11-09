@@ -97,6 +97,9 @@ program
       if (summary.identical.length) {
         console.log(pc.dim(`Up-to-date: ${summary.identical.length}`));
       }
+      if (summary.conflicts.length) {
+        console.log(pc.yellow(`Conflicts ${summary.conflicts.length} (wrote *.new)`));
+      }
       if (opts.dryRun) {
         console.log(pc.yellow("Dry run complete – no files were written."));
       } else {
@@ -117,6 +120,9 @@ program
     const cwd = resolveCommandCwd(opts.cwd);
     try {
       const result = await upgrade({ cwd, dryRun: opts.dryRun });
+      if (result.conflicts.length) {
+        console.log(pc.yellow(`Conflicts ${result.conflicts.length} (wrote *.new)`));
+      }
       if (result.conflicts.length) {
         console.error(pc.red("Upgrade aborted due to conflicts:"));
         for (const conflict of result.conflicts) {

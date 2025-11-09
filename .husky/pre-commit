@@ -1,4 +1,22 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
+set -e
 
-node node_modules/@arela/preset-cto/dist/cli.js doctor
+run_arela() {
+  if command -v arela >/dev/null 2>&1; then
+    arela doctor --eval
+    return
+  fi
+  if [ -f node_modules/@arela/preset-cto/dist/cli.js ]; then
+    node node_modules/@arela/preset-cto/dist/cli.js doctor --eval
+    return
+  fi
+  if [ -f packages/preset-cto/dist/cli.js ]; then
+    node packages/preset-cto/dist/cli.js doctor --eval
+    return
+  fi
+  echo "Arela CLI not found. Failing pre-commit." >&2
+  exit 1
+}
+
+run_arela
