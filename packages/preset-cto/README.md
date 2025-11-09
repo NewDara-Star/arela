@@ -1,12 +1,12 @@
 # @newdara/preset-cto
 
-**A CTO operating system that learns from your mistakes.**
+**CTO-level engineering discipline for AI agents.** Enforce best practices, prevent technical debt, and ship with confidence.
 
-Arela packages 21 CTO-level rules, 9 workflows, auto-activation hooks, and a global learning system that shares knowledge across all your projects.
+Arela packages 22 CTO-level rules, 9 workflows, auto-activation hooks, multi-agent orchestration, and a global learning system that shares knowledge across all your projects.
 
-## What's New in v1.1.0 🧠
+## What's New in v1.3.0 🚀
 
-**Arela now learns!** Violations are tracked in `~/.arela/`, patterns are detected, and learned rules automatically apply to new projects.
+**Multi-Agent Orchestration!** Organize tickets by agent (Codex, Claude, DeepSeek, local models), track status automatically, and save 72-99% on AI costs.
 
 ```bash
 # First project

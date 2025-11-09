@@ -174,6 +174,20 @@
         "rules/017-dora-metrics.md"
       ],
       "priority": "high"
+    },
+    {
+      "id": "failure-investigation",
+      "triggers": {
+        "keywords": ["failed", "failure", "error", "warning", "⚠", "❌", "crashed", "timeout"],
+        "patterns": ["Failed to", "Error:", "Warning:", "⚠.*Failed", "build failed", "test failed"],
+        "contexts": ["debugging", "troubleshooting", "investigating"]
+      },
+      "activates": [
+        "rules/140-investigate-failures.md",
+        "rules/080-observability-minimums.md",
+        "rules/085-blameless-culture.md"
+      ],
+      "priority": "critical"
     }
   ],
   "hooks": {

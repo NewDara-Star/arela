@@ -18,6 +18,12 @@ import {
 } from "./loaders.js";
 import type { AgentType, BootstrapBundle } from "./loaders.js";
 import { runSetup } from "./setup.js";
+import {
+  loadTicketStatus,
+  getStatusReport,
+  resetTicket,
+  resetAllTickets,
+} from "./ticket-status.js";
 import { globalConfig } from "./global-config.js";
 import { SyncManager } from "./sync.js";
 
@@ -113,7 +119,7 @@ program
   });
 
 program
-  .command("sync")
+  .command("sync-templates")
   .description("Copy preset changes into the local .arela folder")
   .option("--force", "Overwrite conflicting files instead of writing *.new", false)
   .option("--dry-run", "Preview actions without writing", false)
@@ -631,6 +637,147 @@ program
       }
     } catch (error) {
       console.error(pc.red(`Failed to list projects: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// Ticket status command
+program
+  .command("status")
+  .description("Show ticket status and progress")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--format <format>", "Output format (text|json)", "text")
+  .option("--verbose", "Show detailed status", false)
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const status = await loadTicketStatus(cwd);
+      
+      if (opts.format === "json") {
+        console.log(JSON.stringify(status, null, 2));
+        return;
+      }
+      
+      const report = await getStatusReport(cwd);
+      console.log(report);
+      
+      if (opts.verbose && Object.keys(status.tickets).length > 0) {
+        console.log("\n## All Tickets\n");
+        for (const [id, ticket] of Object.entries(status.tickets)) {
+          console.log(`- **${id}** (${ticket.status})`);
+          if (ticket.agent) console.log(`  - Agent: ${ticket.agent}`);
+          if (ticket.cost) console.log(`  - Cost: $${ticket.cost.toFixed(3)}`);
+          if (ticket.duration_ms) console.log(`  - Duration: ${(ticket.duration_ms / 1000).toFixed(1)}s`);
+        }
+      }
+    } catch (error) {
+      console.error(pc.red(`Failed to get status: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// Reset ticket command
+program
+  .command("reset-ticket <ticketId>")
+  .description("Reset status for a specific ticket")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .action(async (ticketId, opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      await resetTicket(cwd, ticketId);
+      console.log(pc.green(`✓ Reset ticket ${ticketId}`));
+    } catch (error) {
+      console.error(pc.red(`Failed to reset ticket: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// Reset all tickets command
+program
+  .command("reset-all")
+  .description("Reset status for all tickets")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--yes", "Skip confirmation", false)
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      if (!opts.yes) {
+        console.log(pc.yellow("⚠ This will reset status for ALL tickets."));
+        console.log(pc.yellow("Run with --yes to confirm."));
+        return;
+      }
+      
+      await resetAllTickets(cwd);
+      console.log(pc.green("✓ Reset all tickets"));
+    } catch (error) {
+      console.error(pc.red(`Failed to reset tickets: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// RAG search command
+program
+  .command("search <query>")
+  .description("Semantic search via RAG server")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--top <n>", "Number of results to return", "10")
+  .option("--type <ext>", "File extension filter (e.g., tsx, ts, md)")
+  .option("--path <path>", "Path filter (e.g., src/api)")
+  .option("--server <url>", "RAG server URL", "http://localhost:3456")
+  .action(async (query, opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      // Check if RAG server is running
+      const healthUrl = `${opts.server}/health`;
+      let isRunning = false;
+      
+      try {
+        const response = await fetch(healthUrl);
+        isRunning = response.ok;
+      } catch {
+        isRunning = false;
+      }
+      
+      if (!isRunning) {
+        console.log(pc.yellow("⚠ RAG server not running"));
+        console.log(pc.gray("\nStart the server with:"));
+        console.log(pc.cyan("  npx arela serve"));
+        console.log(pc.gray("\nOr use grep for exact string matching:"));
+        console.log(pc.cyan(`  grep -r "${query}" ${cwd}`));
+        process.exitCode = 1;
+        return;
+      }
+      
+      // Build search URL
+      const searchUrl = new URL(`${opts.server}/search`);
+      searchUrl.searchParams.set("q", query);
+      searchUrl.searchParams.set("top", opts.top);
+      if (opts.type) searchUrl.searchParams.set("type", opts.type);
+      if (opts.path) searchUrl.searchParams.set("path", opts.path);
+      
+      // Execute search
+      const response = await fetch(searchUrl.toString());
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.statusText}`);
+      }
+      
+      const results = await response.json();
+      
+      if (!results.results || results.results.length === 0) {
+        console.log(pc.yellow("No results found"));
+        return;
+      }
+      
+      console.log(pc.bold(pc.cyan(`\n🔍 Found ${results.results.length} results for "${query}"\n`)));
+      
+      for (const result of results.results) {
+        console.log(pc.bold(result.file));
+        console.log(pc.gray(`  Score: ${(result.score * 100).toFixed(1)}%`));
+        console.log(pc.dim(`  ${result.chunk.substring(0, 150)}...`));
+        console.log("");
+      }
+    } catch (error) {
+      console.error(pc.red(`Search failed: ${(error as Error).message}`));
       process.exitCode = 1;
     }
   });

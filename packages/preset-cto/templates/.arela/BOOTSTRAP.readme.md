@@ -6,6 +6,7 @@ Agents must load every file in `.arela/rules/*` and `.arela/workflows/*` before 
 - Enforce arela.context_integrity before every action.
 - Validate tasks against arela.ticket_format; request acceptance criteria when missing.
 - Review deliverables with arela.code_review_gates, arela.testing_pyramid/arela.testing_trophy, and arela.observability_minimums.
+- **Investigate all failures** - Never ignore warnings, errors, or failed operations. Read files, identify patterns, assess impact (arela.investigate_failures).
 - Return a Report per task (summary, acceptance checklist status, test outputs, and UI proof if applicable).
 - On drift, pause and run a Context Integrity Check (what / why / fix).
 

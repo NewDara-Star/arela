@@ -1,5 +1,211 @@
 # Changelog
 
+## 1.3.0 - 2024-11-09
+
+### 🚀 Multi-Agent Orchestration Foundation
+
+**The biggest update yet!** Arela now supports multi-agent workflows with cost optimization, status tracking, and local agent integration.
+
+#### 1. Agent-Based Ticket Organization
+
+Organize tickets by AI agent for optimal cost and performance:
+
+```
+.arela/tickets/
+├── codex/          # Implementation ($0.002/1K)
+├── claude/         # Architecture ($0.015/1K)
+├── deepseek/       # Optimization ($0.001/1K)
+├── cascade/        # Integration (free)
+└── local-llama/    # Local models (free!)
+```
+
+**Cost Savings:** 72-87% through intelligent agent selection
+
+#### 2. Enhanced Ticket Template
+
+New template with cost estimates and agent recommendations:
+
+```markdown
+**Agent:** @codex
+**Estimated tokens:** 2000
+**Cost estimate:** $0.004
+**Dependencies:** CODEX-001
+```
+
+#### 3. Status Tracking System
+
+Automatic ticket status tracking prevents duplicate work:
+
+```bash
+npx arela status              # Show progress
+npx arela status --verbose    # Detailed view
+npx arela status --format=json  # JSON output
+npx arela reset-ticket CODEX-001  # Reset ticket
+```
+
+**Status values:** `open`, `in_progress`, `completed`, `failed`
+
+#### 4. RAG Search Command
+
+Semantic search via RAG server:
+
+```bash
+npx arela search "authentication logic" --top=10
+npx arela search "form validation" --type=tsx
+npx arela search "API endpoints" --path=src/api
+```
+
+**Auto-detects** if RAG server is running, suggests alternatives
+
+#### 5. Local Agent Support
+
+Run AI agents on your machine for FREE:
+
+```json
+{
+  "local-llama": {
+    "command": "ollama run codellama:13b",
+    "cost_per_1k_tokens": 0
+  }
+}
+```
+
+**Supported:**
+- Ollama (CodeLlama, DeepSeek, etc.)
+- LM Studio
+- Custom scripts
+- Any local LLM
+
+#### 6. Multi-Agent Selection Guide
+
+Complete guide with decision trees, cost optimization strategies, and real-world examples:
+
+- Agent selection matrix
+- Cost comparison calculator
+- Decision tree for task types
+- Best practices
+- Troubleshooting
+
+### New Files
+
+**Templates:**
+- `templates/.arela/tickets/` - Agent-based folders
+- `templates/.arela/tickets/README.md` - Usage guide
+- `templates/.arela/tickets/.ticket-status.json` - Status tracking
+- `templates/.arela/ticket-template.md` - Enhanced template
+- `templates/.arela/agents/config.json` - Agent configuration
+- `templates/.arela/agents/README.md` - Local agent guide
+
+**Examples:**
+- `templates/.arela/tickets/codex/EXAMPLE-CODEX-001-component.md`
+- `templates/.arela/tickets/claude/EXAMPLE-CLAUDE-001-architecture.md`
+- `templates/.arela/tickets/deepseek/EXAMPLE-DEEPSEEK-001-optimization.md`
+
+**Documentation:**
+- `MULTI-AGENT-GUIDE.md` - Complete orchestration guide
+- `RFC-MULTI-AGENT-ORCHESTRATION.md` - Full specification
+
+**Code:**
+- `src/ticket-status.ts` - Status tracking system
+
+### New CLI Commands
+
+```bash
+npx arela status              # Show ticket status
+npx arela reset-ticket <id>   # Reset ticket
+npx arela reset-all --yes     # Reset all tickets
+npx arela search <query>      # RAG semantic search
+```
+
+### Cost Optimization Examples
+
+**Building 14 Components:**
+- All Claude: $0.630
+- Optimized (Codex + Claude): $0.176
+- **Savings: 72%**
+
+**With Local Models:**
+- 10 Local tickets: $0
+- 4 Codex tickets: $0.008
+- **Total: $0.008 (99% savings!)**
+
+### Coming in v1.4.0
+
+- ✅ Automated runner scripts
+- ✅ Full orchestration command
+- ✅ Setup wizard improvements
+- ✅ Parallel execution
+- ✅ Cost reporting
+
+### Breaking Changes
+
+None! Fully backward compatible.
+
+### Migration
+
+No migration needed. New features are opt-in.
+
+To start using multi-agent:
+```bash
+npx arela init  # Creates new folder structure
+```
+
+## 1.2.0 - 2024-11-09
+
+### ✨ New Feature: Failure Investigation Rule
+
+**Added Rule 140: Investigate Failures for Root Cause**
+
+Agents must now investigate all warnings and failures instead of ignoring them:
+
+- **Never ignore failures** - Read files, identify patterns, assess impact
+- **Investigation checklist** - What failed? Why? Impact? Can we fix it?
+- **Common patterns** - RAG indexing, build warnings, test flakiness
+- **Document findings** - Fix or explicitly accept with reasoning
+- **Learning integration** - Patterns recorded and applied to new projects
+
+**Auto-activation:**
+- Triggers on keywords: `failed`, `failure`, `error`, `warning`, `⚠`, `❌`
+- Priority: `critical`
+- Activates: Rule 140, Observability, Blameless Culture
+
+**Why this matters:**
+- Silent failures compound into larger issues
+- Every warning is a signal, every failure is a lesson
+- CTO mindset: investigate, document, learn, prevent
+
+**Example use case:**
+```
+⚠ Failed to embed 47 chunks in RAG indexing
+
+Agent now:
+1. Reads failing files
+2. Identifies pattern (large generated JSON)
+3. Proposes solution (.ragignore)
+4. Documents decision
+5. Records pattern for future projects
+```
+
+**Updated:**
+- `templates/.arela/rules/140-investigate-failures.md` - New comprehensive rule
+- `templates/.arela/skill-rules.json` - Added failure-investigation trigger
+- `templates/.arela/BOOTSTRAP.readme.md` - Added to core directives
+
+### Rule Count
+- **22 rules** (was 21)
+- **9 workflows**
+
+## 1.1.2 - 2024-11-09
+
+### 🐛 Bugfix
+
+- **Fixed duplicate 'sync' command error** - Renamed old template sync to `sync-templates`
+- The new `sync` command (v1.1.0) now works correctly for syncing updates + patterns
+
+### Commands
+- `npx arela sync` - Sync package updates + global patterns (NEW)
+- `npx arela sync-templates` - Copy preset templates (renamed from `sync`)
+
 ## 1.1.1 - 2024-11-09
 
 ### 📚 Documentation Updates
