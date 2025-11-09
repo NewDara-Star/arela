@@ -1,0 +1,214 @@
+{
+  "version": "1.0.0",
+  "description": "Auto-activation rules for Arela CTO system. Analyzes prompts and file context to suggest relevant rules and workflows.",
+  "rules": [
+    {
+      "id": "architecture-decisions",
+      "triggers": {
+        "keywords": ["architecture", "design", "system design", "microservices", "monolith", "database", "api design", "scalability"],
+        "filePatterns": ["**/docs/adr/**", "**/architecture/**", "**/*.architecture.md"],
+        "contexts": ["new feature", "refactoring", "migration"]
+      },
+      "activates": [
+        "rules/015-modular-monolith.md",
+        "rules/090-adr-discipline.md",
+        "workflows/architect-spec.prompt.md",
+        "workflows/cto-decision-adr.prompt.md"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "decision-making",
+      "triggers": {
+        "keywords": ["should we", "which option", "decide", "choice", "tradeoff", "evaluate"],
+        "contexts": ["technical decision", "architecture choice", "tool selection"]
+      },
+      "activates": [
+        "rules/025-two-way-door-decisions.md",
+        "rules/010-pragmatic-visionary.md",
+        "workflows/cto-decision-adr.prompt.md"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "testing",
+      "triggers": {
+        "keywords": ["test", "testing", "unit test", "integration test", "e2e", "qa", "quality"],
+        "filePatterns": ["**/test/**", "**/*.test.ts", "**/*.spec.ts", "**/tests/**"],
+        "contexts": ["writing tests", "test coverage", "test strategy"]
+      },
+      "activates": [
+        "rules/070-testing-pyramid.md",
+        "rules/070-testing-trophy.md",
+        "rules/130-automated-qa.md",
+        "workflows/qa-automation.prompt.md"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "security",
+      "triggers": {
+        "keywords": ["security", "authentication", "authorization", "xss", "csrf", "sql injection", "vulnerability", "encrypt", "secrets"],
+        "filePatterns": ["**/auth/**", "**/security/**", "**/.env*"],
+        "contexts": ["auth implementation", "security review", "vulnerability fix"]
+      },
+      "activates": [
+        "rules/060-security-first.md"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "performance",
+      "triggers": {
+        "keywords": ["performance", "slow", "optimization", "latency", "speed", "cache", "load time"],
+        "filePatterns": ["**/performance/**", "**/benchmarks/**"],
+        "contexts": ["performance issue", "optimization", "slow page"]
+      },
+      "activates": [
+        "rules/110-performance-budget.md"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "technical-debt",
+      "triggers": {
+        "keywords": ["technical debt", "refactor", "cleanup", "legacy", "deprecated", "todo", "hack"],
+        "contexts": ["refactoring", "code cleanup", "debt paydown"]
+      },
+      "activates": [
+        "rules/050-technical-debt-management.md"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "incident-response",
+      "triggers": {
+        "keywords": ["incident", "outage", "down", "production issue", "emergency", "rollback", "hotfix"],
+        "contexts": ["production issue", "incident", "emergency"]
+      },
+      "activates": [
+        "workflows/incident-response.prompt.md",
+        "rules/085-blameless-culture.md"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "code-review",
+      "triggers": {
+        "keywords": ["review", "pr", "pull request", "code review", "feedback"],
+        "filePatterns": ["**/.github/pull_request_template.md"],
+        "contexts": ["code review", "pr review"]
+      },
+      "activates": [
+        "rules/040-code-review-gates.md"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "prioritization",
+      "triggers": {
+        "keywords": ["prioritize", "roadmap", "backlog", "feature request", "what should we build"],
+        "contexts": ["planning", "prioritization", "roadmap"]
+      },
+      "activates": [
+        "workflows/ruthless-prioritization.prompt.md"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "hiring",
+      "triggers": {
+        "keywords": ["hire", "hiring", "interview", "candidate", "recruit", "job description"],
+        "contexts": ["hiring", "interview", "recruitment"]
+      },
+      "activates": [
+        "workflows/tech-hiring.prompt.md"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "multi-agent",
+      "triggers": {
+        "keywords": ["delegate", "codex", "claude", "agent", "task assignment"],
+        "contexts": ["task delegation", "agent coordination"]
+      },
+      "activates": [
+        "rules/100-multi-agent-orchestration.md",
+        "workflows/delegate-agent-ticket.prompt.md"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "async-communication",
+      "triggers": {
+        "keywords": ["meeting", "communication", "documentation", "rfc", "decision record"],
+        "filePatterns": ["**/docs/**", "**/rfcs/**", "**/*.md"],
+        "contexts": ["documentation", "communication", "decision"]
+      },
+      "activates": [
+        "rules/120-async-first-communication.md"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "observability",
+      "triggers": {
+        "keywords": ["monitoring", "logging", "metrics", "observability", "alerting", "dashboard"],
+        "filePatterns": ["**/monitoring/**", "**/metrics/**"],
+        "contexts": ["monitoring", "observability", "debugging"]
+      },
+      "activates": [
+        "rules/080-observability-minimums.md"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "deployment",
+      "triggers": {
+        "keywords": ["deploy", "deployment", "ci/cd", "pipeline", "release"],
+        "filePatterns": ["**/.github/workflows/**", "**/ci/**", "**/deploy/**"],
+        "contexts": ["deployment", "ci/cd", "release"]
+      },
+      "activates": [
+        "rules/016-trunk-based-dev.md",
+        "rules/017-dora-metrics.md"
+      ],
+      "priority": "high"
+    }
+  ],
+  "hooks": {
+    "UserPromptSubmit": {
+      "enabled": true,
+      "description": "Analyzes user prompts and suggests relevant Arela rules/workflows",
+      "implementation": "hooks/auto-activate.js"
+    },
+    "FileOpen": {
+      "enabled": true,
+      "description": "Suggests rules based on file type and location",
+      "implementation": "hooks/file-context.js"
+    },
+    "PreCommit": {
+      "enabled": true,
+      "description": "Runs arela doctor before commits",
+      "implementation": "hooks/pre-commit.js"
+    }
+  },
+  "contexts": {
+    "new feature": {
+      "indicators": ["new", "add", "implement", "create"],
+      "suggests": ["architecture", "testing", "security"]
+    },
+    "bug fix": {
+      "indicators": ["fix", "bug", "issue", "error"],
+      "suggests": ["testing", "observability", "blameless-culture"]
+    },
+    "refactoring": {
+      "indicators": ["refactor", "cleanup", "improve", "optimize"],
+      "suggests": ["technical-debt", "testing", "code-review"]
+    },
+    "production issue": {
+      "indicators": ["production", "live", "urgent", "critical"],
+      "suggests": ["incident-response", "observability"]
+    }
+  }
+}

@@ -4,6 +4,8 @@ import { execa } from "execa";
 import prompts from "prompts";
 import pc from "picocolors";
 import { init, harden as hardenTask, doctor as doctorTask } from "./loaders.js";
+import { globalConfig } from "./global-config.js";
+import { SyncManager } from "./sync.js";
 
 export interface SetupOptions {
   cwd: string;
@@ -395,11 +397,23 @@ export async function runSetup(opts: SetupOptions): Promise<void> {
     console.log(pc.yellow("\n⚠ Git not found"));
     console.log(pc.dim("Install from: https://git-scm.com"));
     if (nonInteractive) {
-      throw new Error("Git required");
+      throw new Error("Git is required");
     }
   }
 
-  // 1. Detect package manager
+  // 1. Initialize global config
+  console.log(pc.cyan("Initializing global learning system..."));
+  await globalConfig.init();
+  
+  // 2. Check for package updates
+  const syncManager = new SyncManager(cwd);
+  const versionInfo = await syncManager.checkForUpdates();
+  
+  if (versionInfo.hasUpdate) {
+    await syncManager.syncAfterUpdate();
+  }
+
+  // 3. Detect package manager
   const pm = await detectPackageManager(cwd);
   console.log(pc.dim(`Detected package manager: ${pm}`));
 
@@ -512,7 +526,17 @@ export async function runSetup(opts: SetupOptions): Promise<void> {
   // 11. Commit changes
   await gitAddAndCommit(cwd, "chore(arela): setup rules, hooks, CI, baseline");
 
-  // 12. IDE configuration
+  // 12. Register project with global config
+  const packageVersion = versionInfo.current;
+  await globalConfig.registerProject(cwd, packageVersion);
+  console.log(pc.green("✓ Registered project with global learning system"));
+
+  // 13. Sync global patterns
+  if (!nonInteractive) {
+    await syncManager.syncGlobalPatterns();
+  }
+
+  // 14. IDE configuration
   if (!nonInteractive && !opts.ide) {
     console.log("");
     const ide = await selectIDE();

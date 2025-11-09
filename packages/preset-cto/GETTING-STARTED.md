@@ -4,12 +4,19 @@
 
 Arela is your AI coding assistant's rulebook. It ensures your AI follows best practices, writes quality code, and maintains discipline across your project.
 
+**New in v1.1.0:** Arela now learns from your mistakes and shares knowledge across all your projects!
+
 ## What You Get
 
-- ✅ **Rules** - Engineering best practices your AI must follow
+- ✅ **21 Rules** - CTO-level engineering best practices
+- ✅ **9 Workflows** - Step-by-step guides for common tasks
+- ✅ **Auto-Activation** - Rules suggest themselves based on context
+- ✅ **Learning System** - Tracks violations, learns patterns, applies to new projects
 - ✅ **Pre-commit Hooks** - Automatic quality checks before every commit
 - ✅ **CI Validation** - GitHub Actions that verify pull requests
 - ✅ **Quality Reports** - Baseline metrics to track improvement
+- ✅ **RAG Search** - Semantic search across your codebase (optional)
+- ✅ **Browser Automation** - AI-powered QA testing (optional)
 
 ## Prerequisites
 

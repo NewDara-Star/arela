@@ -3,43 +3,49 @@
 ## One Command Setup
 
 ```bash
-npx @newdara/preset-cto setup
+npx @newdara/preset-cto@latest setup
 ```
 
-That's it. The wizard handles everything.
+That's it. The wizard handles everything: rules, hooks, CI, RAG, **and learning system**.
 
 ## What You Get
 
 ```
+~/.arela/                      # Global (NEW in v1.1.0)
+├── config.json                # Learning data, patterns
+└── custom-rules/              # Your custom rules
+
 .arela/
-├── rules/              # Engineering discipline rules
-├── workflows/          # Agent workflow prompts
-├── profile.json        # Agent persona config
+├── rules/                     # 21 CTO rules
+├── workflows/                 # 9 workflows
+├── hooks/                     # Auto-activation hooks (NEW in v1.0.0)
+├── skill-rules.json           # Activation triggers (NEW in v1.0.0)
+├── profile.json               # Agent persona config
 ├── evals/
-│   └── rubric.json    # Quality evaluation criteria
-└── .last-report.json  # Baseline report (gitignored)
+│   └── rubric.json           # Quality evaluation criteria
+└── .last-report.json         # Baseline report (gitignored)
 
 .husky/
-└── pre-commit         # Runs doctor --eval before commits
+└── pre-commit                # Runs doctor --eval before commits
 
 .github/workflows/
-└── arela-doctor.yml   # CI validation
+└── arela-doctor.yml          # CI validation
 
 .vscode/
-└── settings.json      # Optimized search patterns
+└── settings.json             # Optimized search patterns
 ```
 
 ## Fast Flags
 
 ```bash
 # Accept all defaults
-npx @newdara/preset-cto setup --yes
+npx @newdara/preset-cto@latest setup --yes
 
 # CI mode (non-interactive)
-npx @newdara/preset-cto setup --non-interactive --yes --skip-rag
+npx @newdara/preset-cto@latest setup --non-interactive --yes --skip-rag
 
 # Skip optional steps
-npx @newdara/preset-cto setup --skip-rag --skip-ci --skip-hooks
+npx @newdara/preset-cto@latest setup --skip-rag --skip-ci --skip-hooks
 ```
 
 ## Verify Setup
@@ -58,13 +64,51 @@ git commit -m "test: verify arela hooks"
 
 ## Common Commands
 
+### Core Commands
 ```bash
+# Check rules and workflows
+npx arela doctor
+
 # Sync preset updates
 npx arela sync
 
 # Three-way merge upgrade
 npx arela upgrade
+```
 
+### Learning System (v1.1.0+)
+```bash
+# View learned patterns
+npx arela patterns
+
+# Check for updates
+npx arela check-updates
+
+# Sync updates + patterns
+npx arela sync
+
+# Share with team
+npx arela export-patterns
+npx arela import-patterns --file team-patterns.json
+
+# List all projects
+npx arela projects
+```
+
+### RAG System (v0.5.0+)
+```bash
+# Build semantic index
+npx arela index
+
+# Start RAG server
+npx arela serve
+
+# Search codebase
+npx arela search "authentication logic"
+```
+
+### Agent Integration
+```bash
 # Get agent bootstrap prompt
 npx arela agent bootstrap
 
@@ -117,11 +161,13 @@ chmod +x bootstrap.sh
 
 ## Next Steps
 
-1. Customize `.arela/rules/` for your team
-2. Update `.arela/profile.json` with your preferences
-3. Adjust `.arela/evals/rubric.json` thresholds
-4. Copy agent bootstrap prompt to your IDE
-5. Start building with discipline
+1. **Configure IDE** - Run `npx arela agent install --agent windsurf`
+2. **Customize rules** - Edit `.arela/rules/` for your team
+3. **Set preferences** - Update `.arela/profile.json`
+4. **Adjust thresholds** - Edit `.arela/evals/rubric.json`
+5. **Start RAG** - Run `npx arela serve` for semantic search
+6. **Let it learn** - Arela tracks violations and learns patterns
+7. **Share patterns** - Export patterns for your team
 
 ## Philosophy
 
@@ -133,8 +179,12 @@ chmod +x bootstrap.sh
 
 ## Documentation
 
+- [README.md](./README.md) - Overview and learning system
 - [SETUP.md](./SETUP.md) - Complete setup guide
-- [README.md](./README.md) - Full preset documentation
+- [GETTING-STARTED.md](./GETTING-STARTED.md) - For non-technical users
+- [AUTO-ACTIVATION.md](./AUTO-ACTIVATION.md) - Auto-activation system
+- [BROWSER-AUTOMATION.md](./BROWSER-AUTOMATION.md) - QA testing guide
+- [RAG.md](./RAG.md) - Local semantic search
 - [CHANGELOG.md](./CHANGELOG.md) - Version history
 
 ---

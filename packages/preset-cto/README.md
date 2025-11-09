@@ -1,23 +1,41 @@
-# @arela/preset-cto
+# @newdara/preset-cto
 
-Arela packages a curated set of CTO-level rules, workflows, and memories that keep projects aligned.
-Use the `arela` CLI to bootstrap a `.arela/` folder, sync templates, run upgrades, and audit content.
+**A CTO operating system that learns from your mistakes.**
+
+Arela packages 21 CTO-level rules, 9 workflows, auto-activation hooks, and a global learning system that shares knowledge across all your projects.
+
+## What's New in v1.1.0 🧠
+
+**Arela now learns!** Violations are tracked in `~/.arela/`, patterns are detected, and learned rules automatically apply to new projects.
+
+```bash
+# First project
+cd project-1
+npx arela setup
+git commit  # ❌ Missing API tests
+# Saved to ~/.arela/
+
+# Second project (learns!)
+cd project-2
+npx arela setup
+# 🤖 Apply pattern: Require API tests? [Y/n]
+```
 
 ## Quick Start
 
 **One command to rule them all:**
 
 ```sh
-npx @newdara/preset-cto setup
+npx @newdara/preset-cto@latest setup
 ```
 
-This interactive wizard handles: git init → install preset → arela init → husky hooks → CI → baseline → optional RAG.
+This interactive wizard handles: git init → install preset → arela init → husky hooks → CI → baseline → RAG → **learning system**.
 
 **Fast flags:**
 ```sh
-npx @newdara/preset-cto setup --yes                    # accept all defaults
-npx @newdara/preset-cto setup --non-interactive --yes  # CI mode
-npx @newdara/preset-cto setup --skip-rag --skip-ci     # skip optional steps
+npx @newdara/preset-cto@latest setup --yes                    # accept all defaults
+npx @newdara/preset-cto@latest setup --non-interactive --yes  # CI mode
+npx @newdara/preset-cto@latest setup --skip-rag --skip-ci     # skip optional steps
 ```
 
 ### Documentation
@@ -26,6 +44,47 @@ npx @newdara/preset-cto setup --skip-rag --skip-ci     # skip optional steps
 - 🔄 **[FLOW.md](./FLOW.md)** - Visual setup flow and decision tree
 - 📚 **[SETUP.md](./SETUP.md)** - Complete technical documentation
 - ⚡ **[QUICKSTART.md](./QUICKSTART.md)** - Command reference
+- 🧠 **[AUTO-ACTIVATION.md](./AUTO-ACTIVATION.md)** - Auto-activation system
+- 🌐 **[BROWSER-AUTOMATION.md](./BROWSER-AUTOMATION.md)** - QA testing with Stagehand
+- 🔍 **[RAG.md](./RAG.md)** - Local semantic search
+
+## Learning System
+
+Arela learns from your violations and shares knowledge across projects:
+
+### Commands
+
+```bash
+npx arela patterns           # View learned patterns
+npx arela check-updates      # Check for new version
+npx arela sync               # Sync updates + patterns
+npx arela export-patterns    # Share with team
+npx arela import-patterns    # Import team patterns
+npx arela projects           # List all projects
+```
+
+### How It Works
+
+1. **Tracks violations** - Every `arela doctor` failure is recorded in `~/.arela/config.json`
+2. **Detects patterns** - Recurring violations become learned patterns
+3. **Applies to new projects** - Patterns auto-suggest in new repos
+4. **Safe updates** - Your data in `~/.arela/` never touched by package updates
+5. **Team sharing** - Export/import patterns across team
+
+### Data Architecture
+
+```
+~/.arela/                    ← Global (your learning data)
+├── config.json              ← Patterns, violations, projects
+└── custom-rules/            ← Your custom rules
+
+node_modules/@newdara/       ← Package (updated by npm)
+└── preset-cto/templates/    ← Base rules
+
+.arela/                      ← Project (merged)
+├── rules/                   ← Base rules
+└── custom/                  ← Your overrides (safe!)
+```
 
 ## Manual Setup
 

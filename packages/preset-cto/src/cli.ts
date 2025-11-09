@@ -18,6 +18,8 @@ import {
 } from "./loaders.js";
 import type { AgentType, BootstrapBundle } from "./loaders.js";
 import { runSetup } from "./setup.js";
+import { globalConfig } from "./global-config.js";
+import { SyncManager } from "./sync.js";
 
 const program = new Command();
 const version: string = (pkg as { version?: string }).version ?? "0.0.0";
@@ -200,6 +202,13 @@ program
       }
 
       if (rules.errors.length || workflows.errors.length) {
+        // Record violations to global learning system
+        for (const err of rules.errors) {
+          const ruleMatch = err.match(/Rule: ([\w-]+)/);
+          if (ruleMatch) {
+            await globalConfig.recordViolation(cwd, ruleMatch[1]);
+          }
+        }
         process.exitCode = 1;
       } else {
         console.log(pc.green("Doctor passed."));
@@ -484,6 +493,144 @@ agentCommand
       console.log(pc.green(`Agent assets ready for ${agent}.`));
     } catch (error) {
       console.error(pc.red(`Agent install failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// Learning system commands
+program
+  .command("patterns")
+  .description("View learned patterns from your projects")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const patterns = await globalConfig.getPatterns(cwd, 0); // Get all patterns
+      
+      if (patterns.length === 0) {
+        console.log(pc.gray("No learned patterns yet. Keep coding!"));
+        return;
+      }
+      
+      console.log(pc.bold(pc.cyan("\n🤖 Learned Patterns\n")));
+      
+      for (const pattern of patterns) {
+        const confidence = (pattern.confidence * 100).toFixed(0);
+        const icon = pattern.confidence >= 0.8 ? "🔴" : pattern.confidence >= 0.5 ? "🟡" : "🟢";
+        
+        console.log(`${icon} ${pc.bold(pattern.description)}`);
+        console.log(`   Rule: ${pattern.rule}`);
+        console.log(`   Occurrences: ${pattern.occurrences} across ${pattern.projects.length} projects`);
+        console.log(`   Confidence: ${confidence}%`);
+        console.log(`   Last seen: ${new Date(pattern.lastSeen).toLocaleDateString()}`);
+        console.log("");
+      }
+    } catch (error) {
+      console.error(pc.red(`Failed to get patterns: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("check-updates")
+  .description("Check for package updates")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const syncManager = new SyncManager(cwd);
+      const versionInfo = await syncManager.checkForUpdates();
+      
+      if (!versionInfo.hasUpdate) {
+        console.log(pc.green(`✅ You're on the latest version: ${versionInfo.current}`));
+        return;
+      }
+      
+      console.log(pc.cyan(`\n📦 New version available: ${versionInfo.current} (current: ${versionInfo.previous})\n`));
+      console.log("Run: npx arela sync");
+    } catch (error) {
+      console.error(pc.red(`Failed to check updates: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("sync")
+  .description("Sync with latest package version and global patterns")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const syncManager = new SyncManager(cwd);
+      await syncManager.syncAfterUpdate();
+      await syncManager.syncGlobalPatterns();
+      console.log(pc.green("\n✅ Sync complete!"));
+    } catch (error) {
+      console.error(pc.red(`Sync failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("export-patterns")
+  .description("Export learned patterns to share with team")
+  .option("--output <file>", "Output file", "arela-patterns.json")
+  .action(async (opts) => {
+    try {
+      const data = await globalConfig.exportPatterns();
+      const fs = await import("fs-extra");
+      await fs.writeFile(opts.output, data, "utf-8");
+      console.log(pc.green(`✅ Patterns exported to ${opts.output}`));
+    } catch (error) {
+      console.error(pc.red(`Export failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("import-patterns")
+  .description("Import patterns from team")
+  .requiredOption("--file <path>", "Patterns file to import")
+  .action(async (opts) => {
+    try {
+      const fs = await import("fs-extra");
+      const data = await fs.readFile(opts.file, "utf-8");
+      await globalConfig.importPatterns(data);
+      console.log(pc.green("✅ Patterns imported successfully"));
+    } catch (error) {
+      console.error(pc.red(`Import failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("projects")
+  .description("List all projects using Arela")
+  .action(async () => {
+    try {
+      const projects = await globalConfig.getAllProjects();
+      
+      if (projects.length === 0) {
+        console.log(pc.gray("No projects registered yet"));
+        return;
+      }
+      
+      console.log(pc.bold(pc.cyan("\n📁 Your Arela Projects\n")));
+      
+      for (const project of projects) {
+        console.log(pc.bold(project.name));
+        console.log(`   Path: ${project.path}`);
+        console.log(`   Version: ${project.packageVersion}`);
+        console.log(`   Last sync: ${new Date(project.lastSync).toLocaleDateString()}`);
+        
+        const violationCount = Object.values(project.violations).reduce((a, b) => a + b, 0);
+        if (violationCount > 0) {
+          console.log(`   Violations: ${violationCount}`);
+        }
+        console.log("");
+      }
+    } catch (error) {
+      console.error(pc.red(`Failed to list projects: ${(error as Error).message}`));
       process.exitCode = 1;
     }
   });
