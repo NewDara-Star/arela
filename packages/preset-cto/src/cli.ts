@@ -17,6 +17,7 @@ import {
   autoMaterializeOnPostinstall,
 } from "./loaders.js";
 import type { AgentType, BootstrapBundle } from "./loaders.js";
+import { runSetup } from "./setup.js";
 
 const program = new Command();
 const version: string = (pkg as { version?: string }).version ?? "0.0.0";
@@ -49,6 +50,32 @@ function printPostInitGuide(): void {
 }
 
 program.name("arela").description("Opinionated Arela preset CLI").version(version);
+
+program
+  .command("setup")
+  .description("Interactive bootstrap: init → husky → CI → baseline → optional RAG")
+  .option("--yes", "Accept sensible defaults without prompts", false)
+  .option("--non-interactive", "No prompts, fail on missing deps (for CI)", false)
+  .option("--skip-rag", "Don't build semantic index", false)
+  .option("--skip-ci", "Don't write GitHub Action", false)
+  .option("--skip-hooks", "Don't touch Husky", false)
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      await runSetup({
+        cwd,
+        yes: opts.yes,
+        nonInteractive: opts.nonInteractive,
+        skipRag: opts.skipRag,
+        skipCi: opts.skipCi,
+        skipHooks: opts.skipHooks,
+      });
+    } catch (error) {
+      console.error(pc.red(`Setup failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
 
 program
   .command("init")

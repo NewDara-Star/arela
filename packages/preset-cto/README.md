@@ -3,13 +3,31 @@
 Arela packages a curated set of CTO-level rules, workflows, and memories that keep projects aligned.
 Use the `arela` CLI to bootstrap a `.arela/` folder, sync templates, run upgrades, and audit content.
 
-## Install & Use
+## Quick Start
+
+**One command to rule them all:**
 
 ```sh
-pnpm add -D @arela/preset-cto
+npx @newdara/preset-cto setup
+```
+
+This interactive wizard handles: git init → install preset → arela init → husky hooks → CI → baseline → optional RAG.
+
+**Fast flags:**
+```sh
+npx @newdara/preset-cto setup --yes                    # accept all defaults
+npx @newdara/preset-cto setup --non-interactive --yes  # CI mode
+npx @newdara/preset-cto setup --skip-rag --skip-ci     # skip optional steps
+```
+
+See [SETUP.md](./SETUP.md) for complete documentation.
+
+## Manual Setup
+
+```sh
+pnpm add -D @newdara/preset-cto
 npx arela init
-npx arela sync
-npx arela upgrade
+npx arela harden
 npx arela doctor
 ```
 
