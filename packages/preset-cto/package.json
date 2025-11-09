@@ -1,6 +1,6 @@
 {
   "name": "@arela/preset-cto",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "bin": {
     "arela": "dist/cli.js"
@@ -31,11 +31,11 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.7.4",
     "eslint": "^9.12.0",
     "prettier": "^3.3.3",
     "tsx": "^4.16.0",
-    "typescript": "^5.5.4",
-    "@types/fs-extra": "^11.0.4"
+    "typescript": "^5.5.4"
   }
 }
