@@ -187,15 +187,22 @@ async function indexFile(
   return indexed;
 }
 
+export interface BuildIndexOptions extends RagConfig {
+  progress?: boolean;
+  parallel?: boolean;
+}
+
 /**
  * Build RAG index for the codebase
  */
-export async function buildIndex(config: RagConfig): Promise<IndexStats> {
+export async function buildIndex(config: BuildIndexOptions): Promise<IndexStats> {
   const {
     cwd,
     model = "nomic-embed-text",
     ollamaHost = "http://localhost:11434",
     excludePatterns = [],
+    progress = false,
+    parallel = false,
   } = config;
   
   const startTime = Date.now();
@@ -209,10 +216,21 @@ export async function buildIndex(config: RagConfig): Promise<IndexStats> {
   const files = await getFilesToIndex(cwd, excludePatterns);
   console.log(pc.dim(`Found ${files.length} files to index`));
   
+  if (parallel) {
+    console.log(pc.yellow("⚠️  Parallel indexing uses more memory but may be slower"));
+  }
+  
   const indexPath = path.join(cwd, ".arela", ".rag-index.json");
   await fs.ensureDir(path.dirname(indexPath));
   
   const allEmbeddings: Array<{ file: string; chunk: string; embedding: number[] }> = [];
+  
+  // Progress bar
+  let progressBar: any = null;
+  if (progress) {
+    const { ProgressBar } = await import("../utils/progress.js");
+    progressBar = new ProgressBar({ total: files.length, label: "Indexing" });
+  }
   
   let processed = 0;
   for (const file of files) {
@@ -221,12 +239,20 @@ export async function buildIndex(config: RagConfig): Promise<IndexStats> {
       allEmbeddings.push(...embeddings);
       processed++;
       
-      if (processed % 10 === 0) {
+      if (progressBar) {
+        progressBar.update(processed);
+      } else if (processed % 10 === 0) {
         console.log(pc.dim(`Indexed ${processed}/${files.length} files...`));
       }
     } catch (error) {
-      console.log(pc.yellow(`⚠ Failed to index ${path.relative(cwd, file)}`));
+      if (!progressBar) {
+        console.log(pc.yellow(`⚠ Failed to index ${path.relative(cwd, file)}`));
+      }
     }
+  }
+  
+  if (progressBar) {
+    progressBar.complete();
   }
   
   // Save index
@@ -305,16 +331,4 @@ function cosineSimilarity(a: number[], b: number[]): number {
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
-/**
- * Start RAG server for AI assistants
- */
-export async function startRagServer(config: RagConfig, port = 3456): Promise<void> {
-  console.log(pc.cyan(`Starting RAG server on port ${port}...`));
-  console.log(pc.dim("AI assistants can query: http://localhost:3456/search"));
-  
-  // TODO: Implement HTTP server for AI queries
-  // This would expose /search endpoint that AI assistants can call
-  
-  console.log(pc.yellow("⚠ RAG server not yet implemented"));
-  console.log(pc.dim("Coming in next release"));
-}
+// RAG server implementation moved to src/rag/server.ts

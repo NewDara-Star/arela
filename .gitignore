@@ -16,3 +16,5 @@ coverage
 .arela/memories/*
 .arela/*.new
 .arela/.last-report.json
+
+.arela/.rag-index.json

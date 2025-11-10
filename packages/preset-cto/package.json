@@ -1,6 +1,6 @@
 {
   "name": "@newdara/preset-cto",
-  "version": "1.6.0",
+  "version": "2.1.1",
   "type": "module",
   "bin": {
     "arela": "dist/cli.js"
@@ -25,6 +25,8 @@
     "RAG.md",
     "BROWSER-AUTOMATION.md",
     "AUTO-ACTIVATION.md",
+    "AUTO-INDEX.md",
+    "MULTI-AGENT-GUIDE.md",
     "FEATURES.md"
   ],
   "scripts": {
@@ -50,7 +52,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@newdara/preset-cto": "^1.5.1",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.7.4",
     "@types/prompts": "^2.4.9",

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import path from "node:path";
 import process from "node:process";
+import fs from "fs-extra";
 import { Command } from "commander";
 import pc from "picocolors";
 import pkg from "../package.json" with { type: "json" };
@@ -103,6 +104,7 @@ program
   .option("--from <osJsonPath>", "Optional OS export JSON path")
   .option("--dry-run", "Preview actions without writing", false)
   .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--create-ide-rules", "Create IDE rule files (.windsurfrules, .cursorrules, etc.)", false)
   .action(async (opts) => {
     const cwd = resolveCommandCwd(opts.cwd);
     try {
@@ -115,6 +117,14 @@ program
       if (result.templateSummary.identical.length) {
         console.log(pc.dim(`Up-to-date: ${result.templateSummary.identical.length}`));
       }
+      
+      // Create IDE rules if requested
+      if (opts.createIdeRules && !opts.dryRun) {
+        const { createIDERules } = await import("./ide-setup.js");
+        console.log(pc.cyan("\n📝 Creating IDE rules...\n"));
+        await createIDERules(cwd);
+      }
+      
       if (opts.dryRun) {
         console.log(pc.yellow("Dry run complete – no files were written."));
       } else {
@@ -195,9 +205,43 @@ program
   .description("Validate .arela rules and workflows")
   .option("--cwd <dir>", "Directory to operate in", process.cwd())
   .option("--eval", "Validate evaluation rubric and latest report", false)
+  .option("--check-structure", "Check project structure", false)
+  .option("--fix", "Auto-fix structure issues", false)
+  .option("--track", "Track compliance history", false)
   .action(async (opts) => {
     const cwd = resolveCommandCwd(opts.cwd);
     try {
+      // Structure validation
+      if (opts.checkStructure || opts.fix) {
+        const { checkStructure, fixStructure } = await import("./structure-validator.js");
+        const issues = await checkStructure(cwd);
+        
+        if (issues.length === 0) {
+          console.log(pc.green("✅ Project structure is valid"));
+        } else {
+          console.log(pc.bold(pc.yellow("\n⚠️  Structure Issues Found:\n")));
+          for (const issue of issues) {
+            const icon = issue.type === "error" ? "❌" : "⚠️ ";
+            console.log(`${icon} ${issue.message}`);
+            if (issue.fix) {
+              console.log(pc.dim(`   Fix: ${issue.fix}`));
+            }
+          }
+          
+          if (opts.fix) {
+            console.log(pc.cyan("\n🔧 Applying fixes...\n"));
+            await fixStructure(cwd, issues);
+            console.log(pc.green("\n✅ Structure fixed!"));
+          } else {
+            console.log(pc.dim("\nRun with --fix to auto-correct these issues"));
+          }
+        }
+        
+        if (!opts.eval) {
+          return;
+        }
+      }
+      
       const { rules, workflows, evalResult } = await doctorTask({ cwd, evalMode: opts.eval });
       if (rules.errors.length === 0) {
         console.log(pc.green(`Rules OK (${rules.items.length})`));
@@ -258,6 +302,17 @@ program
           );
         }
       }
+      
+      // Track compliance history
+      if (opts.track) {
+        const { trackCompliance } = await import("./compliance-tracker.js");
+        const snapshot = await trackCompliance(cwd);
+        
+        console.log(pc.cyan("\n📊 Compliance tracked"));
+        console.log(pc.gray(`Score: ${snapshot.score}%`));
+        console.log(pc.gray(`Violations: ${snapshot.violations}`));
+        console.log(pc.gray(`Saved to: .arela/compliance-history.json\n`));
+      }
     } catch (error) {
       console.error(pc.red(`Doctor failed: ${(error as Error).message}`));
       process.exitCode = 1;
@@ -289,6 +344,8 @@ program
   .option("--cwd <dir>", "Directory to operate in", process.cwd())
   .option("--model <name>", "Ollama model to use", "nomic-embed-text")
   .option("--exclude <patterns...>", "Additional glob patterns to exclude")
+  .option("--progress", "Show progress bar", false)
+  .option("--parallel", "Use parallel indexing (slower, more memory)", false)
   .action(async (opts) => {
     const cwd = resolveCommandCwd(opts.cwd);
     try {
@@ -303,6 +360,8 @@ program
         cwd,
         model: opts.model,
         excludePatterns: opts.exclude || [],
+        progress: opts.progress,
+        parallel: opts.parallel,
       });
       
       console.log("");
@@ -325,6 +384,7 @@ program
   .option("--cwd <dir>", "Directory to operate in", process.cwd())
   .option("--port <number>", "Port to listen on", "3456")
   .option("--model <name>", "Ollama model to use", "nomic-embed-text")
+  .option("--auto-port", "Automatically find available port", false)
   .action(async (opts) => {
     const cwd = resolveCommandCwd(opts.cwd);
     try {
@@ -334,6 +394,7 @@ program
         cwd,
         port: parseInt(opts.port),
         model: opts.model,
+        autoPort: opts.autoPort,
       });
       
       // Handle graceful shutdown
@@ -478,39 +539,7 @@ agentCommand
     }
   });
 
-// Learning system commands
-program
-  .command("patterns")
-  .description("View learned patterns from your projects")
-  .option("--cwd <dir>", "Directory to operate in", process.cwd())
-  .action(async (opts) => {
-    const cwd = resolveCommandCwd(opts.cwd);
-    try {
-      const patterns = await globalConfig.getPatterns(cwd, 0); // Get all patterns
-      
-      if (patterns.length === 0) {
-        console.log(pc.gray("No learned patterns yet. Keep coding!"));
-        return;
-      }
-      
-      console.log(pc.bold(pc.cyan("\n🤖 Learned Patterns\n")));
-      
-      for (const pattern of patterns) {
-        const confidence = (pattern.confidence * 100).toFixed(0);
-        const icon = pattern.confidence >= 0.8 ? "🔴" : pattern.confidence >= 0.5 ? "🟡" : "🟢";
-        
-        console.log(`${icon} ${pc.bold(pattern.description)}`);
-        console.log(`   Rule: ${pattern.rule}`);
-        console.log(`   Occurrences: ${pattern.occurrences} across ${pattern.projects.length} projects`);
-        console.log(`   Confidence: ${confidence}%`);
-        console.log(`   Last seen: ${new Date(pattern.lastSeen).toLocaleDateString()}`);
-        console.log("");
-      }
-    } catch (error) {
-      console.error(pc.red(`Failed to get patterns: ${(error as Error).message}`));
-      process.exitCode = 1;
-    }
-  });
+// Old patterns command removed - replaced by v2.0.0 patterns command below
 
 program
   .command("check-updates")
@@ -618,38 +647,7 @@ program
 
 // Ticket status command
 program
-  .command("status")
-  .description("Show ticket status and progress")
-  .option("--cwd <dir>", "Directory to operate in", process.cwd())
-  .option("--format <format>", "Output format (text|json)", "text")
-  .option("--verbose", "Show detailed status", false)
-  .action(async (opts) => {
-    const cwd = resolveCommandCwd(opts.cwd);
-    try {
-      const status = await loadTicketStatus(cwd);
-      
-      if (opts.format === "json") {
-        console.log(JSON.stringify(status, null, 2));
-        return;
-      }
-      
-      const report = await getStatusReport(cwd);
-      console.log(report);
-      
-      if (opts.verbose && Object.keys(status.tickets).length > 0) {
-        console.log("\n## All Tickets\n");
-        for (const [id, ticket] of Object.entries(status.tickets)) {
-          console.log(`- **${id}** (${ticket.status})`);
-          if (ticket.agent) console.log(`  - Agent: ${ticket.agent}`);
-          if (ticket.cost) console.log(`  - Cost: $${ticket.cost.toFixed(3)}`);
-          if (ticket.duration_ms) console.log(`  - Duration: ${(ticket.duration_ms / 1000).toFixed(1)}s`);
-        }
-      }
-    } catch (error) {
-      console.error(pc.red(`Failed to get status: ${(error as Error).message}`));
-      process.exitCode = 1;
-    }
-  });
+// Old status command removed - replaced by v1.8.0 status command below
 
 // Reset ticket command
 program
@@ -699,6 +697,7 @@ program
   .option("--type <ext>", "File extension filter (e.g., tsx, ts, md)")
   .option("--path <path>", "Path filter (e.g., src/api)")
   .option("--server <url>", "RAG server URL", "http://localhost:3456")
+  .option("--json", "Output as JSON")
   .action(async (query, opts) => {
     const cwd = resolveCommandCwd(opts.cwd);
     try {
@@ -739,10 +738,21 @@ program
       const results = await response.json();
       
       if (!results.results || results.results.length === 0) {
-        console.log(pc.yellow("No results found"));
+        if (opts.json) {
+          console.log(JSON.stringify({ results: [] }, null, 2));
+        } else {
+          console.log(pc.yellow("No results found"));
+        }
         return;
       }
       
+      // JSON output
+      if (opts.json) {
+        console.log(JSON.stringify(results, null, 2));
+        return;
+      }
+      
+      // Pretty output
       console.log(pc.bold(pc.cyan(`\n🔍 Found ${results.results.length} results for "${query}"\n`)));
       
       for (const result of results.results) {
@@ -813,6 +823,38 @@ program
     }
   });
 
+// IDE setup command
+program
+  .command("ide-setup")
+  .description("Setup IDE integration")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--ide <name>", "IDE to setup (windsurf, cursor, cline)")
+  .option("--list", "List available IDEs", false)
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const { setupIDE, listIDEs } = await import("./ide-setup.js");
+      
+      if (opts.list) {
+        listIDEs();
+        return;
+      }
+      
+      if (!opts.ide) {
+        console.log(pc.yellow("Please specify an IDE with --ide"));
+        console.log(pc.gray("\nAvailable IDEs: windsurf, cursor, cline"));
+        console.log(pc.gray("Or use --list to see all options"));
+        process.exitCode = 1;
+        return;
+      }
+      
+      await setupIDE(cwd, opts.ide);
+    } catch (error) {
+      console.error(pc.red(`Setup failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
 program
   .command("install-auto-index")
   .description("Install post-commit hook for auto-indexing")
@@ -823,6 +865,121 @@ program
       await installAutoIndexHook(cwd);
     } catch (error) {
       console.error(pc.red(`Failed to install hook: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// Compliance tracking commands (v1.9.0)
+program
+  .command("compliance")
+  .description("Show compliance dashboard and trends")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const { showComplianceDashboard } = await import("./compliance-tracker.js");
+      
+      await showComplianceDashboard(cwd);
+    } catch (error) {
+      console.error(pc.red(`Compliance dashboard failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("report")
+  .description("Generate compliance report")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--format <type>", "Report format (markdown, json, html)", "markdown")
+  .option("--output <file>", "Output file path")
+  .option("--ci", "CI mode - exit with code 1 if compliance < 80%", false)
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const { generateComplianceReport, checkComplianceForCI } = await import("./compliance-tracker.js");
+      
+      if (opts.ci) {
+        const result = await checkComplianceForCI(cwd, 80);
+        
+        console.log(pc.cyan("\n🔍 CI Compliance Check\n"));
+        console.log(pc.gray(`Score: ${result.score}%`));
+        console.log(pc.gray(`Violations: ${result.violations}`));
+        console.log(pc.gray(`Threshold: 80%`));
+        console.log("");
+        
+        if (result.passed) {
+          console.log(pc.green("✅ Compliance check passed\n"));
+          process.exitCode = 0;
+        } else {
+          console.log(pc.red("❌ Compliance check failed\n"));
+          process.exitCode = 1;
+        }
+        
+        return;
+      }
+      
+      const report = await generateComplianceReport(cwd, opts.format as any);
+      
+      if (opts.output) {
+        await fs.writeFile(opts.output, report, "utf-8");
+        console.log(pc.green(`\n✓ Report saved to: ${opts.output}\n`));
+      } else {
+        console.log(report);
+      }
+    } catch (error) {
+      console.error(pc.red(`Report generation failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// Pattern learning commands (v2.0.0)
+program
+  .command("patterns")
+  .description("Manage pattern learning")
+  .option("--explain", "Show pattern learning configuration", false)
+  .option("--list", "List all patterns", false)
+  .option("--filter <status>", "Filter by status (suggested, approved, enforced)")
+  .option("--add", "Add a pattern manually", false)
+  .option("--violation <text>", "Violation description")
+  .option("--rule <text>", "Rule to enforce")
+  .option("--severity <level>", "Severity (low, medium, high)")
+  .option("--approve <id>", "Approve a pattern by ID")
+  .option("--export <file>", "Export patterns for team sharing")
+  .option("--import <file>", "Import patterns from team")
+  .action(async (opts) => {
+    try {
+      const {
+        showPatternConfig,
+        listPatterns,
+        addPattern,
+        approvePattern,
+        exportPatterns,
+        importPatterns,
+      } = await import("./patterns.js");
+      
+      if (opts.explain) {
+        await showPatternConfig();
+      } else if (opts.list || opts.filter) {
+        await listPatterns(opts.filter as any);
+      } else if (opts.add) {
+        if (!opts.violation || !opts.rule || !opts.severity) {
+          console.error(pc.red("Error: --violation, --rule, and --severity are required"));
+          process.exitCode = 1;
+          return;
+        }
+        await addPattern(opts.violation, opts.rule, opts.severity);
+      } else if (opts.approve) {
+        await approvePattern(opts.approve);
+      } else if (opts.export) {
+        await exportPatterns(opts.export);
+      } else if (opts.import) {
+        await importPatterns(opts.import);
+      } else {
+        // Default: show config
+        await showPatternConfig();
+      }
+    } catch (error) {
+      console.error(pc.red(`Patterns command failed: ${(error as Error).message}`));
       process.exitCode = 1;
     }
   });
@@ -841,6 +998,78 @@ program
       }
     } catch (error) {
       console.error(pc.red(`Agent discovery failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+// Agent orchestration commands (v1.8.0)
+program
+  .command("dispatch")
+  .description("Dispatch tickets to AI agents")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--agent <name>", "Agent to dispatch to (codex, claude, deepseek, etc.)")
+  .option("--tickets <ids...>", "Ticket IDs to dispatch (e.g., CODEX-001 CODEX-002)")
+  .option("--auto", "Auto-select best agent based on complexity", false)
+  .option("--dry-run", "Preview dispatch without saving", false)
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const { dispatchTickets } = await import("./dispatch.js");
+      
+      await dispatchTickets({
+        cwd,
+        agent: opts.agent,
+        tickets: opts.tickets,
+        auto: opts.auto,
+        dryRun: opts.dryRun,
+      });
+    } catch (error) {
+      console.error(pc.red(`Dispatch failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("status")
+  .description("Show agent and ticket status")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--agent <name>", "Filter by agent")
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const { showAgentStatus } = await import("./dispatch.js");
+      
+      await showAgentStatus(cwd, opts.agent);
+    } catch (error) {
+      console.error(pc.red(`Status failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("tickets")
+  .description("Manage and visualize tickets")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--graph", "Show dependency graph", false)
+  .option("--next", "Show next available tickets", false)
+  .option("--stats", "Show ticket statistics", false)
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const { showDependencyGraph, showNextTickets, showTicketStats } = await import("./tickets.js");
+      
+      if (opts.graph) {
+        await showDependencyGraph(cwd);
+      } else if (opts.next) {
+        await showNextTickets(cwd);
+      } else if (opts.stats) {
+        await showTicketStats(cwd);
+      } else {
+        // Default: show stats
+        await showTicketStats(cwd);
+      }
+    } catch (error) {
+      console.error(pc.red(`Tickets command failed: ${(error as Error).message}`));
       process.exitCode = 1;
     }
   });

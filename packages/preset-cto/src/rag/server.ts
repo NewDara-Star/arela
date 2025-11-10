@@ -8,6 +8,7 @@ export interface ServerConfig {
   port?: number;
   model?: string;
   host?: string;
+  autoPort?: boolean;
 }
 
 export interface SearchRequest {
@@ -26,10 +27,50 @@ export interface SearchResponse {
 }
 
 /**
+ * Check if port is available
+ */
+async function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = http.createServer();
+    server.once("error", () => resolve(false));
+    server.once("listening", () => {
+      server.close();
+      resolve(true);
+    });
+    server.listen(port);
+  });
+}
+
+/**
+ * Find available port starting from base port
+ */
+async function findAvailablePort(basePort: number, maxAttempts = 10): Promise<number> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const port = basePort + i;
+    if (await isPortAvailable(port)) {
+      return port;
+    }
+    if (i > 0) {
+      console.log(pc.yellow(`Port ${basePort + i - 1} in use, trying ${port}...`));
+    }
+  }
+  throw new Error(`No available ports found in range ${basePort}-${basePort + maxAttempts - 1}`);
+}
+
+/**
  * Start RAG HTTP server for AI assistants
  */
 export async function startServer(config: ServerConfig): Promise<http.Server> {
-  const { cwd, port = 3456, model = "nomic-embed-text" } = config;
+  const { cwd, port: requestedPort = 3456, model = "nomic-embed-text", autoPort = false } = config;
+  
+  // Find available port if autoPort is enabled
+  let port = requestedPort;
+  if (autoPort) {
+    port = await findAvailablePort(requestedPort);
+    if (port !== requestedPort) {
+      console.log(pc.green(`✅ Using port ${port}`));
+    }
+  }
 
   const server = http.createServer(async (req, res) => {
     // CORS headers for browser/IDE access

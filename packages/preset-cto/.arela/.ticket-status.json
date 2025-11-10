@@ -1,0 +1,42 @@
+{
+  "README": {
+    "id": "README",
+    "status": "pending",
+    "agent": "openai",
+    "assignedAt": "2025-11-10T00:33:01.728Z",
+    "tokens": 738,
+    "cost": 0.00369
+  },
+  "ARELA-004": {
+    "id": "ARELA-004",
+    "status": "pending",
+    "agent": "codex",
+    "assignedAt": "2025-11-10T00:39:48.137Z",
+    "tokens": 598,
+    "cost": 0.001196
+  },
+  "ARELA-003": {
+    "id": "ARELA-003",
+    "status": "pending",
+    "agent": "openai",
+    "assignedAt": "2025-11-10T00:33:01.754Z",
+    "tokens": 271,
+    "cost": 0.001355
+  },
+  "ARELA-002": {
+    "id": "ARELA-002",
+    "status": "pending",
+    "agent": "openai",
+    "assignedAt": "2025-11-10T00:33:01.763Z",
+    "tokens": 313,
+    "cost": 0.001565
+  },
+  "ARELA-001": {
+    "id": "ARELA-001",
+    "status": "pending",
+    "agent": "openai",
+    "assignedAt": "2025-11-10T00:33:01.773Z",
+    "tokens": 501,
+    "cost": 0.002505
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "presetVersion": "2.1.1",
+  "files": {
+    "ticket-template.md": {
+      "templateHash": "d916ae753afd7005d44a2bdc2e695f79ce59de67",
+      "localHash": "d916ae753afd7005d44a2bdc2e695f79ce59de67"
+    },
+    "skill-rules.json": {
+      "templateHash": "6d9b9ef06036252d8613cb9be5077fa828ce5f86",
+      "localHash": "6d9b9ef06036252d8613cb9be5077fa828ce5f86"
+    },
+    "run-all-tickets.sh": {
+      "templateHash": "82c106190366a587f0d749f02f5ceb8a4b6a670f",
+      "localHash": "82c106190366a587f0d749f02f5ceb8a4b6a670f"
+    },
+    "auto-index.json": {
+      "templateHash": "b177398457d05dd93dbd9fa1efc929d487bc7975",
+      "localHash": "b177398457d05dd93dbd9fa1efc929d487bc7975"
+    },
+    "BOOTSTRAP.readme.md": {
+      "templateHash": "22e1eda84930d0dbcfc7c9a950ef94b227b1c993",
+      "localHash": "22e1eda84930d0dbcfc7c9a950ef94b227b1c993"
+    },
+    "AGENT-HANDOFF.md": {
+      "templateHash": "430d21c0c57220cf2ce4c88a5435b7b50099e3d6",
+      "localHash": "430d21c0c57220cf2ce4c88a5435b7b50099e3d6"
+    },
+    "workflows/tech-hiring.prompt.md": {
+      "templateHash": "2c3216605339fc513ab6d18c7b7f6e3e223108be",
+      "localHash": "2c3216605339fc513ab6d18c7b7f6e3e223108be"
+    },
+    "workflows/ruthless-prioritization.prompt.md": {
+      "templateHash": "f9778180925b2021d6d9ee9c3e37b4c9c85a48f2",
+      "localHash": "f9778180925b2021d6d9ee9c3e37b4c9c85a48f2"
+    },
+    "workflows/qa-automation.prompt.md": {
+      "templateHash": "1d2716561e563d4d06f67b94013f733636b148fd",
+      "localHash": "1d2716561e563d4d06f67b94013f733636b148fd"
+    },
+    "workflows/mom-test-interview.prompt.md": {
+      "templateHash": "324c2a050828a45d95b22d8979be8cfa95401862",
+      "localHash": "324c2a050828a45d95b22d8979be8cfa95401862"
+    },
+    "workflows/incident-response.prompt.md": {
+      "templateHash": "606a3f669ae53d6fd1a24102674d07d7ac5acebe",
+      "localHash": "606a3f669ae53d6fd1a24102674d07d7ac5acebe"
+    },
+    "workflows/engineer-ticket.prompt.md": {
+      "templateHash": "edb2cf986cea2f6bbacb06835782ada1f09aeedc",
+      "localHash": "edb2cf986cea2f6bbacb06835782ada1f09aeedc"
+    },
+    "workflows/delegate-agent-ticket.prompt.md": {
+      "templateHash": "d972bdcb8f5464594570760c645f9ef9c7a2947f",
+      "localHash": "d972bdcb8f5464594570760c645f9ef9c7a2947f"
+    },
+    "workflows/cto-decision-adr.prompt.md": {
+      "templateHash": "b47d5c4341175b6dcf5ce52d9ad3bfb9e5346c7d",
+      "localHash": "b47d5c4341175b6dcf5ce52d9ad3bfb9e5346c7d"
+    },
+    "workflows/architect-spec.prompt.md": {
+      "templateHash": "4c1d1ae90a58d575b54e2cb46cd5137393ebb0aa",
+      "localHash": "4c1d1ae90a58d575b54e2cb46cd5137393ebb0aa"
+    },
+    "tickets/README.md": {
+      "templateHash": "a3f5880fbdb0cef88021c5e97153b511f20f00b9",
+      "localHash": "a3f5880fbdb0cef88021c5e97153b511f20f00b9"
+    },
+    "tickets/.ticket-status.json": {
+      "templateHash": "69afbb4ec96429520d0d5f6cfb3a0c0bb5e68f36",
+      "localHash": "69afbb4ec96429520d0d5f6cfb3a0c0bb5e68f36"
+    },
+    "rules/150-investigate-failures.md": {
+      "templateHash": "00dffa11526e82211bcd14cea6c15f336099c50c",
+      "localHash": "00dffa11526e82211bcd14cea6c15f336099c50c"
+    },
+    "rules/140-current-context-awareness.md": {
+      "templateHash": "4847af54491039c2c710dcd94e4a5ae11b692736",
+      "localHash": "4847af54491039c2c710dcd94e4a5ae11b692736"
+    },
+    "rules/130-automated-qa.md": {
+      "templateHash": "68004e4a6bec634d7087a4bb7c66864084649efb",
+      "localHash": "68004e4a6bec634d7087a4bb7c66864084649efb"
+    },
+    "rules/120-async-first-communication.md": {
+      "templateHash": "1daa2a32e6c39b0585a508ca70198a89f5b30a5d",
+      "localHash": "1daa2a32e6c39b0585a508ca70198a89f5b30a5d"
+    },
+    "rules/110-performance-budget.md": {
+      "templateHash": "96f46d5fe9ce39c0b05fed77ffb52ce501fede2e",
+      "localHash": "96f46d5fe9ce39c0b05fed77ffb52ce501fede2e"
+    },
+    "rules/100-multi-agent-orchestration.md": {
+      "templateHash": "b2134607e0d3c84a057d2036ba2791bbe6ebc736",
+      "localHash": "b2134607e0d3c84a057d2036ba2791bbe6ebc736"
+    },
+    "rules/085-blameless-culture.md": {
+      "templateHash": "93de3f28e3cc680b70ce8968de8c9240899dc9a4",
+      "localHash": "93de3f28e3cc680b70ce8968de8c9240899dc9a4"
+    },
+    "rules/075-testing-trophy.md": {
+      "templateHash": "4c3620e40034dde7f67add1a13f22203bda82777",
+      "localHash": "4c3620e40034dde7f67add1a13f22203bda82777"
+    },
+    "rules/060-security-first.md": {
+      "templateHash": "c1c698b8365ac379b1e6b1a02b9c05214179ecd2",
+      "localHash": "c1c698b8365ac379b1e6b1a02b9c05214179ecd2"
+    },
+    "rules/050-technical-debt-management.md": {
+      "templateHash": "b3d6fbedddb80f6eb1b861fa3fd5374a7c3a1a5a",
+      "localHash": "b3d6fbedddb80f6eb1b861fa3fd5374a7c3a1a5a"
+    },
+    "rules/025-two-way-door-decisions.md": {
+      "templateHash": "d7954867a52feda02923ba86a4611b2806fbec42",
+      "localHash": "d7954867a52feda02923ba86a4611b2806fbec42"
+    },
+    "memories/seed.jsonc": {
+      "templateHash": "e8f9386a5ce16f1fef7f498bf049ffec7221e490",
+      "localHash": "e8f9386a5ce16f1fef7f498bf049ffec7221e490"
+    },
+    "lib/ticket-runner.sh": {
+      "templateHash": "6b7d98f0c3f35fe58e7922307d5b4a3447b62b76",
+      "localHash": "6b7d98f0c3f35fe58e7922307d5b4a3447b62b76"
+    },
+    "hooks/file-context.js": {
+      "templateHash": "07fe09cf74139a619bb44f954ed611fe6929cf23",
+      "localHash": "07fe09cf74139a619bb44f954ed611fe6929cf23"
+    },
+    "hooks/auto-activate.js": {
+      "templateHash": "03cdb1cb55bca1512ad985704793a72670f9f6ca",
+      "localHash": "03cdb1cb55bca1512ad985704793a72670f9f6ca"
+    },
+    "hooks/README.md": {
+      "templateHash": "f407cf7bdbdf681e9f9653b157e821157f2af81f",
+      "localHash": "f407cf7bdbdf681e9f9653b157e821157f2af81f"
+    },
+    "evals/rubric.json": {
+      "templateHash": "39e5f781f0298682c7a151218bada534b9aecba6",
+      "localHash": "39e5f781f0298682c7a151218bada534b9aecba6"
+    },
+    "agents/config.json": {
+      "templateHash": "11cbf9572af8e83d5fded92220e4e026db10de2a",
+      "localHash": "11cbf9572af8e83d5fded92220e4e026db10de2a"
+    },
+    "agents/README.md": {
+      "templateHash": "f7ec881e6bad0a56f4fb152d4db0519731c89fed",
+      "localHash": "f7ec881e6bad0a56f4fb152d4db0519731c89fed"
+    },
+    "tickets/deepseek/EXAMPLE-DEEPSEEK-001-optimization.md": {
+      "templateHash": "ef756bfe8c3ae8892ac2b3fde7d27cd8e824b7cf",
+      "localHash": "ef756bfe8c3ae8892ac2b3fde7d27cd8e824b7cf"
+    },
+    "tickets/codex/EXAMPLE-CODEX-001-component.md": {
+      "templateHash": "518f1353a32be677afe5745e34e1be40edf09d7e",
+      "localHash": "518f1353a32be677afe5745e34e1be40edf09d7e"
+    },
+    "tickets/claude/EXAMPLE-CLAUDE-001-architecture.md": {
+      "templateHash": "24cdff34d21cb6da32020bb947623fdae735c614",
+      "localHash": "24cdff34d21cb6da32020bb947623fdae735c614"
+    }
+  }
+}
