@@ -3,6 +3,8 @@ import path from "path";
 import pc from "picocolors";
 import { glob } from "glob";
 import { discoverAgents, generateAgentConfig, type DiscoveredAgent } from "./agent-discovery.js";
+import { parseTicket as parseTicketUnified, getAllTicketFiles } from "./ticket-parser.js";
+import type { ParsedTicket } from "./ticket-parser.js";
 
 export interface TicketStatus {
   id: string;
@@ -73,21 +75,15 @@ export async function saveTicketStatus(
 }
 
 /**
- * Get all tickets in .arela/tickets/
+ * Get all tickets in .arela/tickets/ (both MD and YAML)
  */
 export async function getAllTickets(cwd: string): Promise<string[]> {
   const ticketsDir = path.join(cwd, ".arela", "tickets");
-  
-  if (!(await fs.pathExists(ticketsDir))) {
-    return [];
-  }
-  
-  const files = await glob("*.md", { cwd: ticketsDir });
-  return files.map((f) => path.basename(f, ".md"));
+  return getAllTicketFiles(ticketsDir);
 }
 
 /**
- * Parse ticket to extract metadata
+ * Parse ticket to extract metadata (supports both MD and YAML formats)
  */
 export async function parseTicket(cwd: string, ticketId: string): Promise<{
   id: string;
@@ -97,36 +93,15 @@ export async function parseTicket(cwd: string, ticketId: string): Promise<{
   dependencies?: string[];
   estimatedTokens?: number;
 }> {
-  const ticketPath = path.join(cwd, ".arela", "tickets", `${ticketId}.md`);
-  
-  if (!(await fs.pathExists(ticketPath))) {
-    throw new Error(`Ticket not found: ${ticketId}`);
-  }
-  
-  const content = await fs.readFile(ticketPath, "utf-8");
-  
-  // Extract metadata from ticket
-  const complexityMatch = content.match(/complexity:\s*(simple|medium|complex)/i);
-  const priorityMatch = content.match(/priority:\s*(low|medium|high|highest)/i);
-  const agentMatch = content.match(/agent:\s*(\w+)/i);
-  const depsMatch = content.match(/depends on:\s*(.+)/i);
-  
-  const dependencies: string[] = [];
-  if (depsMatch) {
-    const depsStr = depsMatch[1];
-    dependencies.push(...depsStr.split(/[,\s]+/).filter(Boolean));
-  }
-  
-  // Estimate tokens based on content length
-  const estimatedTokens = Math.ceil(content.length / 4);
-  
+  const ticket = await parseTicketUnified(cwd, ticketId);
+
   return {
-    id: ticketId,
-    complexity: complexityMatch?.[1] as any,
-    priority: priorityMatch?.[1] as any,
-    agent: agentMatch?.[1],
-    dependencies,
-    estimatedTokens,
+    id: ticket.id,
+    complexity: ticket.complexity,
+    priority: ticket.priority,
+    agent: ticket.agent,
+    dependencies: ticket.dependencies,
+    estimatedTokens: ticket.estimatedTokens,
   };
 }
 

@@ -18,6 +18,7 @@ import {
   autoMaterializeOnPostinstall,
 } from "./loaders.js";
 import type { AgentType, BootstrapBundle } from "./loaders.js";
+import { generateTicketsFromViolations } from "./auto-tickets.js";
 import { runSetup } from "./setup.js";
 import {
   loadTicketStatus,
@@ -208,6 +209,8 @@ program
   .option("--check-structure", "Check project structure", false)
   .option("--fix", "Auto-fix structure issues", false)
   .option("--track", "Track compliance history", false)
+  .option("--create-tickets", "Generate .arela/tickets/* from doctor violations", false)
+  .option("--dry-run", "Preview ticket generation without writing files", false)
   .action(async (opts) => {
     const cwd = resolveCommandCwd(opts.cwd);
     try {
@@ -242,7 +245,7 @@ program
         }
       }
       
-      const { rules, workflows, evalResult } = await doctorTask({ cwd, evalMode: opts.eval });
+      const { rules, workflows, evalResult, violations } = await doctorTask({ cwd, evalMode: opts.eval });
       if (rules.errors.length === 0) {
         console.log(pc.green(`Rules OK (${rules.items.length})`));
       } else {
@@ -303,6 +306,42 @@ program
         }
       }
       
+      if (opts.createTickets) {
+        if (!violations.length) {
+          console.log(pc.green("\nNo violations detected. No tickets to create.\n"));
+        } else {
+          const tickets = await generateTicketsFromViolations({
+            cwd,
+            violations,
+            dryRun: opts.dryRun,
+          });
+
+          if (tickets.length === 0) {
+            console.log(pc.yellow("\nNo tickets generated (nothing actionable).\n"));
+          } else {
+            console.log(pc.bold(pc.cyan("\n🎫 Generated Tickets:\n")));
+            for (const ticket of tickets) {
+              console.log(
+                `${ticket.id}: ${ticket.title} (${ticket.occurrences} occurrence${
+                  ticket.occurrences === 1 ? "" : "s"
+                })`,
+              );
+              console.log(`  Agent: ${ticket.agent}`);
+              console.log(`  Priority: ${ticket.priority}`);
+              console.log(`  Files: ${ticket.files.join(", ") || "n/a"}`);
+              console.log("");
+            }
+
+            const summaryLine = tickets.length === 1 ? "ticket" : "tickets";
+            if (opts.dryRun) {
+              console.log(pc.yellow(`Previewed ${tickets.length} ${summaryLine}. No files written.`));
+            } else {
+              console.log(pc.green(`Created ${tickets.length} ${summaryLine} in .arela/tickets/`));
+            }
+          }
+        }
+      }
+
       // Track compliance history
       if (opts.track) {
         const { trackCompliance } = await import("./compliance-tracker.js");
@@ -1057,7 +1096,7 @@ program
     const cwd = resolveCommandCwd(opts.cwd);
     try {
       const { showDependencyGraph, showNextTickets, showTicketStats } = await import("./tickets.js");
-      
+
       if (opts.graph) {
         await showDependencyGraph(cwd);
       } else if (opts.next) {
@@ -1070,6 +1109,66 @@ program
       }
     } catch (error) {
       console.error(pc.red(`Tickets command failed: ${(error as Error).message}`));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("migrate")
+  .description("Migrate tickets between formats (MD ↔ YAML)")
+  .option("--cwd <dir>", "Directory to operate in", process.cwd())
+  .option("--to <format>", "Target format: yaml or markdown", "yaml")
+  .option("--dry-run", "Preview changes without writing", false)
+  .option("--verbose", "Show detailed output", false)
+  .action(async (opts) => {
+    const cwd = resolveCommandCwd(opts.cwd);
+    try {
+      const format = opts.to?.toLowerCase();
+
+      if (!["yaml", "markdown"].includes(format)) {
+        console.error(pc.red(`Invalid format: ${format} (must be 'yaml' or 'markdown')`));
+        process.exitCode = 1;
+        return;
+      }
+
+      const { migrateTicketsToYaml, migrateTicketsToMarkdown } = await import("./ticket-migrator.js");
+
+      let result;
+
+      if (format === "yaml") {
+        result = await migrateTicketsToYaml(cwd, {
+          dryRun: opts.dryRun,
+          verbose: opts.verbose,
+        });
+      } else {
+        result = await migrateTicketsToMarkdown(cwd, {
+          dryRun: opts.dryRun,
+          verbose: opts.verbose,
+        });
+      }
+
+      // Show summary
+      console.log(pc.bold(pc.cyan("\n📊 Migration Summary\n")));
+      console.log(pc.green(`✓ Converted: ${result.converted}`));
+      console.log(pc.gray(`⊘ Skipped: ${result.skipped}`));
+
+      if (result.errors.length > 0) {
+        console.log(pc.red(`✗ Errors: ${result.errors.length}`));
+        for (const error of result.errors) {
+          console.log(pc.red(`  ${error.ticket}: ${error.error}`));
+        }
+        process.exitCode = 1;
+      }
+
+      if (opts.dryRun) {
+        console.log(pc.yellow("\n⚠️  Dry run - no files were written"));
+      } else if (result.converted > 0) {
+        console.log(pc.green(`\nMigration complete!`));
+      }
+
+      console.log("");
+    } catch (error) {
+      console.error(pc.red(`Migration failed: ${(error as Error).message}`));
       process.exitCode = 1;
     }
   });

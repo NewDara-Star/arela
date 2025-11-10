@@ -3,6 +3,7 @@ import path from "path";
 import pc from "picocolors";
 import { glob } from "glob";
 import { loadTicketStatus, parseTicket, checkDependencies, type TicketStatus } from "./dispatch.js";
+import { getAllTicketFiles } from "./ticket-parser.js";
 
 export interface TicketNode {
   id: string;
@@ -17,13 +18,12 @@ export interface TicketNode {
  */
 export async function buildDependencyTree(cwd: string): Promise<TicketNode[]> {
   const ticketsDir = path.join(cwd, ".arela", "tickets");
-  
+
   if (!(await fs.pathExists(ticketsDir))) {
     return [];
   }
-  
-  const files = await glob("*.md", { cwd: ticketsDir });
-  const ticketIds = files.map((f) => path.basename(f, ".md"));
+
+  const ticketIds = await getAllTicketFiles(ticketsDir);
   
   const status = await loadTicketStatus(cwd);
   
@@ -133,14 +133,13 @@ export async function showDependencyGraph(cwd: string): Promise<void> {
  */
 export async function showNextTickets(cwd: string): Promise<void> {
   const ticketsDir = path.join(cwd, ".arela", "tickets");
-  
+
   if (!(await fs.pathExists(ticketsDir))) {
     console.log(pc.yellow("\nNo tickets found.\n"));
     return;
   }
-  
-  const files = await glob("*.md", { cwd: ticketsDir });
-  const ticketIds = files.map((f) => path.basename(f, ".md"));
+
+  const ticketIds = await getAllTicketFiles(ticketsDir);
   
   const status = await loadTicketStatus(cwd);
   
@@ -220,14 +219,13 @@ export async function showNextTickets(cwd: string): Promise<void> {
  */
 export async function showTicketStats(cwd: string): Promise<void> {
   const ticketsDir = path.join(cwd, ".arela", "tickets");
-  
+
   if (!(await fs.pathExists(ticketsDir))) {
     console.log(pc.yellow("\nNo tickets found.\n"));
     return;
   }
-  
-  const files = await glob("*.md", { cwd: ticketsDir });
-  const ticketIds = files.map((f) => path.basename(f, ".md"));
+
+  const ticketIds = await getAllTicketFiles(ticketsDir);
   
   const status = await loadTicketStatus(cwd);
   
