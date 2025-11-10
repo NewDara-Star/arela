@@ -1,5 +1,200 @@
 # Changelog
 
+## 2.2.0 - 2025-11-10
+
+### 🎉 Self-Hosting Milestone - Arela Built Arela!
+
+**Major Release:** Arela successfully built itself using its own orchestration system! This release includes two major features implemented through Arela's ticket system.
+
+#### 🎫 ARELA-001: Auto-Generate Tickets from Audit ✅
+
+Automatically convert `doctor` violations into actionable tickets!
+
+**New Module:** `src/auto-tickets.ts`
+- Intelligent violation grouping by similarity
+- Keyword-based complexity detection (simple vs complex)
+- Smart agent assignment (codex for simple, claude for complex)
+- Automatic ticket ID sequencing
+- Full metadata generation (priority, estimate, files)
+
+**CLI Integration:**
+```bash
+# Generate tickets from violations
+npx arela doctor --create-tickets
+
+# Preview without creating files
+npx arela doctor --create-tickets --dry-run
+
+# Example output:
+# 🎫 Generated Tickets:
+#
+# CODEX-001: Fix console.log in production (8 occurrences)
+#   Priority: high, Estimated: 15m
+#   Files: src/api/users.ts, src/api/posts.ts
+```
+
+**Features:**
+- Groups similar violations into single tickets
+- Includes file paths and line numbers
+- Auto-assigns to best agent based on complexity
+- Dry-run mode for safe testing
+- Structured violation data from doctor
+
+---
+
+#### 📝 ARELA-004: YAML Ticket Format Support ✅
+
+Full support for YAML tickets alongside Markdown!
+
+**New Modules:**
+- `src/ticket-parser.ts` - Unified parser for both formats
+- `src/ticket-schema.ts` - JSON schema validation
+- `src/ticket-migrator.ts` - Bidirectional migration tool
+
+**YAML Format:**
+```yaml
+id: CODEX-001
+title: Create Login Component
+agent: codex
+priority: high
+complexity: simple
+estimated_time: 20m
+estimated_cost: $0.004
+
+context: |
+  Need a reusable login component...
+
+requirements:
+  - Email/password inputs
+  - Form validation
+  - Error handling
+
+acceptance:
+  - id: AC-1
+    description: Component renders correctly
+    status: pending
+    test: npm test -- LoginComponent.test.tsx
+
+files:
+  - path: src/components/LoginComponent.tsx
+    action: create
+
+dependencies: []
+tags: [ui, authentication]
+```
+
+**Migration Tool:**
+```bash
+# Convert all MD tickets to YAML
+npx arela migrate --to yaml
+
+# Convert back to Markdown
+npx arela migrate --to markdown
+
+# Preview changes
+npx arela migrate --to yaml --dry-run
+
+# Verbose output
+npx arela migrate --to yaml --verbose
+```
+
+**Features:**
+- Auto-detects file format (.md or .yaml)
+- Schema validation with helpful errors
+- Preserves all metadata during migration
+- Supports rich acceptance criteria with test commands
+- Seamless integration with existing commands
+- Both formats work with dispatch, status, tickets commands
+
+---
+
+#### 🏗️ Infrastructure Improvements
+
+**Unified Ticket System:**
+- Single parser interface for both formats
+- Agent-based folder organization (`codex/`, `claude/`, `cascade/`, `deepseek/`)
+- Structured violation data from doctor
+- Enhanced ticket metadata support
+
+**Integration:**
+- Updated `dispatch.ts` to use unified parser
+- Updated `tickets.ts` to scan both formats
+- Updated `loaders.ts` with structured violations
+- All existing commands work with both formats
+
+---
+
+#### 🎯 Dogfooding Success
+
+**Arela built these features using Arela:**
+- Created tickets: ARELA-001, ARELA-002, ARELA-003, ARELA-004
+- Dispatched to agents: codex, claude
+- Tracked status and dependencies
+- Estimated costs: $0.0103 total
+- Parallel execution: ~1.5 hours
+- All acceptance criteria met ✅
+
+**Proven capabilities:**
+- ✅ Ticket creation & tracking
+- ✅ Agent-based organization
+- ✅ Automatic dispatch
+- ✅ Status management
+- ✅ Cost estimation
+- ✅ Parallel execution
+- ✅ Self-auditing
+- ✅ Semantic search
+
+---
+
+#### 📊 What's New
+
+**Commands:**
+```bash
+# Auto-generate tickets from violations
+npx arela doctor --create-tickets [--dry-run]
+
+# Migrate ticket formats
+npx arela migrate --to yaml|markdown [--dry-run] [--verbose]
+```
+
+**Files:**
+- `src/auto-tickets.ts` - Ticket generation from violations
+- `src/ticket-parser.ts` - Unified MD/YAML parser
+- `src/ticket-schema.ts` - YAML validation schema
+- `src/ticket-migrator.ts` - Format migration tool
+
+---
+
+#### 🚀 Why This Matters
+
+**Before v2.2.0:**
+- Manual ticket creation from violations
+- Only Markdown format supported
+- No format validation
+- No migration tools
+
+**After v2.2.0:**
+- Automatic ticket generation ✅
+- YAML + Markdown support ✅
+- Schema validation ✅
+- Bidirectional migration ✅
+- Self-hosting proven ✅
+
+---
+
+### Migration
+
+Update to v2.2.0:
+```bash
+npm install -g @newdara/preset-cto@latest
+
+# Try new features
+npx arela doctor --create-tickets --dry-run
+npx arela migrate --to yaml --dry-run
+```
+
+**Breaking Changes:** None - fully backward compatible!
+
 ## 2.1.1 - 2025-11-10
 
 ### 📦 Package Improvements
