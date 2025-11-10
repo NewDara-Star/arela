@@ -1,9 +1,0 @@
-{
-	"devDependencies": {
-		"@newdara/preset-cto": "^0.3.4",
-		"husky": "^9.1.7"
-	},
-	"scripts": {
-		"prepare": "husky"
-	}
-}

@@ -1,6 +1,0 @@
-dist
-node_modules
-*.log
-
-.arela/.last-report.json
-.arela/.rag-index.json
