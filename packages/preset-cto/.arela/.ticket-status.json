@@ -10,10 +10,10 @@
   "ARELA-004": {
     "id": "ARELA-004",
     "status": "pending",
-    "agent": "codex",
-    "assignedAt": "2025-11-10T00:39:48.137Z",
+    "agent": "claude",
+    "assignedAt": "2025-11-10T01:21:33.892Z",
     "tokens": 598,
-    "cost": 0.001196
+    "cost": 0.008969999999999999
   },
   "ARELA-003": {
     "id": "ARELA-003",
@@ -34,9 +34,9 @@
   "ARELA-001": {
     "id": "ARELA-001",
     "status": "pending",
-    "agent": "openai",
-    "assignedAt": "2025-11-10T00:33:01.773Z",
+    "agent": "codex",
+    "assignedAt": "2025-11-10T01:21:12.776Z",
     "tokens": 501,
-    "cost": 0.002505
+    "cost": 0.001002
   }
 }

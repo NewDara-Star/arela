@@ -466,6 +466,83 @@ export type EvalCheckResult = {
   thresholds?: { minPass: number; avgPass: number };
 };
 
+export type DoctorViolation = {
+  source: "rule" | "workflow";
+  message: string;
+  file?: string;
+  line?: number;
+  column?: number;
+  ruleId?: string;
+  raw: string;
+};
+
+function parseErrorDetail(error: string): {
+  file?: string;
+  line?: number;
+  column?: number;
+  message: string;
+} {
+  let message = error.trim();
+  let file: string | undefined;
+  let line: number | undefined;
+  let column: number | undefined;
+
+  const locationRegex = /:(\d+)(?::(\d+))?/;
+  const locationMatch = locationRegex.exec(message);
+
+  if (locationMatch && typeof locationMatch.index === "number") {
+    const idx = locationMatch.index;
+    const prefix = message.slice(0, idx);
+    const suffix = message.slice(idx + locationMatch[0].length).trim();
+    line = Number(locationMatch[1]);
+    column = locationMatch[2] ? Number(locationMatch[2]) : undefined;
+    file = prefix.endsWith(":") ? prefix.slice(0, -1).trim() : prefix.trim();
+    message = suffix;
+  } else {
+    const colonIndex = message.indexOf(":");
+    if (colonIndex > -1) {
+      file = message.slice(0, colonIndex).trim();
+      message = message.slice(colonIndex + 1).trim();
+    }
+  }
+
+  return { file, line, column, message };
+}
+
+function extractRuleId(message: string): string | undefined {
+  const ruleMatch = message.match(/Rule:\s*([\w./-]+)/i);
+  if (ruleMatch) {
+    return ruleMatch[1];
+  }
+  const workflowMatch = message.match(/Workflow:\s*([\w./-]+)/i);
+  return workflowMatch ? workflowMatch[1] : undefined;
+}
+
+function collectViolations(
+  cwd: string,
+  errors: string[],
+  source: DoctorViolation["source"],
+): DoctorViolation[] {
+  return errors.map((raw) => {
+    const detail = parseErrorDetail(raw);
+    const absolute = detail.file
+      ? path.isAbsolute(detail.file)
+        ? detail.file
+        : path.join(cwd, detail.file)
+      : undefined;
+    const relative = absolute ? path.relative(cwd, absolute) : detail.file;
+    return {
+      source,
+      message: detail.message || raw,
+      file: relative,
+      line: detail.line,
+      column: detail.column,
+      ruleId: extractRuleId(detail.message || raw),
+      raw,
+    } satisfies DoctorViolation;
+  });
+}
+
 export async function doctor(opts: {
   cwd: string;
   evalMode?: boolean;
@@ -473,11 +550,16 @@ export async function doctor(opts: {
   rules: LoadResult<ArelaRule>;
   workflows: LoadResult<ArelaWorkflow>;
   evalResult?: EvalCheckResult;
+  violations: DoctorViolation[];
 }> {
   const cwd = resolveCwd(opts.cwd);
   const [rules, workflows] = await Promise.all([loadLocalRules(cwd), loadLocalWorkflows(cwd)]);
   const evalResult = opts.evalMode ? await runEvalCheck(cwd) : undefined;
-  return { rules, workflows, evalResult };
+  const violations: DoctorViolation[] = [
+    ...collectViolations(cwd, rules.errors, "rule"),
+    ...collectViolations(cwd, workflows.errors, "workflow"),
+  ];
+  return { rules, workflows, evalResult, violations };
 }
 
 async function runEvalCheck(cwd: string): Promise<EvalCheckResult> {
