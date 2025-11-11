@@ -1,5 +1,87 @@
 # Changelog
 
+## [3.3.1] - 2025-11-11
+
+### 🎯 Intelligent Fallbacks & Auto-Recovery
+
+**Making mobile testing accessible everywhere and RAG indexing bulletproof.**
+
+### ✨ New Features
+
+#### **Mobile Web Fallback**
+- **Auto-detect Appium availability** - Checks if Appium server is running
+- **Graceful fallback to web** - Uses Playwright with mobile viewport when Appium unavailable
+- **Mobile viewport dimensions** - iPhone 15 Pro (390x844) for iOS, Pixel 7 (412x915) for Android
+- **Force web mode** - `--web-fallback` flag to always use browser testing
+- **Perfect for Expo apps** - Most Expo apps run on web, now testable without simulators
+- **CI/CD friendly** - Works in environments without simulators
+- **Same flow execution** - No changes needed to your test flows
+- **Clear messaging** - Tells you when and why fallback is used
+
+#### **Smart .ragignore Auto-Generation**
+- **Automatic failure detection** - Tracks files that fail to embed during indexing
+- **Intelligent analysis** - Categorizes failures: dependencies, generated code, data, large source
+- **Auto-creates .ragignore** - Generates patterns and adds them automatically
+- **Actionable recommendations** - Tells you to IGNORE, REFACTOR, or SPLIT
+- **Saves recommendations** - Creates `.arela/indexing-recommendations.md` for review
+- **Automatic retry** - Re-runs indexing after creating .ragignore
+- **Multi-ecosystem support** - Handles Python (venv), Node (node_modules), and more
+- **Graceful degradation** - Never crashes, always provides guidance
+
+### 🎨 User Experience
+
+**Mobile Testing:**
+```bash
+$ arela run mobile --flow test
+⚠️  Appium not available, falling back to web mode
+📱 Testing with iPhone 15 Pro viewport (390x844)
+✅ 4 steps passed
+💡 Tip: Start Appium with 'npx appium' for native mobile testing
+```
+
+**RAG Indexing:**
+```bash
+$ arela index
+⚠️  Failed to embed: venv/lib/python3.14/site-packages/idna/uts46data.py
+🤖 Analyzing failure...
+✅ Recommendation: IGNORE (Third-party dependency)
+📝 Auto-added to .ragignore: venv/
+🔄 Re-running index...
+✅ Indexed 127 files successfully
+```
+
+### 🔧 Technical Details
+
+**Mobile Web Fallback:**
+- Detects Appium via `http://localhost:4723/status`
+- Falls back on connection failure or missing app
+- Uses Playwright with mobile user agent
+- Supports touch events and mobile gestures
+- Same screenshot capture and reporting
+
+**Smart Ragignore:**
+- Tracks `IndexingFailure` with reason, size, and type
+- Analyzes patterns: dependencies, generated, cache, data
+- Extracts glob patterns intelligently
+- Appends to existing .ragignore without duplicates
+- Prevents infinite retry loops
+
+### 📦 Dependencies
+
+No new dependencies - uses existing Playwright and Appium packages.
+
+### 🎯 Impact
+
+**Mobile Testing:**
+- v3.3.0: Requires Appium + simulator
+- v3.3.1: Works everywhere (simulator, web, CI/CD)
+
+**RAG Indexing:**
+- Before: Manual .ragignore creation after crashes
+- After: Auto-generates and retries automatically
+
+---
+
 ## [3.3.0] - 2025-11-11
 
 ### 📱 Mobile Testing with Appium

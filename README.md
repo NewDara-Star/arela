@@ -1,4 +1,4 @@
-# Arela v3.3.0
+# Arela v3.3.1
 
 **Your AI Technical Co-Founder**
 
@@ -10,13 +10,23 @@ Arela was born from a simple frustration: being an "idea person" with no technic
 
 Arela is that guidance. Not a linter. Not a framework. **A conversational CTO persona** that helps you think through products and build them to world-class standards.
 
-## ✨ What's New in v3.3.0
+## ✨ What's New in v3.3.1
 
-### 📱 Mobile Testing with Appium
-- **Test Mobile Apps** - Arela can now test iOS and Android apps
-- **Simulator Support** - Works with iOS Simulator and Android Emulator
-- **Expo Integration** - Auto-detects and tests Expo apps
-- **Cross-Platform** - Same flow format for web and mobile
+### 🎯 Intelligent Fallbacks & Auto-Recovery
+
+**Mobile testing now works everywhere. RAG indexing never crashes.**
+
+#### **Mobile Web Fallback**
+- **Works Without Simulators** - Auto-falls back to web with mobile viewport
+- **Perfect for CI/CD** - No simulator setup required
+- **Expo Apps** - Test Expo apps in browser instantly
+- **Force Web Mode** - `--web-fallback` flag for faster iteration
+
+#### **Smart .ragignore Auto-Generation**
+- **Never Crashes** - Auto-handles indexing failures
+- **Intelligent Analysis** - Knows what to ignore vs refactor
+- **Auto-Recovery** - Creates .ragignore and retries automatically
+- **Actionable Guidance** - Tells you exactly what to do
 
 ### 🚀 New Commands
 ```bash

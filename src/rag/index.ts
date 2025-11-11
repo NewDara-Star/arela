@@ -250,34 +250,59 @@ async function generateEmbedding(
 }
 
 /**
- * Index a single file
+ * Index a single file with failure tracking
  */
 async function indexFile(
   filePath: string,
   cwd: string,
   model: string,
   host: string,
+  failures: IndexingFailure[]
 ): Promise<Array<{ file: string; chunk: string; embedding: number[] }>> {
-  const content = await fs.readFile(filePath, "utf-8");
   const relativePath = path.relative(cwd, filePath);
-  const chunks = chunkContent(content);
-  
-  const indexed = [];
-  
-  for (const chunk of chunks) {
-    try {
-      const embedding = await generateEmbedding(chunk, model, host);
-      indexed.push({
-        file: relativePath,
-        chunk,
-        embedding,
-      });
-    } catch (error) {
-      console.log(pc.yellow(`⚠ Failed to embed chunk in ${relativePath}`));
+
+  try {
+    const content = await fs.readFile(filePath, "utf-8");
+    const chunks = chunkContent(content);
+
+    const indexed = [];
+
+    for (const chunk of chunks) {
+      try {
+        const embedding = await generateEmbedding(chunk, model, host);
+        indexed.push({
+          file: relativePath,
+          chunk,
+          embedding,
+        });
+      } catch (error) {
+        const errorMessage = (error as Error).message;
+        // Track file-level failure on first chunk failure
+        if (indexed.length === 0) {
+          const stats = await fs.stat(filePath);
+          failures.push({
+            file: relativePath,
+            reason: errorMessage,
+            size: stats.size,
+            type: categorizeError(error as Error) as any,
+          });
+        }
+        // Continue with other chunks
+      }
     }
+
+    return indexed;
+  } catch (error) {
+    // Track file-level errors (read errors, etc)
+    const stats = await fs.stat(filePath).catch(() => ({ size: 0 }));
+    failures.push({
+      file: relativePath,
+      reason: (error as Error).message,
+      size: stats.size,
+      type: categorizeError(error as Error) as any,
+    });
+    return [];
   }
-  
-  return indexed;
 }
 
 export interface BuildIndexOptions extends RagConfig {
@@ -286,7 +311,7 @@ export interface BuildIndexOptions extends RagConfig {
 }
 
 /**
- * Build RAG index for the codebase
+ * Build RAG index for the codebase with failure handling
  */
 export async function buildIndex(config: BuildIndexOptions): Promise<IndexStats> {
   const {
@@ -297,78 +322,164 @@ export async function buildIndex(config: BuildIndexOptions): Promise<IndexStats>
     progress = false,
     parallel = false,
   } = config;
-  
+
+  return await buildIndexWithAutoRetry(
+    {
+      cwd,
+      model,
+      ollamaHost,
+      excludePatterns,
+      progress,
+      parallel,
+    },
+    0 // recursion depth
+  );
+}
+
+/**
+ * Internal function to handle indexing with auto-retry on failures
+ */
+async function buildIndexWithAutoRetry(
+  config: BuildIndexOptions,
+  retryDepth: number
+): Promise<IndexStats> {
+  const {
+    cwd,
+    model = "nomic-embed-text",
+    ollamaHost = "http://localhost:11434",
+    excludePatterns = [],
+    progress = false,
+    parallel = false,
+  } = config;
+
   const startTime = Date.now();
-  
-  // Ensure Ollama is installed
-  await ensureOllamaInstalled();
-  
-  // Ensure Ollama is running
-  if (!(await isOllamaRunning(ollamaHost))) {
-    await startOllamaServer();
+
+  // Ensure Ollama is installed (only on first try)
+  if (retryDepth === 0) {
+    await ensureOllamaInstalled();
+
+    // Ensure Ollama is running
+    if (!(await isOllamaRunning(ollamaHost))) {
+      await startOllamaServer();
+    }
+
+    // Ensure the required model is available
+    await ensureModelAvailable(model, ollamaHost);
   }
-  
-  // Ensure the required model is available
-  await ensureModelAvailable(model, ollamaHost);
-  
+
   console.log(pc.cyan("Scanning codebase..."));
   const files = await getFilesToIndex(cwd, excludePatterns);
   console.log(pc.dim(`Found ${files.length} files to index`));
-  
+
   if (parallel) {
     console.log(pc.yellow("⚠️  Parallel indexing uses more memory but may be slower"));
   }
-  
+
   const indexPath = path.join(cwd, ".arela", ".rag-index.json");
   await fs.ensureDir(path.dirname(indexPath));
-  
+
   const allEmbeddings: Array<{ file: string; chunk: string; embedding: number[] }> = [];
-  
+  const failures: IndexingFailure[] = [];
+
   // Progress bar
   let progressBar: any = null;
   if (progress) {
     const { ProgressBar } = await import("../utils/progress.js");
     progressBar = new ProgressBar({ total: files.length, label: "Indexing" });
   }
-  
+
   let processed = 0;
   for (const file of files) {
-    try {
-      const embeddings = await indexFile(file, cwd, model, ollamaHost);
-      allEmbeddings.push(...embeddings);
-      processed++;
-      
-      if (progressBar) {
-        progressBar.update(processed);
-      } else if (processed % 10 === 0) {
-        console.log(pc.dim(`Indexed ${processed}/${files.length} files...`));
-      }
-    } catch (error) {
-      if (!progressBar) {
-        console.log(pc.yellow(`⚠ Failed to index ${path.relative(cwd, file)}`));
-      }
+    const embeddings = await indexFile(file, cwd, model, ollamaHost, failures);
+    allEmbeddings.push(...embeddings);
+    processed++;
+
+    if (progressBar) {
+      progressBar.update(processed);
+    } else if (processed % 10 === 0) {
+      console.log(pc.dim(`Indexed ${processed}/${files.length} files...`));
     }
   }
-  
+
   if (progressBar) {
     progressBar.complete();
   }
-  
+
+  // Handle failures - auto-generate .ragignore and retry
+  if (failures.length > 0 && retryDepth === 0) {
+    console.log("");
+    console.log(
+      pc.yellow(
+        `\n⚠️  ${failures.length} file${failures.length !== 1 ? "s" : ""} failed to index`
+      )
+    );
+
+    // Generate .ragignore with analysis
+    await generateRagignore(failures, cwd);
+
+    // Retry indexing after creating .ragignore
+    console.log(pc.cyan(`\n🔄 Re-running index without failed files...\n`));
+    return await buildIndexWithAutoRetry(
+      {
+        cwd,
+        model,
+        ollamaHost,
+        excludePatterns,
+        progress,
+        parallel,
+      },
+      1 // Mark as retry
+    );
+  }
+
   // Save index
-  await fs.writeJson(indexPath, {
-    version: "1.0",
-    model,
-    timestamp: new Date().toISOString(),
-    embeddings: allEmbeddings,
-  }, { spaces: 2 });
-  
+  await fs.writeJson(
+    indexPath,
+    {
+      version: "1.0",
+      model,
+      timestamp: new Date().toISOString(),
+      embeddings: allEmbeddings,
+    },
+    { spaces: 2 }
+  );
+
   const timeMs = Date.now() - startTime;
-  
+
+  if (allEmbeddings.length > 0) {
+    console.log(
+      pc.green(
+        `\n✅ Indexed ${processed} files successfully in ${formatDuration(timeMs)}`
+      )
+    );
+  } else {
+    console.log(pc.yellow(`\n⚠️  No files were successfully indexed`));
+  }
+
   return {
     filesIndexed: processed,
     totalChunks: allEmbeddings.length,
     timeMs,
   };
+}
+
+/**
+ * Format duration in human-readable format
+ */
+function formatDuration(ms: number): string {
+  if (ms < 1000) {
+    return `${ms}ms`;
+  }
+
+  const seconds = ms / 1000;
+  if (seconds < 60) {
+    return `${seconds.toFixed(1)}s`;
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+
+  return `${minutes}m ${remainingSeconds}s`;
 }
 
 /**
