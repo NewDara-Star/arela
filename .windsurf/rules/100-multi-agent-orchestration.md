@@ -1,9 +1,5 @@
 ---
-id: arela.multi_agent_orchestration
-title: Multi-Agent Orchestration
-category: architecture
-severity: must
-version: 1.0.0
+trigger: always_on
 ---
 
 # Multi-Agent Orchestration

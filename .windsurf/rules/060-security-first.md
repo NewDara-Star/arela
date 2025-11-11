@@ -1,9 +1,5 @@
 ---
-id: arela.security_first
-title: Security First
-category: security
-severity: must
-version: 1.0.0
+trigger: always_on
 ---
 
 # Security First
