@@ -34,14 +34,14 @@ export function getMessage(config: PersonalityConfig, key: string, fallback?: st
       next_steps: "Next steps:",
     },
     fun: {
-      init: "🎯 Arela v3.1.0 - Your AI CTO is here to help!",
+      init: "🎯 Arela v3.1.1 - Your AI CTO is here to help!",
       init_success: "✨ Boom! Your AI CTO is ready",
       preset_info: "🚀 {{preset}} mode activated!",
       created: "📦 Unpacked:",
       next_steps: "📚 What's next:",
     },
     bold: {
-      init: "🔥 Arela v3.1.0 - No bullshit, just results",
+      init: "🔥 Arela v3.1.1 - No bullshit, just results",
       init_success: "✅ Done. Now go build something useful",
       preset_info: "{{preset}} - Because you need this",
       created: "Files created (don't ignore them):",

@@ -13,7 +13,7 @@ const program = new Command();
 program
   .name("arela")
   .description("🎯 Your AI CTO with multi-agent orchestration")
-  .version("3.1.0");
+  .version("3.1.1");
 
 /**
  * arela agents - List discovered agents
@@ -79,7 +79,7 @@ program
   .option("--preset <type>", "Rule preset: startup, enterprise, solo, all", "startup")
   .option("--force", "Overwrite existing files", false)
   .action(async (opts) => {
-    console.log(pc.bold(pc.cyan("\n🎯 Arela v3.1.0 - Your AI CTO is here to help!\n")));
+    console.log(pc.bold(pc.cyan("\n🎯 Arela v3.1.1 - Your AI CTO is here to help!\n")));
     console.log(pc.gray("Let's get you set up. What kind of team are you?\n"));
 
     // Validate preset
