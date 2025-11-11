@@ -1,0 +1,11 @@
+name: Stride Simple Guest Flow
+steps:
+  - action: navigate
+    target: /
+  - action: screenshot
+    name: landing
+  - action: waitFor
+    selector: body
+    timeout: 5000
+  - action: screenshot
+    name: loaded

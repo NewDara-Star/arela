@@ -1,0 +1,30 @@
+name: Tic Tac Toe Game Test
+steps:
+  - action: navigate
+    target: /
+  - action: screenshot
+    name: game-start
+  - action: click
+    selector: button[data-cell-index="0"]
+  - action: screenshot
+    name: after-first-move
+  - action: click
+    selector: button[data-cell-index="4"]
+  - action: screenshot
+    name: after-second-move
+  - action: click
+    selector: button[data-cell-index="1"]
+  - action: screenshot
+    name: after-third-move
+  - action: click
+    selector: button[data-cell-index="3"]
+  - action: screenshot
+    name: after-fourth-move
+  - action: click
+    selector: button[data-cell-index="2"]
+  - action: screenshot
+    name: x-wins
+  - action: waitFor
+    selector: .winner
+  - action: screenshot
+    name: winner-displayed

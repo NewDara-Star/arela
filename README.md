@@ -1,4 +1,4 @@
-# Arela v3.2.0
+# Arela v3.3.0
 
 **Your AI Technical Co-Founder**
 
@@ -10,18 +10,19 @@ Arela was born from a simple frustration: being an "idea person" with no technic
 
 Arela is that guidance. Not a linter. Not a framework. **A conversational CTO persona** that helps you think through products and build them to world-class standards.
 
-## ✨ What's New in v3.2.0
+## ✨ What's New in v3.3.0
 
-### 🎭 Visual Testing with Playwright
-- **Test Like a User** - Arela can now actually use your web apps
-- **Catch UX Issues** - Find problems that code review misses
-- **Automated Flows** - Define user journeys in YAML
-- **AI Analysis** - Get smart recommendations for improvements
+### 📱 Mobile Testing with Appium
+- **Test Mobile Apps** - Arela can now test iOS and Android apps
+- **Simulator Support** - Works with iOS Simulator and Android Emulator
+- **Expo Integration** - Auto-detects and tests Expo apps
+- **Cross-Platform** - Same flow format for web and mobile
 
 ### 🚀 New Commands
 ```bash
-arela run web              # Test web apps with Playwright
-arela run web --flow signup # Run specific user flow
+arela run mobile                    # Test iOS app (default)
+arela run mobile --platform android # Test Android app
+arela run mobile --flow onboarding  # Run specific flow
 ```
 
 ## The Problem
@@ -63,7 +64,7 @@ arela agents
 
 ## Current Status
 
-✅ **Live on npm** - v3.2.0 with visual testing
+✅ **Live on npm** - v3.3.0 with web + mobile testing
 
 📦 **Archived** - v2.2.0 at `/Users/Star/arela-v2.2.0-archive`
 

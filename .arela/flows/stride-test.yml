@@ -1,0 +1,9 @@
+name: Stride App Test
+steps:
+  - action: screenshot
+    name: app-launch
+  - action: waitFor
+    selector: ~welcome-screen
+    timeout: 10000
+  - action: screenshot
+    name: welcome-screen

@@ -1,4 +1,4 @@
-# Arela v3.2.0 - Quickstart Guide
+# Arela v3.3.0 - Quickstart Guide
 
 ## Installing Arela in an Existing Project
 
@@ -40,7 +40,7 @@ arela init --preset solo --personality fun         # Lightweight for solo devs (
 
 **Fun Mode Example Output:**
 ```
-🎯 Arela v3.1.3 - Your AI CTO is here to help!
+🎯 Arela v3.3.0 - Your AI CTO is here to help!
 🚀 startup mode activated!
 🎉 Boom! Your AI CTO is ready
 📦 Unpacked:  - .windsurf/rules/
@@ -237,6 +237,55 @@ steps:
 
 ---
 
+### **Step 8: Test Your Mobile App**
+
+Test iOS or Android apps with Appium:
+
+```bash
+# Start your Expo app
+npx expo start
+
+# In another terminal, test it
+arela run mobile
+
+# Or test Android
+arela run mobile --platform android
+```
+
+**Create a mobile flow:**
+```yaml
+# .arela/flows/onboarding.yml
+name: Mobile Onboarding Flow
+steps:
+  - action: click
+    selector: ~get-started-button  # iOS accessibility ID
+  - action: swipe
+    direction: left
+  - action: click
+    selector: ~next-button
+  - action: screenshot
+    name: onboarding-complete
+```
+
+**Output:**
+```
+📱 Starting mobile app testing...
+🍎 Launching iOS Simulator (iPhone 15 Pro)
+
+🧪 Running user flow: onboarding
+  ✅ Tap get-started button
+  ✅ Swipe left
+  ✅ Tap next button
+  ✅ Captured screenshot
+  
+📊 Results:
+  - 4 steps passed
+
+📸 Screenshots saved to .arela/screenshots/mobile/
+```
+
+---
+
 ## **Complete Command Reference**
 
 ```bash
@@ -389,7 +438,7 @@ npm install -g arela
 ```
 
 ### **"Ollama not running" (for indexing)**
-**No longer an issue!** Arela v3.1.3+ handles this automatically:
+**No longer an issue!** Arela v3.3.0+ handles this automatically:
 
 ```bash
 arela index  # Will install and start Ollama if needed

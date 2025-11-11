@@ -1,0 +1,20 @@
+name: Stride Guest User Flow
+steps:
+  - action: navigate
+    target: /
+  - action: screenshot
+    name: landing-page
+  - action: waitFor
+    selector: button
+    timeout: 10000
+  - action: screenshot
+    name: buttons-loaded
+  - action: click
+    selector: button:has-text("Continue as Guest"), button:has-text("Guest"), button:has-text("Skip")
+  - action: screenshot
+    name: after-guest-click
+  - action: waitFor
+    selector: body
+    timeout: 5000
+  - action: screenshot
+    name: guest-home

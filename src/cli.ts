@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from "node:url";
 import { Command } from "commander";
 import pc from "picocolors";
 import { discoverAgents } from "./agents/discovery.js";
@@ -160,60 +161,113 @@ program
   });
 
 /**
+ * Run command types and handlers (exported for testing)
+ */
+export interface RunCommandOptions {
+  url?: string;
+  flow: string;
+  headless?: boolean;
+  record?: boolean;
+  platform?: string;
+  device?: string;
+  app?: string;
+  webFallback?: boolean;
+}
+
+export type RunCommandHandler = (platform: string, opts: RunCommandOptions) => Promise<void>;
+
+export class UnsupportedPlatformError extends Error {
+  constructor(public readonly platform: string) {
+    super(`Platform "${platform}" not supported.`);
+    this.name = "UnsupportedPlatformError";
+  }
+}
+
+export async function handleRunCommand(platform: string, opts: RunCommandOptions): Promise<void> {
+  if (platform === "web") {
+    try {
+      const { runWebApp } = await import("./run/web.js");
+      await runWebApp({
+        url: opts.url ?? "http://localhost:3000",
+        flow: opts.flow ?? "default",
+        headless: Boolean(opts.headless),
+        record: Boolean(opts.record),
+      });
+    } catch (error) {
+      console.error(pc.red(`\n😵‍💫 Web runner hit a snag: ${(error as Error).message}\n`));
+      throw error;
+    }
+    return;
+  }
+
+  if (platform === "mobile") {
+    try {
+      const { runMobileApp } = await import("./run/mobile.js");
+      await runMobileApp({
+        platform: (opts.platform ?? "ios") as "ios" | "android",
+        device: opts.device,
+        flow: opts.flow ?? "default",
+        app: opts.app,
+        webFallback: opts.webFallback,
+      });
+    } catch (error) {
+      console.error(pc.red(`\n😵‍💫 Mobile runner hit a snag: ${(error as Error).message}\n`));
+      throw error;
+    }
+    return;
+  }
+
+  throw new UnsupportedPlatformError(platform);
+}
+
+export function buildRunCommand(
+  programInstance: Command,
+  handler: RunCommandHandler = handleRunCommand
+): Command {
+  return programInstance
+    .command("run")
+    .description("Run and test your app like a real user")
+    .argument("<platform>", "Platform: web or mobile")
+    .option("--url <url>", "URL for web apps", "http://localhost:3000")
+    .option("--platform <platform>", "Mobile platform: ios or android", "ios")
+    .option("--device <name>", "Device name (e.g., 'iPhone 15 Pro')")
+    .option("--app <path>", "Path to .app or .apk file (auto-detects Expo)")
+    .option("--flow <name>", "User flow to test", "default")
+    .option("--headless", "Run browser in headless mode (web only)", false)
+    .option("--record", "Record video of test execution", false)
+    .option("--web-fallback", "Force web fallback mode with mobile viewport (mobile only)", false)
+    .addHelpText(
+      "after",
+      "\nExamples:\n" +
+        "  $ arela run web\n" +
+        "  $ arela run web --url http://localhost:8080\n" +
+        "  $ arela run web --flow signup --headless\n" +
+        "  $ arela run mobile\n" +
+        "  $ arela run mobile --platform android\n" +
+        "  $ arela run mobile --device 'Pixel 7' --flow onboarding\n"
+    )
+    .action(async (platformArg, opts) => {
+      try {
+        await handler(platformArg, opts);
+      } catch (error) {
+        if (error instanceof UnsupportedPlatformError) {
+          console.error(pc.red(error.message));
+          console.log(pc.gray("Supported platforms: web, mobile"));
+          process.exit(1);
+        }
+
+        if (error instanceof Error) {
+          console.error(pc.red(`\n😵‍💫 Run command hit a snag: ${error.message}\n`));
+        }
+        process.exit(1);
+      }
+    });
+}
+
+/**
  * arela run - Execute user flows via platform runners
  */
-program
-  .command("run")
-  .description("Run and test your app like a real user")
-  .argument("<platform>", "Platform: web or mobile")
-  .option("--url <url>", "URL for web apps", "http://localhost:3000")
-  .option("--flow <name>", "User flow to test", "default")
-  .option("--headless", "Run browser in headless mode", false)
-  .option("--record", "Record video of test execution", false)
-  .option("--platform-os <os>", "Mobile OS: ios or android", "ios")
-  .option("--device <name>", "Device or simulator name", undefined)
-  .option("--app <path>", "Path to app (.app or .apk), or auto-detect Expo", undefined)
-  .addHelpText(
-    "after",
-    "\nExamples:\n  $ arela run web\n  $ arela run web --url http://localhost:8080\n  $ arela run web --flow signup --headless\n  $ arela run mobile --platform-os ios --device 'iPhone 15 Simulator'\n  $ arela run mobile --platform-os android --flow login\n"
-  )
-  .action(async (platform, opts) => {
-    if (platform === "web") {
-      try {
-        const { runWebApp } = await import("./run/web.js");
-        await runWebApp({
-          url: opts.url,
-          flow: opts.flow,
-          headless: Boolean(opts.headless),
-          record: Boolean(opts.record),
-        });
-      } catch (error) {
-        console.error(pc.red(`\n😵‍💫 Web runner hit a snag: ${(error as Error).message}\n`));
-        process.exit(1);
-      }
-      return;
-    }
-
-    if (platform === "mobile") {
-      try {
-        const { runMobileApp } = await import("./run/mobile.js");
-        await runMobileApp({
-          platform: opts.platformOs as "ios" | "android",
-          device: opts.device,
-          flow: opts.flow,
-          app: opts.app,
-        });
-      } catch (error) {
-        console.error(pc.red(`\n😵‍💫 Mobile runner hit a snag: ${(error as Error).message}\n`));
-        process.exit(1);
-      }
-      return;
-    }
-
-    console.error(pc.red(`Platform "${platform}" not supported yet.`));
-    console.log(pc.gray("Supported platforms: web, mobile"));
-    process.exit(1);
-  });
+buildRunCommand(program);
 
 /**
  * arela status - Show ticket status
@@ -444,4 +498,21 @@ program
     }
   });
 
-program.parse();
+function isDirectCliExecution(): boolean {
+  const entry = process.argv[1];
+  if (!entry) {
+    return true;
+  }
+
+  try {
+    return import.meta.url === pathToFileURL(entry).href;
+  } catch {
+    return true;
+  }
+}
+
+if (isDirectCliExecution()) {
+  program.parse();
+}
+
+export { program };

@@ -8,6 +8,18 @@ export type TicketComplexity = 'simple' | 'medium' | 'complex';
 export type TicketStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'blocked';
 
 /**
+ * RAG indexing failure tracking
+ */
+export type IndexingFailureType = 'too_large' | 'invalid_string' | 'timeout' | 'other';
+
+export interface IndexingFailure {
+  file: string;
+  reason: string;
+  size: number;
+  type: IndexingFailureType;
+}
+
+/**
  * Discovered AI agent/model
  */
 export interface DiscoveredAgent {

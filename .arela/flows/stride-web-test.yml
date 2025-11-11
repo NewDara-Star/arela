@@ -1,0 +1,11 @@
+name: Stride App Web Test
+steps:
+  - action: navigate
+    target: /
+  - action: screenshot
+    name: app-home
+  - action: waitFor
+    selector: body
+    timeout: 5000
+  - action: screenshot
+    name: app-loaded

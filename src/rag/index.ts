@@ -3,6 +3,8 @@ import fs from "fs-extra";
 import { execa } from "execa";
 import { glob } from "glob";
 import pc from "picocolors";
+import { IndexingFailure } from "../types.js";
+import { generateRagignore, readRagignorePatterns, categorizeError } from "../utils/ragignore.js";
 
 export interface RagConfig {
   cwd: string;
@@ -178,18 +180,21 @@ async function getFilesToIndex(cwd: string, excludePatterns: string[]): Promise<
     "**/*.yaml",
     "**/*.yml",
   ];
-  
+
+  // Load .ragignore patterns
+  const ragignorePatterns = await readRagignorePatterns(cwd);
+
   const files: string[] = [];
-  
+
   for (const pattern of patterns) {
     const matches = await glob(pattern, {
       cwd,
-      ignore: [...DEFAULT_EXCLUDE, ...excludePatterns],
+      ignore: [...DEFAULT_EXCLUDE, ...excludePatterns, ...ragignorePatterns],
       absolute: true,
     });
     files.push(...matches);
   }
-  
+
   return [...new Set(files)]; // dedupe
 }
 

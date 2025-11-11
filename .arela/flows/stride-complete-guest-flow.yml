@@ -1,0 +1,56 @@
+name: Stride Complete Guest User Flow
+steps:
+  # Step 1: Landing page
+  - action: navigate
+    target: /
+  - action: screenshot
+    name: 01-landing-page
+  
+  # Step 2: Wait for and click "Continue as Guest"
+  - action: waitFor
+    selector: button:has-text("Continue as Guest"), a:has-text("Continue as Guest")
+    timeout: 10000
+  - action: screenshot
+    name: 02-guest-button-visible
+  - action: click
+    selector: button:has-text("Continue as Guest"), a:has-text("Continue as Guest")
+  - action: screenshot
+    name: 03-after-guest-click
+  
+  # Step 3: Name input screen
+  - action: waitFor
+    selector: input[placeholder*="name" i], input[placeholder*="Enter" i]
+    timeout: 10000
+  - action: screenshot
+    name: 04-name-input-screen
+  - action: type
+    selector: input[placeholder*="name" i], input[placeholder*="Enter" i]
+    value: Test User
+  - action: screenshot
+    name: 05-name-entered
+  
+  # Step 4: Click Continue button
+  - action: click
+    selector: button:has-text("Continue"), button:has-text("Next")
+  - action: screenshot
+    name: 06-after-continue
+  
+  # Step 5: Welcome message screen
+  - action: waitFor
+    selector: text="You're all set", text="Welcome"
+    timeout: 10000
+  - action: screenshot
+    name: 07-welcome-message
+  
+  # Step 6: Enter Stride
+  - action: click
+    selector: button:has-text("Enter Stride"), button:has-text("Get Started")
+  - action: screenshot
+    name: 08-entering-app
+  
+  # Step 7: Verify we're in the app (guest mode)
+  - action: waitFor
+    selector: body
+    timeout: 5000
+  - action: screenshot
+    name: 09-guest-home-screen

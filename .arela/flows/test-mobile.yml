@@ -1,0 +1,9 @@
+name: Simple Mobile Test Flow
+steps:
+  - action: screenshot
+    name: initial-state
+  - action: waitFor
+    selector: ~test-button
+    timeout: 5000
+  - action: screenshot
+    name: after-wait

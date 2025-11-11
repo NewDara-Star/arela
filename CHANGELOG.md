@@ -1,5 +1,76 @@
 # Changelog
 
+## [3.3.0] - 2025-11-11
+
+### 📱 Mobile Testing with Appium
+
+**Test iOS and Android apps like a real user.**
+
+### ✨ New Features
+
+#### **arela run mobile Command**
+- Launch and test mobile apps with Appium
+- Execute user flows defined in YAML
+- Capture screenshots automatically
+- Support for iOS Simulator and Android Emulator
+- Auto-detect Expo apps
+
+#### **Cross-Platform Support**
+- iOS testing via XCUITest driver
+- Android testing via UIAutomator2 driver
+- Same flow format as web testing
+- Platform-specific selectors (accessibility IDs, resource IDs)
+
+#### **Mobile-Specific Actions**
+- Swipe gestures (up, down, left, right)
+- Tap with coordinates
+- Long press
+- Scroll to element
+
+### 🔧 Technical Details
+
+**New Commands:**
+- `arela run mobile` - Test mobile apps with Appium
+- `arela run mobile --platform android` - Test Android apps
+- `arela run mobile --device "iPhone 15 Pro"` - Specify device
+
+**New Files:**
+- `src/run/mobile.ts` - Mobile test runner
+
+**Dependencies Added:**
+- appium: ^2.0.0
+- appium-xcuitest-driver: ^5.0.0
+- appium-uiautomator2-driver: ^3.0.0
+- webdriverio: ^8.0.0
+
+### 📊 Impact
+
+- **Test Mobile Apps** - No manual tapping required
+- **Expo Support** - Auto-detects and tests Expo apps
+- **Cross-Platform** - Same flows work on iOS and Android
+- **Visual Proof** - Screenshots of every step
+
+### 🚀 Breaking Changes
+
+None - Fully backward compatible.
+
+### 📱 Platform Support
+
+**iOS:**
+- Requires Xcode and iOS Simulator
+- Uses XCUITest driver
+- Accessibility IDs for selectors
+
+**Android:**
+- Requires Android Studio and Emulator
+- Uses UIAutomator2 driver
+- Resource IDs for selectors
+
+**Expo:**
+- Auto-detects Expo apps
+- Works with `npx expo start`
+- No additional configuration needed
+
 ## [3.2.0] - 2025-11-11
 
 ### 🎭 Visual Testing with Playwright
