@@ -1,4 +1,4 @@
-# Arela v3.0 - Quickstart Guide
+# Arela v3.1.2 - Quickstart Guide
 
 ## Installing Arela in an Existing Project
 
@@ -12,9 +12,11 @@ npm install -g arela
 
 ### **Step 2: Initialize in Your Project**
 
+Choose your personality and initialize:
+
 ```bash
 cd your-project
-arela init
+arela init --personality fun
 ```
 
 **What this does:**
@@ -24,9 +26,26 @@ arela init
 
 **Choose a preset:**
 ```bash
-arela init --preset startup      # Default: Fast-moving startups (11 rules)
-arela init --preset enterprise   # Full rule set (23 rules)
-arela init --preset solo         # Lightweight for solo devs (9 rules)
+arela init --preset startup --personality fun      # Default: Fast-moving startups (11 rules)
+arela init --preset enterprise --personality fun   # Full rule set (23 rules)
+arela init --preset solo --personality fun         # Lightweight for solo devs (9 rules)
+```
+
+**Choose your CLI personality:**
+```bash
+--personality professional    # Clean, informative output (default)
+--personality fun             # 🎯 Emojis, encouraging messages
+--personality dbrand          # Savage honesty, direct feedback
+```
+
+**Fun Mode Example Output:**
+```
+🎯 Arela v3.1.2 - Your DBrand CTO is here to help!
+🚀 startup mode activated!
+🎉 Boom! Your DBrand CTO is ready
+📦 Unpacked:  - .windsurf/rules/
+  - arela-cto.md
+📚 What's next:  1. Run: arela agents
 ```
 
 ---
@@ -34,19 +53,19 @@ arela init --preset solo         # Lightweight for solo devs (9 rules)
 ### **Step 3: Verify Setup**
 
 ```bash
-arela doctor
+arela doctor --personality fun
 ```
 
-**Output:**
+**Output (Fun Mode):**
 ```
-🏥 Arela Doctor
+🏥 Arela Doctor - Here to make your project awesome!
 
-✅ Project structure is valid!
+✅ Project structure is valid! Nailed it!
 ```
 
 If there are issues:
 ```bash
-arela doctor --fix
+arela doctor --fix --personality fun
 ```
 
 ---
@@ -54,31 +73,31 @@ arela doctor --fix
 ### **Step 4: Discover Your AI Agents**
 
 ```bash
-arela agents --verbose
+arela agents --verbose --personality fun
 ```
 
-**Output:**
+**Output (Fun Mode):**
 ```
-🔍 Discovering AI Agents...
+🔍 Discovering your AI team...
 
 Found 4 agent(s):
 
-✅ OpenAI (Codex) - Available
+✅ OpenAI (Codex) - Ready to code!
    Command: codex
    Cost: $0.002/1k tokens
    Best for: simple tasks, CRUD operations, boilerplate
 
-✅ Claude (Anthropic) - Available
+✅ Claude (Anthropic) - Your architecture guru!
    Command: claude
    Cost: $0.015/1k tokens
    Best for: complex tasks, refactoring, architecture
 
-✅ Ollama (Local Models) - Available
+✅ Ollama (Local Models) - Offline hero!
    Command: ollama
    Cost: $0/1k tokens
    Best for: offline work, privacy-sensitive
 
-✅ Windsurf (Cascade) - Available
+✅ Windsurf (Cascade) - Your IDE buddy!
    Command: windsurf
    Type: ide
 ```
@@ -90,20 +109,21 @@ Found 4 agent(s):
 For semantic codebase search:
 
 ```bash
-arela index
+arela index --personality fun
 ```
 
-**Output:**
+**Output (Fun Mode):**
 ```
-📚 Building RAG Index...
+📚 Building your code brain...
 
 Scanning codebase...
 Found 247 files to index
 
 Indexing: [████████████████████] 100% (247/247) - 24.5 files/sec
 
-✅ Indexed 247 files (1,234 chunks)
+🎉 Boom! Indexed 247 files (1,234 chunks)
 Duration: 10.1s
+Your codebase is now searchable!
 ```
 
 **Note:** Requires Ollama running locally.
@@ -220,10 +240,10 @@ your-project/
 ### **Day 1: Setup**
 ```bash
 cd your-project
-arela init --preset startup
-arela doctor
-arela agents
-arela index  # Optional but recommended
+arela init --preset startup --personality fun
+arela doctor --personality fun
+arela agents --personality fun
+arela index --personality fun  # Optional but recommended
 ```
 
 ### **Daily: Building Features**
@@ -321,7 +341,43 @@ Install at least one:
 
 ### **Structure issues**
 ```bash
-arela doctor --fix
+arela doctor --fix --personality fun
+```
+
+---
+
+## **CLI Personalities**
+
+All commands support the `--personality` flag:
+
+### **Professional (default)**
+```bash
+arela init --personality professional
+```
+Clean, informative output - standard CLI experience
+
+### **Fun** 
+```bash
+arela init --personality fun
+```
+🎯 Emojis, encouraging messages, "Nailed it!" style
+
+### **DBrand**
+```bash
+arela init --personality dbrand
+```
+Savage honesty, direct feedback, no-nonsense
+
+**Example comparison:**
+```
+# Professional
+✅ Arela initialized successfully!
+
+# Fun
+🎉 Boom! Your DBrand CTO is ready
+
+# DBrand
+✅ Done. Now go build something useful
 ```
 
 ---
@@ -329,9 +385,10 @@ arela doctor --fix
 ## **Next Steps**
 
 1. ✅ Install: `npm install -g arela`
-2. ✅ Initialize: `arela init`
-3. ✅ Verify: `arela doctor`
-4. ✅ Discover agents: `arela agents`
-5. ✅ Start building with Arela in Windsurf!
+2. ✅ Initialize: `arela init --personality fun`
+3. ✅ Verify: `arela doctor --personality fun`
+4. ✅ Discover agents: `arela agents --personality fun`
+5. ✅ Build index: `arela index --personality fun`
+6. ✅ Start building with your AI CTO in Windsurf!
 
 **Questions?** Check the full docs or ask Arela directly in Windsurf! 🚀
