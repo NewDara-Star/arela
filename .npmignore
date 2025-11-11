@@ -1,0 +1,32 @@
+# Source files (we ship dist/)
+src/
+tsconfig.json
+
+# Development
+.arela/
+.windsurf/
+node_modules/
+*.log
+
+# Documentation (keep only essential)
+ROADMAP-v3.0.md
+ARCHITECTURE-v3.0.md
+docs/
+
+# Archive
+arela-v2.2.0-archive/
+packages/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Tests
+*.test.ts
+*.spec.ts
+__tests__/
+coverage/

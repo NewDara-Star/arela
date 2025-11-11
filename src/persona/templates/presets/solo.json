@@ -1,0 +1,15 @@
+{
+  "name": "Solo Developer (Lightweight)",
+  "description": "Essential rules for solo developers. Pragmatic without overhead.",
+  "rules": [
+    "010-pragmatic-visionary.md",
+    "015-modular-monolith.md",
+    "020-context-integrity.md",
+    "025-two-way-door-decisions.md",
+    "060-security-first.md",
+    "075-testing-trophy.md",
+    "080-observability-minimums.md",
+    "100-multi-agent-orchestration.md",
+    "150-investigate-failures.md"
+  ]
+}

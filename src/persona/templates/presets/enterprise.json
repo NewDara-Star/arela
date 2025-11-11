@@ -1,0 +1,28 @@
+{
+  "name": "Enterprise (Comprehensive)",
+  "description": "Full rule set for established companies. Maximum quality.",
+  "rules": [
+    "010-pragmatic-visionary.md",
+    "015-modular-monolith.md",
+    "016-trunk-based-dev.md",
+    "017-dora-metrics.md",
+    "020-context-integrity.md",
+    "025-two-way-door-decisions.md",
+    "030-ticket-format.md",
+    "040-code-review-gates.md",
+    "050-technical-debt-management.md",
+    "060-security-first.md",
+    "070-testing-pyramid.md",
+    "080-observability-minimums.md",
+    "085-blameless-culture.md",
+    "090-adr-discipline.md",
+    "095-responsible-ai.md",
+    "096-context-engineering.md",
+    "100-multi-agent-orchestration.md",
+    "110-performance-budget.md",
+    "120-async-first-communication.md",
+    "130-automated-qa.md",
+    "140-current-context-awareness.md",
+    "150-investigate-failures.md"
+  ]
+}

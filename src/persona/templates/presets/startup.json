@@ -1,0 +1,17 @@
+{
+  "name": "Startup (Pragmatic & Fast)",
+  "description": "Minimal rules for fast-moving startups. Focus on shipping.",
+  "rules": [
+    "010-pragmatic-visionary.md",
+    "015-modular-monolith.md",
+    "016-trunk-based-dev.md",
+    "020-context-integrity.md",
+    "025-two-way-door-decisions.md",
+    "030-ticket-format.md",
+    "060-security-first.md",
+    "070-testing-pyramid.md",
+    "080-observability-minimums.md",
+    "100-multi-agent-orchestration.md",
+    "150-investigate-failures.md"
+  ]
+}
