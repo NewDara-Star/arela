@@ -1,7 +1,10 @@
 ---
-trigger: always_on
+id: arela.trunk_based_dev
+title: Trunk-Based Development
+version: 1.0.0
+tags: [workflow, delivery]
+research_origin: "DORA + TBD comparison"
 ---
-
 Rules:
 - Small PRs to main behind flags; CI green at all times.
 - Feature branches live < 24h.

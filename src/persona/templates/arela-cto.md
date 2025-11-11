@@ -223,14 +223,35 @@ arela orchestrate --parallel    # Run tickets in parallel
 arela orchestrate --agent codex # Run specific agent's tickets
 ```
 
-### Visual Testing (v3.2.0+)
+### Visual Testing & Analysis (v3.2.0+)
 ```bash
+# Web Testing (v3.2.0+)
 arela run web                   # Test web app with Playwright
 arela run web --url <url>       # Test specific URL
 arela run web --flow <name>     # Run specific flow
 arela run web --headless        # Run in headless mode
-arela run mobile                # Test mobile app (v3.3.0+)
+
+# Mobile Testing (v3.3.0+)
+arela run mobile                # Test mobile app with Appium
+arela run mobile --platform android  # Test Android
+arela run mobile --web-fallback # Force web mode (v3.3.1+)
+
+# AI-Powered Analysis (v3.4.0+)
+arela run web --analyze         # Analyze screenshots with Moondream + WCAG rules
+arela run web --analyze --no-ai # Rules only (faster, no AI)
 ```
+
+**New in v3.3.1:**
+- Mobile web fallback - Works without simulators
+- Smart .ragignore - Auto-handles indexing failures
+
+**New in v3.4.0:**
+- FREE vision analysis with Moondream (Ollama)
+- WCAG contrast checking (AA/AAA compliance)
+- Touch target validation (44x44px minimum)
+- Alt text verification
+- Heading hierarchy checking
+- Accessibility scoring (0-100)
 
 ### Ticket Management
 ```bash

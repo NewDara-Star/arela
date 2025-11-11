@@ -26,8 +26,9 @@ export async function runWebApp(opts: {
   flow: string;
   headless: boolean;
   record?: boolean;
+  analyze?: boolean;
 }): Promise<TestResults> {
-  const { url, flow: flowName, headless, record } = opts;
+  const { url, flow: flowName, headless, record, analyze } = opts;
   const cwd = process.cwd();
   const screenshotsDir = path.join(cwd, ".arela", "screenshots");
   await fs.ensureDir(screenshotsDir);
@@ -71,6 +72,59 @@ export async function runWebApp(opts: {
         suggestion: `Trace saved to ${tracePath}`,
       });
       tracePath = undefined;
+    }
+
+    // Run analysis if requested
+    if (analyze && results.screenshots.length > 0) {
+      const pc = await import('picocolors');
+      const { analyzeScreenshot } = await import('../analysis/index.js');
+      
+      console.log(pc.default.cyan('\n🤖 Running AI analysis...\n'));
+      
+      // Analyze the last screenshot (final state)
+      const lastScreenshot = results.screenshots[results.screenshots.length - 1];
+      const analysisResult = await analyzeScreenshot(
+        lastScreenshot,
+        page,
+        `Flow: ${flow.name}`
+      );
+
+      // Print analysis results
+      console.log(pc.default.bold('\n📊 Analysis Results:\n'));
+      console.log(`${analysisResult.summary}\n`);
+
+      const allIssues = [...analysisResult.aiIssues, ...analysisResult.ruleIssues];
+      const critical = allIssues.filter((i: any) => i.severity === 'critical');
+      const warnings = allIssues.filter((i: any) => i.severity === 'warning');
+      const info = allIssues.filter((i: any) => i.severity === 'info');
+
+      if (critical.length > 0) {
+        console.log(pc.default.red(`❌ Critical Issues (${critical.length}):`));
+        critical.forEach((issue: any) => {
+          console.log(pc.default.red(`   ${issue.message}`));
+          console.log(pc.default.gray(`   💡 ${issue.suggestion}\n`));
+        });
+      }
+
+      if (warnings.length > 0) {
+        console.log(pc.default.yellow(`⚠️  Warnings (${warnings.length}):`));
+        warnings.forEach((issue: any) => {
+          console.log(pc.default.yellow(`   ${issue.message}`));
+          console.log(pc.default.gray(`   💡 ${issue.suggestion}\n`));
+        });
+      }
+
+      if (info.length > 0) {
+        console.log(pc.default.cyan(`💡 Suggestions (${info.length}):`));
+        info.forEach((issue: any) => {
+          console.log(pc.default.cyan(`   ${issue.message}\n`));
+        });
+      }
+
+      console.log(pc.default.bold('\n📊 Scores:'));
+      console.log(`   WCAG: ${analysisResult.scores.wcag}/100`);
+      console.log(`   UX: ${analysisResult.scores.ux}/100`);
+      console.log(`   Accessibility: ${analysisResult.scores.accessibility}/100\n`);
     }
 
     reportResults(results);

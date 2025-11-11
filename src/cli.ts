@@ -168,6 +168,7 @@ export interface RunCommandOptions {
   flow: string;
   headless?: boolean;
   record?: boolean;
+  analyze?: boolean;
   platform?: string;
   device?: string;
   app?: string;
@@ -192,6 +193,7 @@ export async function handleRunCommand(platform: string, opts: RunCommandOptions
         flow: opts.flow ?? "default",
         headless: Boolean(opts.headless),
         record: Boolean(opts.record),
+        analyze: Boolean(opts.analyze),
       });
     } catch (error) {
       console.error(pc.red(`\n😵‍💫 Web runner hit a snag: ${(error as Error).message}\n`));
@@ -235,6 +237,7 @@ export function buildRunCommand(
     .option("--flow <name>", "User flow to test", "default")
     .option("--headless", "Run browser in headless mode (web only)", false)
     .option("--record", "Record video of test execution", false)
+    .option("--analyze", "Run AI-powered analysis on screenshots (web only)", false)
     .option("--web-fallback", "Force web fallback mode with mobile viewport (mobile only)", false)
     .addHelpText(
       "after",

@@ -1,7 +1,9 @@
 ---
-trigger: always_on
+id: arela.ticket_format
+title: Engineering Ticket Format
+version: 1.0.0
+tags: [execution]
 ---
-
 Tickets must include:
 1) Context (the why) in 3–5 lines.
 2) Technical task (the what) with explicit references.

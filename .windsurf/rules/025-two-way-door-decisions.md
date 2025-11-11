@@ -1,5 +1,9 @@
 ---
-trigger: always_on
+id: arela.two_way_door_decisions
+title: Two-Way Door Decisions
+category: decision-making
+severity: must
+version: 1.0.0
 ---
 
 # Two-Way Door Decisions

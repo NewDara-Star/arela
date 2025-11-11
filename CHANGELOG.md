@@ -1,5 +1,101 @@
 # Changelog
 
+## [3.4.0] - 2025-11-11
+
+### 🤖 FREE AI-Powered Quality Analysis
+
+**Arela now analyzes your app and tells you what's wrong - completely FREE!**
+
+### ✨ New Features
+
+#### **Vision Analysis with Moondream (Ollama)**
+- **FREE AI analysis** - Runs locally, no API costs
+- **Privacy-first** - Screenshots never leave your machine
+- **Automatic model download** - Pulls Moondream on first use
+- **Graceful fallbacks** - Works without Ollama (rules-only mode)
+- **Smart error handling** - Clear instructions if setup needed
+
+#### **WCAG Compliance Checking**
+- **Contrast ratio validation** - WCAG AA (4.5:1) and AAA (7:1) compliance
+- **Touch target validation** - Ensures 44x44px minimum size
+- **Alt text verification** - Checks all images for screen reader compatibility
+- **Heading hierarchy** - Validates proper h1-h6 structure
+- **Accessibility scoring** - 0-100 rating based on violations
+
+#### **CLI Integration**
+- **`--analyze` flag** - Run analysis on any web flow
+- **Colorized output** - Clear, beautiful issue reporting
+- **Severity levels** - Critical, warning, info categorization
+- **Actionable suggestions** - Tells you exactly how to fix issues
+
+### 🎨 User Experience
+
+**Before v3.4.0:**
+```bash
+$ arela run web --flow test
+✅ 4 steps passed
+```
+
+**After v3.4.0:**
+```bash
+$ arela run web --flow test --analyze
+
+🤖 Running AI analysis...
+
+❌ Critical Issues (2):
+   Low contrast ratio: 2.1:1 (needs 4.5:1)
+   💡 Increase text darkness or background lightness
+   
+   Touch target too small: 32x32px
+   💡 Increase to at least 44x44px
+
+📊 Scores:
+   WCAG: 68/100
+   UX: 82/100
+   Accessibility: 75/100
+```
+
+### 🔧 Technical Details
+
+**Analysis Modules:**
+- `src/analysis/vision.ts` - Moondream integration via Ollama
+- `src/analysis/rules.ts` - WCAG + UX rule-based checks
+- `src/analysis/index.ts` - Combined analysis orchestration
+
+**How It Works:**
+1. Captures screenshots during flow execution
+2. Runs AI analysis (Moondream) + rule-based checks in parallel
+3. Calculates contrast ratios from pixel data
+4. Validates touch target sizes via bounding boxes
+5. Checks DOM for alt text and heading structure
+6. Combines results and scores
+
+**Graceful Degradation:**
+- No Ollama? Falls back to rules-only
+- Model pull fails? Continues with rules
+- AI analysis fails? Shows clear error, continues
+
+### 📦 Dependencies
+
+No new npm dependencies! Uses:
+- Ollama (user installs: `brew install ollama`)
+- Moondream model (auto-downloaded on first use)
+- Existing Playwright for DOM inspection
+
+### 🎯 Impact
+
+**v3.3.1:** Arela runs your app  
+**v3.4.0:** Arela ANALYZES your app and tells you what's wrong
+
+**This makes quality analysis accessible to everyone - for FREE!**
+
+### 🔗 Related
+
+- Vision analysis ticket: CLAUDE-001-v3.4.0
+- Orchestration plan: ORCHESTRATION-PLAN-v3.4.0.md
+
+---
+
 ## [3.3.1] - 2025-11-11
 
 ### 🎯 Intelligent Fallbacks & Auto-Recovery

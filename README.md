@@ -1,4 +1,4 @@
-# Arela v3.3.1
+# Arela v3.4.0
 
 **Your AI Technical Co-Founder**
 
@@ -10,29 +10,52 @@ Arela was born from a simple frustration: being an "idea person" with no technic
 
 Arela is that guidance. Not a linter. Not a framework. **A conversational CTO persona** that helps you think through products and build them to world-class standards.
 
-## ✨ What's New in v3.3.1
+## ✨ What's New in v3.4.0
 
-### 🎯 Intelligent Fallbacks & Auto-Recovery
+### 🤖 FREE AI-Powered Quality Analysis
 
-**Mobile testing now works everywhere. RAG indexing never crashes.**
+**Arela now ANALYZES your app and tells you what's wrong - for FREE!**
 
-#### **Mobile Web Fallback**
-- **Works Without Simulators** - Auto-falls back to web with mobile viewport
-- **Perfect for CI/CD** - No simulator setup required
-- **Expo Apps** - Test Expo apps in browser instantly
-- **Force Web Mode** - `--web-fallback` flag for faster iteration
+#### **Vision Analysis with Moondream**
+- **FREE** - Runs locally via Ollama (no API costs)
+- **Private** - Screenshots never leave your machine
+- **Smart** - AI understands UX and accessibility issues
+- **Fast** - Lightweight 1.8B parameter model
 
-#### **Smart .ragignore Auto-Generation**
-- **Never Crashes** - Auto-handles indexing failures
-- **Intelligent Analysis** - Knows what to ignore vs refactor
-- **Auto-Recovery** - Creates .ragignore and retries automatically
-- **Actionable Guidance** - Tells you exactly what to do
+#### **WCAG Compliance Checking**
+- **Contrast Ratios** - Automatic WCAG AA/AAA validation
+- **Touch Targets** - Ensures 44x44px minimum size
+- **Alt Text** - Verifies screen reader compatibility
+- **Heading Hierarchy** - Checks proper document structure
+- **Accessibility Scores** - 0-100 rating for your app
 
-### 🚀 New Commands
+#### **Graceful Fallbacks**
+- **Works Without Ollama** - Falls back to rule-based checks
+- **Clear Instructions** - Tells you how to get AI analysis
+- **Never Blocks** - Always provides value
+
+### 🚀 Usage Examples
+
 ```bash
-arela run mobile                    # Test iOS app (default)
-arela run mobile --platform android # Test Android app
-arela run mobile --flow onboarding  # Run specific flow
+# Test with AI analysis (FREE!)
+arela run web --flow signup --analyze
+
+# Output:
+🤖 Running AI analysis...
+
+❌ Critical Issues (2):
+   Low contrast ratio: 2.1:1 (needs 4.5:1)
+   💡 Increase text darkness or background lightness
+
+📊 Scores:
+   WCAG: 68/100
+   UX: 82/100
+   Accessibility: 75/100
+
+# Mobile testing
+arela run mobile --flow onboarding
+arela run mobile --platform android
+arela run mobile --web-fallback  # Works without simulators!
 ```
 
 ## The Problem
