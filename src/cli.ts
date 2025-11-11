@@ -13,7 +13,7 @@ const program = new Command();
 program
   .name("arela")
   .description("🎯 Your AI CTO with multi-agent orchestration")
-  .version("3.1.1");
+  .version("3.3.0");
 
 /**
  * arela agents - List discovered agents
@@ -79,7 +79,7 @@ program
   .option("--preset <type>", "Rule preset: startup, enterprise, solo, all", "startup")
   .option("--force", "Overwrite existing files", false)
   .action(async (opts) => {
-    console.log(pc.bold(pc.cyan("\n🎯 Arela v3.1.1 - Your AI CTO is here to help!\n")));
+    console.log(pc.bold(pc.cyan("\n🎯 Arela v3.3.0 - Your AI CTO is here to help!\n")));
     console.log(pc.gray("Let's get you set up. What kind of team are you?\n"));
 
     // Validate preset
@@ -170,9 +170,12 @@ program
   .option("--flow <name>", "User flow to test", "default")
   .option("--headless", "Run browser in headless mode", false)
   .option("--record", "Record video of test execution", false)
+  .option("--platform-os <os>", "Mobile OS: ios or android", "ios")
+  .option("--device <name>", "Device or simulator name", undefined)
+  .option("--app <path>", "Path to app (.app or .apk), or auto-detect Expo", undefined)
   .addHelpText(
     "after",
-    "\nExamples:\n  $ arela run web\n  $ arela run web --url http://localhost:8080\n  $ arela run web --flow signup --headless\n"
+    "\nExamples:\n  $ arela run web\n  $ arela run web --url http://localhost:8080\n  $ arela run web --flow signup --headless\n  $ arela run mobile --platform-os ios --device 'iPhone 15 Simulator'\n  $ arela run mobile --platform-os android --flow login\n"
   )
   .action(async (platform, opts) => {
     if (platform === "web") {
@@ -191,8 +194,24 @@ program
       return;
     }
 
+    if (platform === "mobile") {
+      try {
+        const { runMobileApp } = await import("./run/mobile.js");
+        await runMobileApp({
+          platform: opts.platformOs as "ios" | "android",
+          device: opts.device,
+          flow: opts.flow,
+          app: opts.app,
+        });
+      } catch (error) {
+        console.error(pc.red(`\n😵‍💫 Mobile runner hit a snag: ${(error as Error).message}\n`));
+        process.exit(1);
+      }
+      return;
+    }
+
     console.error(pc.red(`Platform "${platform}" not supported yet.`));
-    console.log(pc.gray("Supported platforms: web"));
+    console.log(pc.gray("Supported platforms: web, mobile"));
     process.exit(1);
   });
 

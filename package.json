@@ -1,7 +1,7 @@
 {
   "name": "arela",
-  "version": "3.2.0",
-  "description": "AI-powered CTO with multi-agent orchestration and visual testing for blazing fast development.",
+  "version": "3.3.0",
+  "description": "AI-powered CTO with multi-agent orchestration, visual testing (web + mobile) for blazing fast development.",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
@@ -38,6 +38,9 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "appium": "^2.0.0",
+    "appium-uiautomator2-driver": "^3.0.0",
+    "appium-xcuitest-driver": "^5.0.0",
     "commander": "^12.0.0",
     "execa": "^9.0.0",
     "fs-extra": "^11.2.0",
@@ -46,6 +49,7 @@
     "ora": "^8.0.0",
     "picocolors": "^1.1.0",
     "playwright": "^1.40.0",
+    "webdriverio": "^8.0.0",
     "yaml": "^2.4.0",
     "zod": "^3.23.0"
   },
