@@ -2,7 +2,7 @@ import process from "node:process";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { search, type RagConfig } from "../rag/index.js";
+import { search, type RagConfig, ensureOllamaInstalled, ensureModelAvailable, isOllamaRunning, startOllamaServer } from "../rag/index.js";
 import { createRequire } from "module";
 
 const require = createRequire(import.meta.url);
@@ -121,6 +121,17 @@ export function createArelaMcpServer(options: ArelaMcpServerOptions = {}): McpSe
 }
 
 export async function runArelaMcpServer(options: ArelaMcpServerOptions = {}): Promise<void> {
+  const { cwd = process.cwd(), model = "nomic-embed-text", ollamaHost = "http://localhost:11434" } = options;
+  
+  // Ensure Ollama is installed and running with the required model
+  await ensureOllamaInstalled();
+  
+  if (!(await isOllamaRunning(ollamaHost))) {
+    await startOllamaServer();
+  }
+  
+  await ensureModelAvailable(model, ollamaHost);
+  
   const server = createArelaMcpServer(options);
   const transport = new StdioServerTransport();
   await server.connect(transport);

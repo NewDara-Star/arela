@@ -33,6 +33,94 @@ const DEFAULT_EXCLUDE = [
 ];
 
 /**
+ * Check if Ollama is installed
+ */
+export async function isOllamaInstalled(): Promise<boolean> {
+  try {
+    await execa("which", ["ollama"]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Install Ollama if not present
+ */
+export async function ensureOllamaInstalled(): Promise<void> {
+  if (await isOllamaInstalled()) {
+    return;
+  }
+
+  console.log(pc.yellow("🔧 Ollama not found. Installing..."));
+  
+  try {
+    // Detect OS and install accordingly
+    const { stdout: platform } = await execa("uname", ["-s"]);
+    
+    if (platform === "Darwin") {
+      // macOS: Use Homebrew
+      console.log(pc.cyan("📦 Installing Ollama via Homebrew..."));
+      await execa("brew", ["install", "ollama"]);
+    } else if (platform === "Linux") {
+      // Linux: Use official install script
+      console.log(pc.cyan("📦 Installing Ollama via official script..."));
+      await execa("sh", ["-c", "curl -fsSL https://ollama.ai/install.sh | sh"]);
+    } else {
+      throw new Error(`Unsupported platform: ${platform}. Please install Ollama manually from https://ollama.ai`);
+    }
+    
+    console.log(pc.green("✅ Ollama installed successfully!"));
+  } catch (error) {
+    throw new Error(`Failed to install Ollama: ${(error as Error).message}. Please install manually from https://ollama.ai`);
+  }
+}
+
+/**
+ * Check if a specific Ollama model is available
+ */
+export async function isModelAvailable(model: string, host = "http://localhost:11434"): Promise<boolean> {
+  try {
+    const response = await fetch(`${host}/api/tags`);
+    if (!response.ok) return false;
+    
+    const data = await response.json() as { models: Array<{ name: string }> };
+    return data.models.some(m => m.name.includes(model));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Pull an Ollama model if not available
+ */
+export async function ensureModelAvailable(model: string, host = "http://localhost:11434"): Promise<void> {
+  if (await isModelAvailable(model, host)) {
+    return;
+  }
+
+  console.log(pc.yellow(`🔧 Model '${model}' not found. Pulling...`));
+  
+  try {
+    console.log(pc.cyan(`📦 Pulling ${model} model...`));
+    const pullProcess = execa("ollama", ["pull", model]);
+    
+    // Show progress
+    pullProcess.stdout?.on("data", (data) => {
+      const output = data.toString().trim();
+      if (output) {
+        console.log(pc.dim(`   ${output}`));
+      }
+    });
+    
+    await pullProcess;
+    console.log(pc.green(`✅ Model '${model}' pulled successfully!`));
+  } catch (error) {
+    throw new Error(`Failed to pull model '${model}': ${(error as Error).message}`);
+  }
+}
+
+/**
  * Check if Ollama server is running
  */
 export async function isOllamaRunning(host = "http://localhost:11434"): Promise<boolean> {
@@ -207,10 +295,16 @@ export async function buildIndex(config: BuildIndexOptions): Promise<IndexStats>
   
   const startTime = Date.now();
   
+  // Ensure Ollama is installed
+  await ensureOllamaInstalled();
+  
   // Ensure Ollama is running
   if (!(await isOllamaRunning(ollamaHost))) {
     await startOllamaServer();
   }
+  
+  // Ensure the required model is available
+  await ensureModelAvailable(model, ollamaHost);
   
   console.log(pc.cyan("Scanning codebase..."));
   const files = await getFilesToIndex(cwd, excludePatterns);

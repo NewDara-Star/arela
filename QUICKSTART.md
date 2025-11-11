@@ -1,4 +1,4 @@
-# Arela v3.1.2 - Quickstart Guide
+# Arela v3.2.0 - Quickstart Guide
 
 ## Installing Arela in an Existing Project
 
@@ -40,9 +40,9 @@ arela init --preset solo --personality fun         # Lightweight for solo devs (
 
 **Fun Mode Example Output:**
 ```
-🎯 Arela v3.1.2 - Your DBrand CTO is here to help!
+🎯 Arela v3.1.3 - Your AI CTO is here to help!
 🚀 startup mode activated!
-🎉 Boom! Your DBrand CTO is ready
+🎉 Boom! Your AI CTO is ready
 📦 Unpacked:  - .windsurf/rules/
   - arela-cto.md
 📚 What's next:  1. Run: arela agents
@@ -104,17 +104,26 @@ Found 4 agent(s):
 
 ---
 
-### **Step 5: (Optional) Build RAG Index**
+### **Step 5: Build RAG Index (Recommended)**
 
-For semantic codebase search:
+For semantic codebase search - **Arela handles everything automatically!**
 
 ```bash
 arela index --personality fun
 ```
 
-**Output (Fun Mode):**
+**Output (Fun Mode with Auto-Installation):**
 ```
-📚 Building your code brain...
+📚 Building your RAG brain...
+🔧 I'll automatically set up Ollama and required models if needed...
+
+🔧 Ollama not found. Installing...
+📦 Installing Ollama via Homebrew...
+✅ Ollama installed successfully!
+
+🔧 Model 'nomic-embed-text' not found. Pulling...
+📦 Pulling nomic-embed-text model...
+✅ Model 'nomic-embed-text' pulled successfully!
 
 Scanning codebase...
 Found 247 files to index
@@ -123,10 +132,17 @@ Indexing: [████████████████████] 100% (2
 
 🎉 Boom! Indexed 247 files (1,234 chunks)
 Duration: 10.1s
-Your codebase is now searchable!
+Your codebase is now searchable by AI!
 ```
 
-**Note:** Requires Ollama running locally.
+**What Arela does automatically:**
+- ✅ Checks if Ollama is installed
+- ✅ Installs Ollama if missing (macOS via Homebrew, Linux via official script)
+- ✅ Starts Ollama server in background
+- ✅ Pulls nomic-embed-text model if needed
+- ✅ Builds your semantic search index
+
+**No manual setup required!**
 
 ---
 
@@ -172,6 +188,51 @@ Build login form with email/password validation
 Then run:
 ```bash
 arela orchestrate
+```
+
+---
+
+### **Step 7: Test Your App Visually**
+
+Run your app and let Arela test it like a real user:
+
+```bash
+# Start your dev server
+npm run dev
+
+# In another terminal, test it
+arela run web
+
+# Or test a specific flow
+arela run web --flow signup
+```
+
+**Create a flow:**
+```yaml
+# .arela/flows/signup.yml
+name: User Signup Flow
+steps:
+  - action: navigate
+    target: /signup
+  - action: click
+    selector: button[data-testid="signup-button"]
+  - action: type
+    selector: input[name="email"]
+    value: test@example.com
+  - action: click
+    selector: button[type="submit"]
+```
+
+**Output:**
+```
+🌐 Starting web app testing...
+🧪 Running user flow: signup
+  ✅ Navigate to /signup
+  ✅ Click signup button
+  ❌ Email field not visible
+  
+💡 Recommendations:
+  1. Fix z-index on signup modal
 ```
 
 ---
@@ -243,7 +304,7 @@ cd your-project
 arela init --preset startup --personality fun
 arela doctor --personality fun
 arela agents --personality fun
-arela index --personality fun  # Optional but recommended
+arela index --personality fun  # Auto-installs Ollama + models
 ```
 
 ### **Daily: Building Features**
@@ -328,6 +389,13 @@ npm install -g arela
 ```
 
 ### **"Ollama not running" (for indexing)**
+**No longer an issue!** Arela v3.1.3+ handles this automatically:
+
+```bash
+arela index  # Will install and start Ollama if needed
+```
+
+If you prefer manual setup:
 ```bash
 # Install Ollama: https://ollama.ai
 ollama serve

@@ -139,6 +139,7 @@ program
   .option("--parallel", "Run tickets in parallel", false)
   .option("--max-parallel <n>", "Max parallel tickets", "5")
   .option("--agent <name>", "Run only tickets for specific agent")
+  .option("--tickets <list>", "Comma-separated list of ticket IDs (e.g., CODEX-001,CODEX-002)")
   .option("--force", "Re-run completed tickets", false)
   .option("--dry-run", "Show what would run without executing", false)
   .action(async (opts) => {
@@ -148,6 +149,7 @@ program
         parallel: opts.parallel,
         maxParallel: parseInt(opts.maxParallel, 10),
         agent: opts.agent,
+        tickets: opts.tickets ? opts.tickets.split(',').map((t: string) => t.trim()) : undefined,
         force: opts.force,
         dryRun: opts.dryRun,
       });
@@ -155,6 +157,43 @@ program
       console.error(pc.red(`\n😵‍💫 Orchestration hit a snag: ${(error as Error).message}\n`));
       process.exit(1);
     }
+  });
+
+/**
+ * arela run - Execute user flows via platform runners
+ */
+program
+  .command("run")
+  .description("Run and test your app like a real user")
+  .argument("<platform>", "Platform: web or mobile")
+  .option("--url <url>", "URL for web apps", "http://localhost:3000")
+  .option("--flow <name>", "User flow to test", "default")
+  .option("--headless", "Run browser in headless mode", false)
+  .option("--record", "Record video of test execution", false)
+  .addHelpText(
+    "after",
+    "\nExamples:\n  $ arela run web\n  $ arela run web --url http://localhost:8080\n  $ arela run web --flow signup --headless\n"
+  )
+  .action(async (platform, opts) => {
+    if (platform === "web") {
+      try {
+        const { runWebApp } = await import("./run/web.js");
+        await runWebApp({
+          url: opts.url,
+          flow: opts.flow,
+          headless: Boolean(opts.headless),
+          record: Boolean(opts.record),
+        });
+      } catch (error) {
+        console.error(pc.red(`\n😵‍💫 Web runner hit a snag: ${(error as Error).message}\n`));
+        process.exit(1);
+      }
+      return;
+    }
+
+    console.error(pc.red(`Platform "${platform}" not supported yet.`));
+    console.log(pc.gray("Supported platforms: web"));
+    process.exit(1);
   });
 
 /**
@@ -237,6 +276,7 @@ program
   .option("--parallel", "Index files in parallel (faster but more memory)", false)
   .action(async (opts) => {
     console.log(pc.bold(pc.cyan("\n📚 Building your RAG brain...\n")));
+    console.log(pc.gray("🔧 I'll automatically set up Ollama and required models if needed...\n"));
 
     try {
       const { buildIndex } = await import("./rag/index.js");

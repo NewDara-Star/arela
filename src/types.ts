@@ -78,6 +78,7 @@ export interface OrchestrationOptions {
   parallel?: boolean;
   maxParallel?: number;
   agent?: AgentName;
+  tickets?: string[];  // Filter by specific ticket IDs (e.g., ["CODEX-001", "CODEX-002"])
   force?: boolean;
   dryRun?: boolean;
 }

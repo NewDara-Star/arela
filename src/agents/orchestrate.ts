@@ -33,7 +33,7 @@ async function loadAgentConfig(cwd: string): Promise<Record<string, AgentConfig>
 /**
  * Discover all tickets
  */
-async function discoverTickets(cwd: string, agentFilter?: string): Promise<ExecutableTicket[]> {
+async function discoverTickets(cwd: string, agentFilter?: string, ticketFilter?: string[]): Promise<ExecutableTicket[]> {
   const ticketsDir = path.join(cwd, ".arela", "tickets");
 
   if (!(await fs.pathExists(ticketsDir))) {
@@ -58,6 +58,12 @@ async function discoverTickets(cwd: string, agentFilter?: string): Promise<Execu
       if (file.startsWith("EXAMPLE-")) continue;
 
       const ticketId = file.replace(/\.(md|yaml)$/, "");
+      
+      // Filter by specific ticket IDs if provided
+      if (ticketFilter && ticketFilter.length > 0 && !ticketFilter.includes(ticketId)) {
+        continue;
+      }
+
       const ticketPath = path.join(agentDir, file);
 
       // Parse basic ticket info
@@ -238,6 +244,7 @@ export async function orchestrate(options: OrchestrationOptions): Promise<void> 
   const {
     cwd,
     agent,
+    tickets,
     parallel = false,
     force = false,
     dryRun = false,
@@ -256,7 +263,7 @@ export async function orchestrate(options: OrchestrationOptions): Promise<void> 
   }
 
   // Discover tickets
-  const allTickets = await discoverTickets(cwd, agent);
+  const allTickets = await discoverTickets(cwd, agent, tickets);
 
   if (allTickets.length === 0) {
     console.log("No tickets found");

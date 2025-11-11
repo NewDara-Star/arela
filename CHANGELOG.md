@@ -1,5 +1,215 @@
 # Changelog
 
+## [3.2.0] - 2025-11-11
+
+### 🎭 Visual Testing with Playwright
+
+**Test your apps like a real user would.**
+
+### ✨ New Features
+
+#### **arela run web Command**
+- Launch and test web apps with Playwright
+- Execute user flows defined in YAML
+- Capture screenshots automatically
+- Get AI-powered UX recommendations
+
+#### **Flow-Based Testing**
+- Define user journeys in `.arela/flows/*.yml`
+- Support for navigate, click, type, waitFor, screenshot actions
+- Error recovery and retry logic
+- Detailed results reporting
+
+#### **Playwright MCP Server**
+- Interactive browser control from Windsurf
+- Tools: navigate, click, type, screenshot, evaluate
+- Persistent browser session across tool calls
+
+### 🔧 Technical Details
+
+**New Commands:**
+- `arela run web` - Test web apps with Playwright
+- `arela mcp --mode playwright` - Start Playwright MCP server
+
+**New Files:**
+- `src/run/web.ts` - Web test runner
+- `src/run/flows.ts` - Flow loader and parser
+- `src/run/reporter.ts` - Results reporter
+- `src/mcp/playwright.ts` - Playwright MCP server
+
+**Dependencies Added:**
+- playwright: ^1.40.0
+
+### 📊 Impact
+
+- **Catch UX Issues Early** - Find problems before users do
+- **Automated Testing** - No manual clicking required
+- **AI Recommendations** - Get smart suggestions for fixes
+- **Visual Proof** - Screenshots of every issue
+
+### 🚀 Breaking Changes
+
+None - Fully backward compatible.
+
+## [3.1.3] - 2025-11-11
+
+### 🚀 Auto-Installation Magic
+
+**Zero Setup Required** - Arela now automatically installs and configures everything needed for semantic search.
+
+### ✨ New Features
+
+#### **Automatic Ollama Management**
+- **Smart Detection** - Checks if Ollama is installed before attempting to use it
+- **Cross-Platform Installation** - Auto-installs Ollama on macOS (Homebrew) and Linux (official script)
+- **Background Server** - Starts Ollama server automatically if not running
+- **Model Management** - Auto-pulls required models (nomic-embed-text) when missing
+- **Progress Feedback** - Shows installation progress and status updates
+
+#### **Enhanced User Experience**
+- **Seamless Onboarding** - New users can run `arela index` without any setup
+- **Graceful Fallbacks** - Clear error messages with manual setup instructions
+- **No-Ops for Existing Setup** - Skips installation if Ollama is already configured
+- **Better CLI Messaging** - Explains auto-setup process to users
+
+### 🔧 Technical Improvements
+
+#### **New Functions in `src/rag/index.ts`**
+- `isOllamaInstalled()` - Detect Ollama CLI availability
+- `ensureOllamaInstalled()` - Auto-install Ollama with platform detection
+- `isModelAvailable()` - Check if specific model is downloaded
+- `ensureModelAvailable()` - Auto-pull models with progress display
+
+#### **Enhanced Flows**
+- `buildIndex()` now ensures Ollama + model before indexing
+- `runArelaMcpServer()` ensures setup before starting MCP server
+- Updated CLI messaging to explain auto-installation
+
+### 📚 Documentation Updates
+
+#### **Updated README.md**
+- Added v3.1.3 feature highlights
+- New "Auto-Installation Magic" section
+- Updated Quick Start guide with zero-setup flow
+- Current status changed to "Live on npm"
+
+#### **Updated QUICKSTART.md**
+- Enhanced Step 5 with auto-installation examples
+- Added "What Arela does automatically" checklist
+- Updated troubleshooting section for Ollama issues
+- Revised typical workflow to emphasize auto-setup
+
+### 🎯 User Impact
+
+#### **Before v3.1.3**
+```bash
+# Manual setup required
+1. Install Ollama: https://ollama.ai
+2. Start server: ollama serve
+3. Pull model: ollama pull nomic-embed-text
+4. Run index: arela index
+```
+
+#### **After v3.1.3**
+```bash
+# One command and you're done
+arela index
+# ✅ Handles all setup automatically
+```
+
+### 🚀 Breaking Changes
+
+None - Fully backward compatible.
+
+### 📊 Performance
+
+- **Zero Setup Time** - Eliminates manual Ollama configuration
+- **Smart Detection** - <100ms to check existing setup
+- **Progress Feedback** - Real-time updates during installations
+- **Cross-Platform** - Works on macOS and Linux without user intervention
+
+### 🧪 Testing
+
+- ✅ All auto-installation functions tested
+- ✅ Cross-platform installation scripts verified
+- ✅ Progress feedback working correctly
+- ✅ Error handling with fallback instructions
+- ✅ No-op behavior when already installed
+
+### 🙏 Credits
+
+Auto-installation feature implemented with help from:
+- Cascade (architecture + cross-platform support)
+- Codex (installation script integration)
+- Claude (error handling + user experience)
+
+---
+
+## [3.1.2] - 2025-11-11
+
+### 📋 Documentation & Polish
+
+**Minor version bump for documentation updates and CLI improvements.**
+
+### 📚 Documentation Updates
+- Updated README with latest features
+- Enhanced QUICKSTART guide
+- Improved command examples
+
+### 🔧 CLI Polish
+- Better error messages
+- Enhanced help text
+- Improved progress indicators
+
+---
+
+## [3.1.1] - 2025-11-11
+
+### 🧠 Memory Management & Research Validation
+
+#### **Enhanced Persona Template**
+- **Proactive Memory Creation** - Auto-saves decisions, patterns, and milestones
+- **Workspace-Specific** - Tags memories to CorpusName for better organization
+- **No Duplicates** - Updates existing memories instead of creating duplicates
+- **Selective Saving** - Only stores important decisions, not routine tasks
+
+#### **Time & Research Awareness**
+- **System Time Integration** - Uses current time for accurate timestamps
+- **Current Year References** - Always uses 2025, not outdated references
+- **Research Validation** - Web search for latest information before recommendations
+- **Source Citation** - Cites sources for architectural decisions
+
+#### **CLI Personality Polish**
+- **Removed Brand References** - Cleaned up all "DBrand" mentions from code
+- **3 Personality Modes** - Professional, Fun, Bold (renamed from dbrand)
+- **Enhanced Messages** - More engaging success/error messages
+- **Consistent Voice** - Unified personality across all CLI commands
+
+### 🔧 MCP Integration
+- **Session Initialization Rules** - MCP server auto-start instructions
+- **RAG Priority** - Semantic search prioritized over grep/pattern matching
+- **Search Priority Order** - arela_search → grep → file exploration
+
+---
+
+## [3.1.0] - 2025-11-11
+
+### 🎯 CLI Personality & RAG Integration
+
+#### **Fun CLI Personality**
+- **Emoji-Rich Output** - Engaging messages with emojis
+- **Encouraging Tone** - "Nailed it!", "Boom!", "Go build something amazing!"
+- **Progress Indicators** - Visual feedback during operations
+- **Error Empathy** - Friendly error messages with suggestions
+
+#### **RAG Search Integration**
+- **MCP Server** - Built-in MCP server for Windsurf integration
+- **Semantic Indexing** - Codebase understanding through embeddings
+- **Auto-Indexing Hooks** - Git hooks for incremental index updates
+- **Search Tools** - `arela_search` tool for semantic code search
+
+---
+
 ## [3.0.0] - 2025-11-11
 
 ### 🎉 Complete Rewrite - Windsurf-Native Architecture

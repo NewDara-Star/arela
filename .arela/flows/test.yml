@@ -1,0 +1,10 @@
+name: Simple Test Flow
+steps:
+  - action: navigate
+    target: https://example.com
+  - action: screenshot
+    name: homepage
+  - action: waitFor
+    selector: h1
+  - action: screenshot
+    name: after-wait
