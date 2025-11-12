@@ -169,6 +169,8 @@ export interface RunCommandOptions {
   headless?: boolean;
   record?: boolean;
   analyze?: boolean;
+  aiPilot?: boolean;
+  goal?: string;
   platform?: string;
   device?: string;
   app?: string;
@@ -188,12 +190,21 @@ export async function handleRunCommand(platform: string, opts: RunCommandOptions
   if (platform === "web") {
     try {
       const { runWebApp } = await import("./run/web.js");
+      
+      // Validate AI Pilot options
+      if (opts.aiPilot && !opts.goal) {
+        console.error(pc.red('\n😵‍💫 --ai-pilot requires --goal to be specified\n'));
+        process.exit(1);
+      }
+      
       await runWebApp({
         url: opts.url ?? "http://localhost:3000",
         flow: opts.flow ?? "default",
         headless: Boolean(opts.headless),
         record: Boolean(opts.record),
         analyze: Boolean(opts.analyze),
+        aiPilot: Boolean(opts.aiPilot),
+        goal: opts.goal,
       });
     } catch (error) {
       console.error(pc.red(`\n😵‍💫 Web runner hit a snag: ${(error as Error).message}\n`));
@@ -238,6 +249,8 @@ export function buildRunCommand(
     .option("--headless", "Run browser in headless mode (web only)", false)
     .option("--record", "Record video of test execution", false)
     .option("--analyze", "Run AI-powered analysis on screenshots (web only)", false)
+    .option("--ai-pilot", "Let AI figure out how to achieve goal (web only)", false)
+    .option("--goal <goal>", "Goal for AI Pilot to achieve (requires --ai-pilot)")
     .option("--web-fallback", "Force web fallback mode with mobile viewport (mobile only)", false)
     .addHelpText(
       "after",

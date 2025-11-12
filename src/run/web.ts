@@ -27,13 +27,18 @@ export async function runWebApp(opts: {
   headless: boolean;
   record?: boolean;
   analyze?: boolean;
+  aiPilot?: boolean;
+  goal?: string;
 }): Promise<TestResults> {
-  const { url, flow: flowName, headless, record, analyze } = opts;
+  const { url, flow: flowName, headless, record, analyze, aiPilot, goal } = opts;
   const cwd = process.cwd();
   const screenshotsDir = path.join(cwd, ".arela", "screenshots");
   await fs.ensureDir(screenshotsDir);
 
-  const flow = await loadFlow(flowName, cwd);
+  // Skip flow loading in AI Pilot mode
+  const flow = aiPilot 
+    ? { name: `AI Pilot: ${goal}`, steps: [] }
+    : await loadFlow(flowName, cwd);
   reportStart(url, flow.name);
 
   let browser: Browser | undefined;
@@ -63,6 +68,40 @@ export async function runWebApp(opts: {
       screenshotsDir,
       screenshots: [],
     };
+
+    // AI Pilot mode - let AI figure out how to achieve the goal
+    if (aiPilot && goal) {
+      const { runAIPilot } = await import('./pilot.js');
+      const pilotSteps = await runAIPilot(page, {
+        goal,
+        screenshotsDir,
+      });
+
+      // Convert pilot steps to test results
+      const results: TestResults = {
+        flow: `AI Pilot: ${goal}`,
+        url,
+        steps: pilotSteps.map(s => ({
+          action: s.action.type,
+          status: s.success ? 'pass' : 'fail',
+          message: s.action.reasoning,
+          screenshot: s.screenshot,
+          duration: 0,
+        })),
+        issues: pilotSteps
+          .filter(s => !s.success)
+          .map(s => ({
+            severity: 'critical',
+            message: `Step ${s.stepNumber} failed: ${s.error}`,
+            suggestion: 'Review AI decision and page state',
+          })),
+        screenshots: pilotSteps.map(s => s.screenshot),
+        duration: 0,
+      };
+
+      reportResults(results);
+      return results;
+    }
 
     const results = await executeFlow(page, flow);
     if (await stopTracing(context, tracePath)) {
