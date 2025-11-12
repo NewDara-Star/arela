@@ -1,0 +1,22 @@
+{
+  "TEST-001-simple-function": {
+    "ticketId": "TEST-001-simple-function",
+    "status": "completed",
+    "agent": "claude",
+    "startedAt": "2025-11-12T16:37:49.168Z",
+    "cost": 0.00186375,
+    "duration": 17412,
+    "completedAt": "2025-11-12T16:38:06.579Z"
+  },
+  "TEST-002-multiply-function": {
+    "ticketId": "TEST-002-multiply-function",
+    "status": "completed",
+    "agent": "codex",
+    "startedAt": "2025-11-12T16:39:15.874Z",
+    "error": "Command failed with exit code 1: sh -c 'cat \"/tmp/arela-ticket-TEST-002-multiply-function-1762965530128.txt\" | codex'\n\nError: stdout is not a terminal",
+    "failedAt": "2025-11-12T16:38:50.456Z",
+    "cost": 0.000262,
+    "duration": 27185,
+    "completedAt": "2025-11-12T16:39:43.059Z"
+  }
+}

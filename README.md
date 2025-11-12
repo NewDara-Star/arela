@@ -1,4 +1,4 @@
-# Arela v3.5.0
+# Arela v3.6.0
 
 **Your AI Technical Co-Founder**
 
@@ -10,7 +10,43 @@ Arela was born from a simple frustration: being an "idea person" with no technic
 
 Arela is that guidance. Not a linter. Not a framework. **A conversational CTO persona** that helps you think through products and build them to world-class standards.
 
-## ✨ What's New in v3.5.0
+## ✨ What's New in v3.6.0
+
+### 🤖 AI Flow Generator + Fixed Ticket Orchestration
+
+**Arela now GENERATES comprehensive test flows by reading your code!**
+
+#### **AI-Powered Flow Generation**
+- AI reads your codebase and understands the flow
+- Generates 3 comprehensive test flows:
+  - **Happy path** - Everything works perfectly
+  - **Validation errors** - Form validation and error handling
+  - **Edge cases** - Unusual but valid scenarios
+- Uses Claude (best quality) or Codex (faster)
+- Outputs ready-to-run YAML flows
+
+```bash
+# Generate test flows for signup
+arela generate flows --goal "test signup process" --cwd /path/to/project
+
+# Run the generated flows
+arela run web --flow happy-path-signup --analyze
+```
+
+#### **Fixed Ticket Orchestration**
+- Ticket orchestration NOW WORKS! 🎉
+- Properly calls Claude/Codex CLI with structured prompts
+- Saves responses to logs for review
+- Both Claude AND Codex tested and working
+
+```bash
+# Create a ticket and let AI implement it
+arela orchestrate --tickets YOUR-TICKET-001
+```
+
+## ✨ Previous Releases
+
+### 🔍 End-to-End Flow Analysis (v3.5.0)
 
 ### 🔍 End-to-End Flow Analysis
 

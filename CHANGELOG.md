@@ -1,5 +1,80 @@
 # Changelog
 
+## [3.6.0] - 2025-11-12
+
+### 🤖 AI Flow Generator + Fixed Ticket Orchestration
+
+**"Why write test flows when AI can read your code and generate them?"**
+
+### ✨ New Features
+
+#### **AI-Powered Flow Generation**
+- **Intelligent code analysis** - AI reads your codebase to understand flows
+- **Comprehensive test coverage** - Generates 3 flow types:
+  - Happy path (everything works)
+  - Validation errors (form validation, error handling)
+  - Edge cases (unusual but valid scenarios)
+- **Smart file discovery** - Automatically finds relevant files (src/, app/, components/)
+- **Claude or Codex** - Choose best quality (Claude) or fastest (Codex)
+- **Ready-to-run YAML** - Outputs flows compatible with existing runner
+
+**CLI:**
+```bash
+arela generate flows --goal "test signup process"
+arela generate flows --goal "test checkout" --files src/checkout.tsx
+```
+
+#### **Fixed Ticket Orchestration** 🎉
+- **Proper AI prompting** - Builds structured prompts instead of raw markdown
+- **Claude CLI integration** - Calls `claude` command correctly
+- **Codex CLI integration** - Uses `codex exec` for non-interactive execution
+- **Response logging** - Saves both prompt and response for review
+- **Tested and working** - Both Claude and Codex verified
+
+**What was broken:**
+- Ticket orchestration was piping raw markdown to AI
+- No structured prompts or instructions
+- Responses weren't captured properly
+
+**What's fixed:**
+- Builds proper prompts with context and instructions
+- Calls Claude/Codex CLI correctly
+- Saves full logs with prompt + response
+- Actually works! 🔥
+
+### 📦 Technical Details
+
+**New Files:**
+- `src/generate/flow-generator.ts` - AI flow generation engine
+- `.arela/agents/config.json` - Agent configuration (Claude, Codex)
+
+**Updated Files:**
+- `src/agents/orchestrate.ts` - Fixed to build proper AI prompts
+- `src/cli.ts` - Added `generate flows` command
+
+### 🎯 Impact
+
+**Before v3.6.0:**
+- Manual flow writing
+- Ticket orchestration broken
+- No AI-generated tests
+
+**After v3.6.0:**
+- AI generates comprehensive test flows
+- Ticket orchestration WORKS
+- Claude + Codex both functional
+- End-to-end AI development workflow
+
+### 💡 Philosophy
+
+**Delegation > Implementation**
+- AI reads code and generates flows
+- Ticket system delegates to AI agents
+- Human reviews and approves
+- Proper CTO workflow
+
+---
+
 ## [3.5.0] - 2025-11-12
 
 ### 🔍 End-to-End Flow Analysis

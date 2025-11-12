@@ -1,0 +1,17 @@
+Implemented multiply helper per TEST-002 inside `src/utils/multiply.ts:1` with typed signature, descriptive JSDoc, and inline note clarifying the straightforward arithmetic approach:
+
+```typescript
+src/utils/multiply.ts
+/**
+ * Multiplies two numeric operands using JavaScript's built-in arithmetic.
+ * @param a First factor.
+ * @param b Second factor.
+ * @returns Product of `a` and `b`.
+ */
+export function multiply(a: number, b: number): number {
+  // Basic arithmetic multiply to satisfy TEST-002.
+  return a * b;
+}
+```
+
+Let me know if you’d like tests wired up or this exported elsewhere.

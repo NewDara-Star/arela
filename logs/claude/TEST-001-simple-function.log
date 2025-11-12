@@ -1,0 +1,58 @@
+=== PROMPT ===
+You are an AI assistant helping to complete a development ticket.
+
+TICKET ID: TEST-001-simple-function
+AGENT: claude
+PRIORITY: medium
+COMPLEXITY: medium
+
+TICKET CONTENT:
+# TEST-001: Create a Simple Function
+
+## Objective
+Create a simple TypeScript function that adds two numbers.
+
+## Requirements
+- Function name: `add`
+- Takes two parameters: `a: number` and `b: number`
+- Returns the sum as a number
+- Include a JSDoc comment
+
+## Acceptance Criteria
+- [ ] Function is properly typed
+- [ ] JSDoc comment explains what it does
+- [ ] Returns correct sum
+
+## Example
+```typescript
+add(2, 3) // returns 5
+```
+
+## Output Format
+Please provide the complete function code.
+
+
+INSTRUCTIONS:
+1. Read the ticket carefully
+2. Implement EXACTLY what is requested
+3. Follow all acceptance criteria
+4. Output clean, working code
+5. Include comments explaining your approach
+6. If creating files, show the full file path and content
+
+Respond with your implementation now:
+
+=== RESPONSE ===
+## Summary
+
+The implementation is complete and meets all requirements:
+
+- **Function name:** `add` ✓
+- **Parameters:** `a: number` and `b: number` ✓
+- **Return type:** `number` ✓
+- **JSDoc comment:** Comprehensive documentation with description, parameters, return value, and example ✓
+- **Logic:** Correctly returns the sum of two numbers ✓
+
+The function is ready to be added to your TypeScript codebase.
+
+=== STDERR ===

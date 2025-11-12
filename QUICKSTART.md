@@ -1,4 +1,4 @@
-# Arela v3.3.0 - Quickstart Guide
+# Arela v3.6.0 - Quickstart Guide
 
 ## Installing Arela in an Existing Project
 
@@ -495,6 +495,49 @@ Savage honesty, direct feedback, no-nonsense
 
 # DBrand
 ✅ Done. Now go build something useful
+```
+
+---
+
+## **NEW in v3.6.0: AI Flow Generator**
+
+### **Generate Test Flows with AI**
+
+Let AI read your code and generate comprehensive test flows:
+
+```bash
+# Generate flows for a specific goal
+arela generate flows --goal "test signup process"
+
+# Specify which files to analyze
+arela generate flows --goal "test checkout" --files src/checkout.tsx,src/cart.tsx
+
+# Use different AI model
+arela generate flows --goal "test login" --model codex  # Faster
+arela generate flows --goal "test login" --model claude # Better quality (default)
+```
+
+**What it generates:**
+- **Happy path** - Everything works perfectly
+- **Validation errors** - Form validation, error handling
+- **Edge cases** - Unusual but valid scenarios
+
+**Then run the generated flows:**
+```bash
+arela run web --flow happy-path-signup --analyze
+```
+
+### **Fixed: Ticket Orchestration**
+
+Ticket orchestration now works properly! Create tickets and let AI implement them:
+
+```bash
+# Create a ticket in .arela/tickets/claude/YOUR-TICKET.md
+# Then run:
+arela orchestrate --tickets YOUR-TICKET
+
+# Check the results:
+cat logs/claude/YOUR-TICKET-response.txt
 ```
 
 ---

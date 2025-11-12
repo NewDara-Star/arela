@@ -85,6 +85,31 @@ async function discoverTickets(cwd: string, agentFilter?: string, ticketFilter?:
 }
 
 /**
+ * Build a proper prompt for AI from ticket content
+ */
+function buildPromptForTicket(ticketContent: string, ticket: Ticket): string {
+  return `You are an AI assistant helping to complete a development ticket.
+
+TICKET ID: ${ticket.id}
+AGENT: ${ticket.agent}
+PRIORITY: ${ticket.priority}
+COMPLEXITY: ${ticket.complexity}
+
+TICKET CONTENT:
+${ticketContent}
+
+INSTRUCTIONS:
+1. Read the ticket carefully
+2. Implement EXACTLY what is requested
+3. Follow all acceptance criteria
+4. Output clean, working code
+5. Include comments explaining your approach
+6. If creating files, show the full file path and content
+
+Respond with your implementation now:`;
+}
+
+/**
  * Run a single ticket
  */
 async function runTicket(
@@ -115,19 +140,33 @@ async function runTicket(
     // Read ticket content
     const ticketContent = await fs.readFile(ticketPath, "utf-8");
 
+    // Build proper prompt for AI
+    const prompt = buildPromptForTicket(ticketContent, ticket);
+
     // Parse agent command
     const command = agentConfig.command;
     const [cmd, ...args] = command.split(" ");
 
-    // Run agent
-    const result = await execa(cmd, args, {
+    // Write prompt to temp file
+    const tempPromptPath = path.join('/tmp', `arela-ticket-${ticket.id}-${Date.now()}.txt`);
+    await fs.writeFile(tempPromptPath, prompt);
+
+    // Run agent with proper prompt
+    const result = await execa('sh', ['-c', `cat "${tempPromptPath}" | ${command}`], {
       cwd,
-      input: ticketContent,
       timeout: 30 * 60 * 1000, // 30 minutes
     });
 
-    // Save log
-    await fs.writeFile(logPath, result.stdout + "\n" + result.stderr);
+    // Save log with prompt and response
+    const logContent = `=== PROMPT ===\n${prompt}\n\n=== RESPONSE ===\n${result.stdout}\n\n=== STDERR ===\n${result.stderr}`;
+    await fs.writeFile(logPath, logContent);
+
+    // Also save just the response for easy access
+    const responsePath = path.join(logDir, `${ticket.id}-response.txt`);
+    await fs.writeFile(responsePath, result.stdout);
+
+    // Clean up temp file
+    await fs.remove(tempPromptPath);
 
     // Calculate duration and cost (rough estimate)
     const duration = Date.now() - startTime;

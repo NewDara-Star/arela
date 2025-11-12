@@ -1,0 +1,16 @@
+{
+  "agents": {
+    "claude": {
+      "name": "Claude Sonnet",
+      "command": "claude",
+      "enabled": true,
+      "cost_per_1k_tokens": 0.015
+    },
+    "codex": {
+      "name": "OpenAI Codex",
+      "command": "codex exec",
+      "enabled": true,
+      "cost_per_1k_tokens": 0.002
+    }
+  }
+}
