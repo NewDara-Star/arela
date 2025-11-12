@@ -1,4 +1,4 @@
-# Arela v3.4.0
+# Arela v3.5.0
 
 **Your AI Technical Co-Founder**
 
@@ -10,11 +10,35 @@ Arela was born from a simple frustration: being an "idea person" with no technic
 
 Arela is that guidance. Not a linter. Not a framework. **A conversational CTO persona** that helps you think through products and build them to world-class standards.
 
-## ✨ What's New in v3.4.0
+## ✨ What's New in v3.5.0
 
-### 🤖 FREE AI-Powered Quality Analysis
+### 🔍 End-to-End Flow Analysis
 
-**Arela now ANALYZES your app and tells you what's wrong - for FREE!**
+**Arela now UNDERSTANDS your code and tells you exactly what's wrong!**
+
+**"I don't even know when code is messy, that's why I need a CTO"** - Now you know!
+
+#### **Complete Code Flow Tracing**
+- Discovers entry points (API routes, event handlers, components)
+- Traces execution paths through your codebase
+- Maps dependencies and data flows
+- Identifies circular dependencies
+
+#### **25 Standards Checking**
+- 🔐 **Security** (5): Input validation, auth, secrets, SQL injection
+- 🎨 **UX** (5): Loading states, error messages, accessibility
+- 🏗️ **Architecture** (5): Module cohesion, dependency injection, types
+- ⚡ **Performance** (5): Memoization, lazy loading, debouncing
+
+#### **Actionable Refactor Proposals**
+- Priority-ranked by impact (1-10)
+- Effort estimates (hours)
+- Specific implementation steps
+- Grouped by file and category
+
+### 🤖 FREE AI-Powered Quality Analysis (v3.4.0)
+
+**Arela ANALYZES your app and tells you what's wrong - for FREE!**
 
 #### **Vision Analysis with Moondream**
 - **FREE** - Runs locally via Ollama (no API costs)
@@ -37,11 +61,21 @@ Arela is that guidance. Not a linter. Not a framework. **A conversational CTO pe
 ### 🚀 Usage Examples
 
 ```bash
-# Test with AI analysis (FREE!)
-arela run web --flow signup --analyze
+# Analyze code flows (NEW in v3.5.0!)
+arela analyze flow "user-login" --cwd /path/to/project
 
 # Output:
-🤖 Running AI analysis...
+📊 Quality Scores:
+  security        ████████░░░░░░░░░░░░ 42/100
+  ux              ██████████████░░░░░░ 68/100
+  architecture    ████████████░░░░░░░░ 55/100
+  performance     ████████████████░░░░ 78/100
+
+⚠️  588 violations found
+🔨 137 refactor proposals ready
+
+# Test with AI analysis (v3.4.0)
+arela run web --flow signup --analyze
 
 ❌ Critical Issues (2):
    Low contrast ratio: 2.1:1 (needs 4.5:1)
@@ -52,7 +86,7 @@ arela run web --flow signup --analyze
    UX: 82/100
    Accessibility: 75/100
 
-# Mobile testing
+# Mobile testing (v3.3.0)
 arela run mobile --flow onboarding
 arela run mobile --platform android
 arela run mobile --web-fallback  # Works without simulators!

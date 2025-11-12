@@ -469,6 +469,64 @@ program
   });
 
 /**
+ * arela analyze flow - Analyze code flow
+ */
+program
+  .command("analyze")
+  .description("Analyze code flows and generate refactor proposals")
+  .argument("<type>", "Analysis type: flow")
+  .argument("[name]", "Flow name to analyze", "main")
+  .option("--cwd <dir>", "Working directory", process.cwd())
+  .option("--verbose", "Show detailed analysis", false)
+  .option("--json <path>", "Export results to JSON file")
+  .option("--markdown <path>", "Export results to Markdown file")
+  .action(async (type, name, opts) => {
+    if (type !== "flow") {
+      console.error(pc.red(`\n😵‍💫 Analysis type "${type}" not supported. Use: flow\n`));
+      process.exit(1);
+    }
+
+    console.log(pc.bold(pc.cyan("\n🔍 Analyzing Code Flow...\n")));
+    console.log(pc.gray(`Flow: ${name}`));
+    console.log(pc.gray(`Directory: ${opts.cwd}\n`));
+
+    try {
+      const { analyzeFlow, generateMarkdownReport } = await import("./flow/analyzer.js");
+      const { reportAnalysis, reportBriefSummary, exportJSON, exportMarkdown } = await import("./flow/reporter.js");
+
+      const result = await analyzeFlow({
+        cwd: opts.cwd,
+        flowName: name,
+        verbose: opts.verbose,
+      });
+
+      if (opts.verbose) {
+        reportAnalysis(result);
+      } else {
+        reportBriefSummary(result);
+      }
+
+      // Export if requested
+      if (opts.json) {
+        exportJSON(result, opts.json);
+      }
+
+      if (opts.markdown) {
+        const markdown = generateMarkdownReport(result);
+        exportMarkdown(markdown, opts.markdown);
+      }
+
+      console.log(pc.bold(pc.green("✨ Analysis complete!\n")));
+    } catch (error) {
+      console.error(pc.red(`\n😵‍💫 Analysis failed: ${(error as Error).message}\n`));
+      if (opts.verbose) {
+        console.error((error as Error).stack);
+      }
+      process.exit(1);
+    }
+  });
+
+/**
  * arela mcp - Start MCP server
  */
 program
@@ -486,14 +544,14 @@ program
 
     try {
       const { runArelaMcpServer } = await import("./mcp/server.js");
-      
+
       await runArelaMcpServer({
         cwd: opts.cwd,
         model: opts.model,
         ollamaHost: opts.host,
         defaultTopK: parseInt(opts.topK, 10),
       });
-      
+
       // Server runs indefinitely
     } catch (error) {
       console.error(pc.red(`\n😵‍💫 MCP server went sideways: ${(error as Error).message}\n`));

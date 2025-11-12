@@ -1,0 +1,43 @@
+name: Stride Signup Flow
+steps:
+  - action: navigate
+    target: /
+  - action: screenshot
+    name: landing-page
+  - action: waitFor
+    selector: body
+    timeout: 3000
+  - action: screenshot
+    name: page-loaded
+  # Look for signup button/link
+  - action: click
+    selector: a[href*="sign"], button:has-text("Sign"), button:has-text("sign")
+  - action: screenshot
+    name: after-signup-click
+  - action: waitFor
+    selector: input[type="email"], input[name*="email"], input[placeholder*="email"]
+    timeout: 3000
+  - action: screenshot
+    name: signup-form
+  # Fill in email
+  - action: type
+    selector: input[type="email"], input[name*="email"], input[placeholder*="email"]
+    value: test@stride.com
+  - action: screenshot
+    name: email-filled
+  # Fill in password
+  - action: type
+    selector: input[type="password"], input[name*="password"]
+    value: TestPassword123!
+  - action: screenshot
+    name: password-filled
+  # Submit form
+  - action: click
+    selector: button[type="submit"], button:has-text("Sign"), button:has-text("Create")
+  - action: screenshot
+    name: form-submitted
+  - action: waitFor
+    selector: body
+    timeout: 5000
+  - action: screenshot
+    name: after-signup

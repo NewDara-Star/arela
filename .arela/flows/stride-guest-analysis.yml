@@ -1,0 +1,10 @@
+name: Stride Guest User Flow
+steps:
+  - action: navigate
+    target: /
+  - action: screenshot
+    name: landing-page
+  - action: waitFor
+    selector: body
+  - action: screenshot
+    name: loaded-page
