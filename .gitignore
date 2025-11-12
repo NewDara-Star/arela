@@ -18,3 +18,4 @@ coverage
 .arela/.last-report.json
 
 .arela/.rag-index.json
+.arela/screenshots/
