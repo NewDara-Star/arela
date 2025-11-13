@@ -218,9 +218,12 @@ arela doctor --fix              # Auto-fix issues
 
 ### Orchestration
 ```bash
-arela orchestrate               # Run all pending tickets
-arela orchestrate --parallel    # Run tickets in parallel
-arela orchestrate --agent codex # Run specific agent's tickets
+arela orchestrate                                    # Run all pending tickets
+arela orchestrate --parallel                         # Run tickets in parallel
+arela orchestrate --agent codex                      # Run specific agent's tickets
+arela orchestrate --tickets CODEX-001,CLAUDE-002     # Run specific tickets
+arela orchestrate --force                            # Re-run completed tickets
+arela orchestrate --dry-run                          # Show what would run
 ```
 
 ### Visual Testing & Analysis (v3.2.0+)
@@ -239,6 +242,13 @@ arela run mobile --web-fallback # Force web mode (v3.3.1+)
 # AI-Powered Analysis (v3.4.0+)
 arela run web --analyze         # Analyze screenshots with Moondream + WCAG rules
 arela run web --analyze --no-ai # Rules only (faster, no AI)
+
+# Code Flow Analysis (v3.5.0+)
+arela analyze flow              # Analyze main code flow
+arela analyze flow signup       # Analyze specific flow
+arela analyze flow --verbose    # Detailed analysis
+arela analyze flow --json out.json      # Export to JSON
+arela analyze flow --markdown report.md # Export to Markdown
 ```
 
 **New in v3.3.1:**
@@ -249,6 +259,17 @@ arela run web --analyze --no-ai # Rules only (faster, no AI)
 - FREE vision analysis with Moondream (Ollama)
 - WCAG contrast checking (AA/AAA compliance)
 - Touch target validation (44x44px minimum)
+
+**New in v3.5.0:**
+- Code flow analysis with `arela analyze flow`
+- 25 standards library (Security, UX, Architecture, Performance)
+- Refactor proposal generation
+- JSON/Markdown export
+
+**New in v3.6.0:**
+- AI flow generation (programmatic only, no CLI yet)
+- Multi-agent ticket orchestration improvements
+- Enhanced flow generator with Claude/Codex support
 - Alt text verification
 - Heading hierarchy checking
 - Accessibility scoring (0-100)

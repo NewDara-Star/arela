@@ -8,13 +8,12 @@ import { orchestrate } from "./agents/orchestrate.js";
 import { getAgentCapabilities } from "./agents/dispatch.js";
 import { showStatus } from "./agents/status.js";
 import { initProject } from "./persona/loader.js";
+import { registerMemoryCommands } from "./memory/cli.js";
 
-const program = new Command();
-
-program
+const program = new Command()
   .name("arela")
-  .description("🎯 Your AI CTO with multi-agent orchestration")
-  .version("3.3.0");
+  .description("AI-powered CTO with multi-agent orchestration")
+  .version("3.8.1");
 
 /**
  * arela agents - List discovered agents
@@ -482,59 +481,203 @@ program
   });
 
 /**
- * arela analyze flow - Analyze code flow
+ * arela analyze - Analyze code flows and architecture
  */
 program
   .command("analyze")
-  .description("Analyze code flows and generate refactor proposals")
-  .argument("<type>", "Analysis type: flow")
-  .argument("[name]", "Flow name to analyze", "main")
+  .description("Analyze code flows and architecture")
+  .argument("<type>", "Analysis type: flow, architecture, tests")
+  .argument("[names...]", "Names or paths to analyze")
   .option("--cwd <dir>", "Working directory", process.cwd())
+  .option("--dir <path>", "Directory to analyze")
   .option("--verbose", "Show detailed analysis", false)
   .option("--json <path>", "Export results to JSON file")
-  .option("--markdown <path>", "Export results to Markdown file")
-  .action(async (type, name, opts) => {
-    if (type !== "flow") {
-      console.error(pc.red(`\n😵‍💫 Analysis type "${type}" not supported. Use: flow\n`));
+  .option("--output <format>", "Output format: text, json", "text")
+  .addHelpText(
+    "after",
+    "\nExamples:\n" +
+      "  $ arela analyze flow\n" +
+      "  $ arela analyze flow main --verbose\n" +
+      "  $ arela analyze architecture\n" +
+      "  $ arela analyze architecture /repo/path1 /repo/path2\n" +
+      "  $ arela analyze architecture --json report.json\n" +
+      "  $ arela analyze tests --dir src --json test-report.json --verbose\n"
+  )
+  .action(async (type, names, opts) => {
+    if (type === "flow") {
+      await handleFlowAnalysis(names, opts);
+    } else if (type === "architecture") {
+      await handleArchitectureAnalysis(names, opts);
+    } else if (type === "tests") {
+      await handleTestAnalysis(opts);
+    } else {
+      console.error(
+        pc.red(`\n😵‍💫 Analysis type "${type}" not supported. Use: flow, architecture, tests\n`)
+      );
+      process.exit(1);
+    }
+  });
+
+/**
+ * Handle flow analysis
+ */
+async function handleFlowAnalysis(names: string[], opts: any): Promise<void> {
+  const name = names[0] || "main";
+
+  console.log(pc.bold(pc.cyan("\n🔍 Analyzing Code Flow...\n")));
+  console.log(pc.gray(`Flow: ${name}`));
+  console.log(pc.gray(`Directory: ${opts.cwd}\n`));
+
+  try {
+    const { analyzeFlow, generateMarkdownReport } = await import("./flow/analyzer.js");
+    const { reportAnalysis, reportBriefSummary, exportJSON, exportMarkdown } = await import(
+      "./flow/reporter.js"
+    );
+
+    const result = await analyzeFlow({
+      cwd: opts.cwd,
+      flowName: name,
+      verbose: opts.verbose,
+    });
+
+    if (opts.verbose) {
+      reportAnalysis(result);
+    } else {
+      reportBriefSummary(result);
+    }
+
+    // Export if requested
+    if (opts.json) {
+      exportJSON(result, opts.json);
+    }
+
+    console.log(pc.bold(pc.green("✨ Analysis complete!\n")));
+  } catch (error) {
+    console.error(pc.red(`\n😵‍💫 Analysis failed: ${(error as Error).message}\n`));
+    if (opts.verbose) {
+      console.error((error as Error).stack);
+    }
+    process.exit(1);
+  }
+}
+
+/**
+ * Handle architecture analysis
+ */
+async function handleArchitectureAnalysis(names: string[], opts: any): Promise<void> {
+  console.log(pc.bold(pc.cyan("\n🔍 Analyzing Architecture...\n")));
+
+  // Determine repository paths
+  let repoPaths = names.length > 0 ? names : [opts.cwd];
+  console.log(pc.gray(`Repositories: ${repoPaths.join(", ")}\n`));
+
+  try {
+    const { analyzeArchitecture } = await import("./analyze/architecture.js");
+    const { reportArchitecture, exportArchitectureJson } = await import(
+      "./analyze/reporter.js"
+    );
+
+    const report = await analyzeArchitecture(repoPaths, {
+      verbose: opts.verbose,
+      output: opts.output,
+    });
+
+    // Display report
+    reportArchitecture(report, opts.verbose);
+
+    // Export if requested
+    if (opts.json) {
+      exportArchitectureJson(report, opts.json);
+      console.log(pc.gray(`\n📄 Report exported to ${opts.json}`));
+    }
+
+    console.log(pc.bold(pc.green("\n✨ Architecture analysis complete!\n")));
+  } catch (error) {
+    console.error(pc.red(`\n😵‍💫 Architecture analysis failed: ${(error as Error).message}\n`));
+    if (opts.verbose) {
+      console.error((error as Error).stack);
+    }
+    process.exit(1);
+  }
+}
+
+/**
+ * Handle test strategy analysis
+ */
+async function handleTestAnalysis(opts: any): Promise<void> {
+  console.log(pc.bold(pc.cyan("\n🧪 Test Strategy Optimizer\n")));
+
+  try {
+    const { analyzeTestStrategy } = await import("./analyze/tests/analyzer.js");
+    const {
+      reportTestStrategy,
+      exportTestStrategyJson,
+      writeDefaultTestReport,
+    } = await import("./analyze/tests/reporter.js");
+
+    const report = await analyzeTestStrategy({
+      cwd: opts.cwd,
+      dir: opts.dir,
+      verbose: opts.verbose,
+    });
+
+    reportTestStrategy(report, opts.verbose);
+    writeDefaultTestReport(report);
+
+    if (opts.json) {
+      exportTestStrategyJson(report, opts.json);
+    }
+
+    console.log(pc.bold(pc.green("✨ Test analysis complete!\n")));
+  } catch (error) {
+    console.error(pc.red(`\n😵‍💫 Test analysis failed: ${(error as Error).message}\n`));
+    if (opts.verbose) {
+      console.error((error as Error).stack);
+    }
+    process.exit(1);
+  }
+}
+
+/**
+ * arela ingest - Ingest codebase into graph database
+ */
+program
+  .command("ingest <command>")
+  .description("Ingest and analyze codebase")
+  .option("--cwd <dir>", "Working directory", process.cwd())
+  .option("--repo <path>", "Repository path (defaults to current directory)")
+  .option("--refresh", "Refresh existing graph", false)
+  .option("--analyze", "Run analysis after ingestion", false)
+  .option("--verbose", "Verbose output", false)
+  .action(async (command, opts) => {
+    if (command !== "codebase") {
+      console.error(pc.red(`\n😵‍💫 Unknown ingest command: ${command}`));
+      console.log(pc.gray("Available commands: codebase\n"));
       process.exit(1);
     }
 
-    console.log(pc.bold(pc.cyan("\n🔍 Analyzing Code Flow...\n")));
-    console.log(pc.gray(`Flow: ${name}`));
-    console.log(pc.gray(`Directory: ${opts.cwd}\n`));
+    const repoPath = opts.repo || opts.cwd;
+
+    console.log(pc.bold(pc.cyan("\n🧠 Arela Codebase Ingestion\n")));
 
     try {
-      const { analyzeFlow, generateMarkdownReport } = await import("./flow/analyzer.js");
-      const { reportAnalysis, reportBriefSummary, exportJSON, exportMarkdown } = await import("./flow/reporter.js");
+      const { ingestCodebase } = await import("./ingest/index.js");
 
-      const result = await analyzeFlow({
-        cwd: opts.cwd,
-        flowName: name,
+      const result = await ingestCodebase(repoPath, {
+        refresh: opts.refresh,
+        analyze: opts.analyze,
         verbose: opts.verbose,
       });
 
-      if (opts.verbose) {
-        reportAnalysis(result);
-      } else {
-        reportBriefSummary(result);
-      }
-
-      // Export if requested
-      if (opts.json) {
-        exportJSON(result, opts.json);
-      }
-
-      if (opts.markdown) {
-        const markdown = generateMarkdownReport(result);
-        exportMarkdown(markdown, opts.markdown);
-      }
-
-      console.log(pc.bold(pc.green("✨ Analysis complete!\n")));
+      console.log(pc.bold(pc.cyan("\n📈 Ingestion Complete!\n")));
+      console.log(pc.gray(`Files scanned: ${result.summary.filesScanned}`));
+      console.log(pc.gray(`Imports found: ${result.summary.importsFound}`));
+      console.log(pc.gray(`Functions: ${result.summary.functionsDefined}`));
+      console.log(pc.gray(`API calls: ${result.summary.apiCallsFound}`));
+      console.log(pc.gray(`\nGraph stored at: ${result.dbPath}`));
+      console.log(pc.gray(`Completed in ${(result.duration / 1000).toFixed(2)}s\n`));
     } catch (error) {
-      console.error(pc.red(`\n😵‍💫 Analysis failed: ${(error as Error).message}\n`));
-      if (opts.verbose) {
-        console.error((error as Error).stack);
-      }
+      console.error(pc.red(`\n😵‍💫 Ingestion failed: ${(error as Error).message}\n`));
       process.exit(1);
     }
   });
@@ -571,6 +714,110 @@ program
       process.exit(1);
     }
   });
+
+/**
+ * arela detect slices - Detect vertical slices
+ */
+program
+  .command("detect")
+  .description("Detect optimal vertical slices in codebase")
+  .argument("<type>", "Detection type (only 'slices' supported)")
+  .argument("[repos...]", "Repository paths (optional)")
+  .option("--cwd <dir>", "Working directory", process.cwd())
+  .option("--json <path>", "Export results to JSON file")
+  .option("--verbose", "Show detailed analysis", false)
+  .option("--min-cohesion <n>", "Minimum cohesion percentage (0-100)", "0")
+  .option("--max-slices <n>", "Maximum slices to detect")
+  .action(async (type, repos, opts) => {
+    if (type !== 'slices') {
+      console.error(pc.red(`\n😵‍💫 Unknown detect type: ${type}`));
+      console.log(pc.gray("Available types: slices\n"));
+      process.exit(1);
+    }
+    console.log(pc.bold(pc.cyan("\n🔍 Detecting Optimal Slice Boundaries...\n")));
+
+    try {
+      const { detectSlices } = await import("./detect/index.js");
+      const { formatReport: formatOutput, printVerboseInfo } = await import("./detect/reporter.js");
+
+      const options = {
+        verbose: opts.verbose,
+        json: opts.json,
+        minCohesion: parseInt(opts.minCohesion, 10),
+        maxSlices: opts.maxSlices ? parseInt(opts.maxSlices, 10) : undefined,
+      };
+
+      // If no repos provided, use cwd as the repo path
+      // Handle both array and undefined cases
+      const reposArray = Array.isArray(repos) ? repos : (repos ? [repos] : []);
+      const repoPaths = reposArray.length > 0 ? reposArray : [opts.cwd];
+      
+      if (opts.verbose) {
+        console.log(pc.gray(`Repo paths: ${repoPaths.join(', ')}`));
+        console.log(pc.gray(`CWD: ${opts.cwd}\n`));
+      }
+      
+      const report = await detectSlices(repoPaths, opts.cwd, options);
+
+      // Display results
+      console.log(formatOutput(report));
+
+      if (opts.verbose) {
+        printVerboseInfo(report);
+      }
+
+      console.log(pc.bold(pc.green(`✨ Done! Detected ${report.sliceCount} slices with ${report.totalFiles} files\n`)));
+    } catch (error) {
+      console.error(pc.red(`\n😵‍💫 Slice detection failed: ${(error as Error).message}\n`));
+      process.exit(1);
+    }
+  });
+
+/**
+ * arela generate contracts - Generate OpenAPI contracts from code
+ */
+program
+  .command("generate")
+  .description("Generate API contracts and specifications")
+  .argument("[type]", "Type of generation (contracts, flows, etc.)", "contracts")
+  .argument("[repos...]", "Repository paths (optional)")
+  .option("--cwd <dir>", "Working directory", process.cwd())
+  .option("--format <type>", "Output format: yaml or json", "yaml")
+  .option("--per-slice", "Generate contracts per vertical slice", true)
+  .option("--drift-only", "Only show schema drift issues", false)
+  .option("--output <dir>", "Output directory", "openapi")
+  .action(async (type, repos, opts) => {
+    if (type !== "contracts") {
+      console.error(pc.red(`\n😵‍💫 Unknown generate command: ${type}`));
+      console.log(pc.gray("Available commands: contracts\n"));
+      process.exit(1);
+    }
+
+    try {
+      const { generateContracts } = await import("./contracts/index.js");
+
+      const repoPaths = repos && repos.length > 0 ? repos : [opts.cwd];
+
+      const report = await generateContracts({
+        repoPaths,
+        perSlice: opts.perSlice !== false,
+        format: opts.format as "yaml" | "json",
+        driftOnly: opts.driftOnly,
+        outputDir: opts.output,
+      });
+
+      // Success - exit with code 0
+      const driftCount = report.driftIssues.length;
+      if (driftCount > 0) {
+        process.exit(0); // Exit with warning but not failure
+      }
+    } catch (error) {
+      console.error(pc.red(`\n😵‍💫 Contract generation failed: ${(error as Error).message}\n`));
+      process.exit(1);
+    }
+  });
+
+registerMemoryCommands(program);
 
 function isDirectCliExecution(): boolean {
   const entry = process.argv[1];

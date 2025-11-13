@@ -1,0 +1,39 @@
+
+  info:
+    description: API contract for send-notification slice
+    title: Send Notification API
+    version: 1.0.0
+  openapi: 3.0.0
+  paths:
+    /send-notification/:email:
+      post:
+        description: Endpoint defined at line 32
+        parameters:
+          - 
+            description: The email
+            in: path
+            name: email
+            required: true
+            schema:
+              type: string
+        requestBody:
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Create send-notification

@@ -1,8 +1,8 @@
-# Arela v3.6.0
+# Arela v3.8.0
 
 **Your AI Technical Co-Founder**
 
-> "What if you could have a CTO who never says 'I'm busy'?"
+> "AI that understands your architecture and tells you exactly how to improve it!"
 
 ## The Story
 
@@ -10,39 +10,138 @@ Arela was born from a simple frustration: being an "idea person" with no technic
 
 Arela is that guidance. Not a linter. Not a framework. **A conversational CTO persona** that helps you think through products and build them to world-class standards.
 
-## ✨ What's New in v3.6.0
+## ✨ What's New in v3.8.0
 
-### 🤖 AI Flow Generator + Fixed Ticket Orchestration
+### 🧠 Phase 2 - Intelligence (Autonomous Analysis & Recommendations)
 
-**Arela now GENERATES comprehensive test flows by reading your code!**
+**Arela now autonomously detects architecture issues and provides actionable recommendations!**
 
-#### **AI-Powered Flow Generation**
-- AI reads your codebase and understands the flow
-- Generates 3 comprehensive test flows:
-  - **Happy path** - Everything works perfectly
-  - **Validation errors** - Form validation and error handling
-  - **Edge cases** - Unusual but valid scenarios
-- Uses Claude (best quality) or Codex (faster)
-- Outputs ready-to-run YAML flows
+#### **1. Autonomous Slice Boundary Detection**
+- Louvain algorithm detects optimal vertical slice boundaries
+- Cohesion scoring (0-100%) measures slice quality
+- Multi-repo support for analyzing mobile + backend together
+- Intelligent naming with pattern recognition
 
 ```bash
-# Generate test flows for signup
-arela generate flows --goal "test signup process" --cwd /path/to/project
+# Detect optimal slices
+arela detect slices
 
-# Run the generated flows
-arela run web --flow happy-path-signup --analyze
+# Output:
+🔍 Detected 4 optimal vertical slices:
+  1. 🔐 authentication (23 files, cohesion: 87%)
+  2. 💪 workout (45 files, cohesion: 82%)
+  3. 🥗 nutrition (31 files, cohesion: 79%)
+  4. 👥 social (28 files, cohesion: 75%)
 ```
 
-#### **Fixed Ticket Orchestration**
-- Ticket orchestration NOW WORKS! 🎉
-- Properly calls Claude/Codex CLI with structured prompts
-- Saves responses to logs for review
-- Both Claude AND Codex tested and working
+#### **2. API Contract Generator**
+- Generates OpenAPI 3.0 specs from code
+- Detects schema drift between frontend/backend
+- Fuzzy matching with Levenshtein distance
+- Per-slice contract organization
 
 ```bash
-# Create a ticket and let AI implement it
-arela orchestrate --tickets YOUR-TICKET-001
+# Generate contracts
+arela generate contracts /mobile /backend
+
+# Output:
+✅ Found 103 endpoints, 87 calls
+❌ Schema Drift: 3 issues
+📝 Generated 4 OpenAPI specs
 ```
+
+#### **3. Test Strategy Optimizer**
+- Analyzes test quality and coverage
+- Recommends Testcontainers over mocks
+- Identifies slow tests and coverage gaps
+- Slice-aware testing recommendations
+
+```bash
+# Analyze tests
+arela analyze tests --dir src
+
+# Output:
+🧪 247 tests analyzed
+🔴 Mock overuse: 142 tests (57%)
+💡 Recommendation: Adopt Testcontainers
+```
+
+---
+
+## ✨ Previous Releases
+
+### 🌍 Phase 1 - Foundation (v3.7.0)
+
+**Arela now analyzes codebases in 15+ programming languages!**
+
+#### **1. Multi-Repo Architecture Analyzer**
+- Detects horizontal (layered) vs vertical (feature-sliced) architecture
+- Calculates coupling/cohesion scores (0-100)
+- Analyzes multiple repositories together (mobile + backend)
+- Identifies critical issues and provides VSA migration recommendations
+- Estimates effort, breakeven, and 3-year ROI
+
+```bash
+# Analyze single repository
+arela analyze architecture
+
+# Analyze multiple repositories together
+arela analyze architecture /path/to/mobile /path/to/backend
+
+# Export detailed report
+arela analyze architecture --json report.json
+```
+
+#### **2. Universal Codebase Ingestion**
+- **15+ languages supported:** TypeScript, JavaScript, Python, Go, Rust, Ruby, PHP, Java, C#, C/C++, Swift, Kotlin
+- **Blazing fast:** 3,585 files in 3.91 seconds
+- **Regex-based extraction:** No AI needed, pure pattern matching
+- **Tracks everything:** Imports, functions, API endpoints, calls
+- **Graph database:** Stores in SQLite at `.arela/memory/graph.db`
+
+```bash
+# Ingest current directory
+arela ingest codebase
+
+# Ingest specific repository
+arela ingest codebase --repo /path/to/repo
+
+# Re-ingest with refresh
+arela ingest codebase --refresh
+```
+
+#### **3. Tri-Memory System**
+- **Vector DB:** Semantic search (wraps existing RAG)
+- **Graph DB:** Structural dependencies (from ingestion)
+- **Governance Log:** Audit trail at `.arela/memory/audit.db`
+- **Unified interface:** Query all three memory types
+
+```bash
+# Initialize all three memory types
+arela memory init
+
+# Semantic search
+arela memory query "authentication logic"
+
+# Dependency analysis
+arela memory impact src/auth/login.ts
+
+# Audit trail
+arela memory audit --commit abc123
+
+# Health check
+arela memory status
+```
+
+### 🎯 Real-World Results
+
+**Stride Mobile + API Analysis:**
+- 3,668 total files scanned (83 TypeScript + 3,585 Python)
+- 103 API endpoints detected in Python backend
+- 23,502 imports mapped
+- 56,957 functions identified
+- Architecture: 100% Horizontal (critical issues found)
+- Migration estimate: 24-28 weeks, 277% 3-year ROI
 
 ## ✨ Previous Releases
 

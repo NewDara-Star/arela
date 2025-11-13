@@ -1,4 +1,4 @@
-# Arela v3.6.0 - Quickstart Guide
+# Arela v3.8.0 - Quickstart Guide
 
 ## Installing Arela in an Existing Project
 
@@ -495,6 +495,138 @@ Savage honesty, direct feedback, no-nonsense
 
 # DBrand
 ✅ Done. Now go build something useful
+```
+
+---
+
+## **NEW in v3.8.0: Autonomous Intelligence**
+
+### **Detect Optimal Vertical Slices**
+
+Arela now autonomously detects where your vertical slices should be:
+
+```bash
+# Detect slices in current repo
+arela detect slices
+
+# Multi-repo detection
+arela detect slices /path/to/mobile /path/to/backend
+
+# Filter by quality
+arela detect slices --min-cohesion 75
+
+# Export results
+arela detect slices --json slices.json
+```
+
+**What you get:**
+- Louvain algorithm clustering
+- Cohesion scores (0-100%)
+- Intelligent slice naming
+- Actionable recommendations
+
+### **Generate API Contracts**
+
+Automatically generate OpenAPI specs and detect schema drift:
+
+```bash
+# Generate contracts
+arela generate contracts
+
+# Multi-repo (frontend + backend)
+arela generate contracts /path/to/mobile /path/to/backend
+
+# Different formats
+arela generate contracts --format json
+arela generate contracts --format yaml
+
+# Only show drift issues
+arela generate contracts --drift-only
+```
+
+**What you get:**
+- OpenAPI 3.0 specifications
+- Schema drift detection
+- Frontend/backend matching
+- Per-slice organization
+
+### **Optimize Test Strategy**
+
+Analyze test quality and get recommendations:
+
+```bash
+# Analyze tests
+arela analyze tests
+
+# Specific directory
+arela analyze tests --dir src
+
+# Export report
+arela analyze tests --json test-report.json
+
+# Verbose output
+arela analyze tests --verbose
+```
+
+**What you get:**
+- Mock overuse detection
+- API coverage analysis
+- Testcontainers recommendations
+- Slice-aware testing guidance
+
+---
+
+## **NEW in v3.7.0: Language-Agnostic Architecture Analysis**
+
+### **Analyze ANY Codebase in ANY Language**
+
+Arela now supports 15+ programming languages for architecture analysis:
+
+```bash
+# Analyze single repository
+arela ingest codebase
+arela analyze architecture
+
+# Analyze multiple repositories (e.g., mobile + backend)
+arela ingest codebase --repo /path/to/mobile
+arela ingest codebase --repo /path/to/backend
+arela analyze architecture /path/to/mobile /path/to/backend
+
+# Export detailed report
+arela analyze architecture --json report.json
+```
+
+**Supported Languages:**
+- TypeScript, JavaScript, Python, Go, Rust
+- Ruby, PHP, Java, C#, C/C++
+- Swift, Kotlin, and more!
+
+**What you get:**
+- Architecture type detection (Horizontal vs Vertical)
+- Coupling/cohesion scores (0-100)
+- Critical issues identified
+- VSA migration recommendations
+- ROI estimates (effort, breakeven, 3-year ROI)
+
+### **Tri-Memory System**
+
+Three types of persistent memory for AI agents:
+
+```bash
+# Initialize all three memory types
+arela memory init
+
+# Semantic search (Vector DB)
+arela memory query "authentication logic"
+
+# Dependency analysis (Graph DB)
+arela memory impact src/auth/login.ts
+
+# Audit trail (Governance Log)
+arela memory audit --commit abc123
+
+# Health check
+arela memory status
 ```
 
 ---

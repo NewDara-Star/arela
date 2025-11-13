@@ -18,6 +18,7 @@ export * from './tickets/auto-generate.js';
 // MCP + RAG
 export * from './mcp/server.js';
 export * from './rag/index.js';
+export * from './memory/index.js';
 
 // Utils
 export * from './utils/progress.js';

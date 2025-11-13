@@ -1,0 +1,253 @@
+# CLAUDE-002: Codebase Ingestion & Mapping
+
+## Priority
+🔴 CRITICAL
+
+## Complexity
+High (5-6 hours)
+
+## Phase
+Phase 1 - Foundation (v3.7.0)
+
+## Description
+Build a comprehensive codebase ingestion system that parses TypeScript/JavaScript files, builds a complete dependency graph, and stores it in a queryable Graph Database. This creates the "structural memory" that powers all analysis and refactoring features.
+
+## Context
+This is the core data infrastructure for Arela v4.0.0. It creates a complete map of the codebase including imports, exports, function calls, and API endpoints. This graph powers architecture analysis, slice detection, and autonomous refactoring.
+
+## Acceptance Criteria
+- [ ] Parses TypeScript/JavaScript files using AST
+- [ ] Tracks imports, exports, and function calls
+- [ ] Builds complete dependency graph
+- [ ] Stores in queryable Graph DB (SQLite)
+- [ ] Handles multi-repo projects
+- [ ] Provides query interface for other features
+
+## CLI Interface
+```bash
+# Ingest current directory
+arela ingest codebase --analyze
+
+# Ingest specific repo
+arela ingest codebase --repo /Users/Star/stride-mobile
+
+# Re-ingest (update graph)
+arela ingest codebase --refresh
+```
+
+## Expected Output
+```
+📥 Ingesting codebase...
+
+Static Analysis:
+✅ Scanned 247 files
+✅ Found 1,834 imports
+✅ Identified 456 functions
+✅ Mapped 89 API calls
+
+📊 Codebase Map:
+   - Modules: 12
+   - Components: 67
+   - Services: 23
+   - API endpoints: 34
+
+💾 Stored in Graph DB: .arela/memory/graph.db
+
+📋 Next step: arela detect slices
+```
+
+## Technical Implementation
+
+### Graph Schema (SQLite)
+```sql
+-- Nodes: Files
+CREATE TABLE files (
+  id INTEGER PRIMARY KEY,
+  path TEXT UNIQUE NOT NULL,
+  repo TEXT NOT NULL,
+  type TEXT NOT NULL, -- 'component', 'service', 'controller', etc.
+  lines INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Nodes: Functions
+CREATE TABLE functions (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  file_id INTEGER REFERENCES files(id),
+  line_start INTEGER,
+  line_end INTEGER,
+  is_exported BOOLEAN DEFAULT FALSE
+);
+
+-- Edges: Imports
+CREATE TABLE imports (
+  id INTEGER PRIMARY KEY,
+  from_file_id INTEGER REFERENCES files(id),
+  to_file_id INTEGER REFERENCES files(id),
+  import_type TEXT, -- 'default', 'named', 'namespace'
+  imported_names TEXT -- JSON array
+);
+
+-- Edges: Function Calls
+CREATE TABLE function_calls (
+  id INTEGER PRIMARY KEY,
+  caller_function_id INTEGER REFERENCES functions(id),
+  callee_function_id INTEGER REFERENCES functions(id),
+  line_number INTEGER
+);
+
+-- API Endpoints (for multi-repo linking)
+CREATE TABLE api_endpoints (
+  id INTEGER PRIMARY KEY,
+  method TEXT NOT NULL, -- 'GET', 'POST', etc.
+  path TEXT NOT NULL,
+  file_id INTEGER REFERENCES files(id),
+  function_id INTEGER REFERENCES functions(id)
+);
+
+-- API Calls (frontend)
+CREATE TABLE api_calls (
+  id INTEGER PRIMARY KEY,
+  method TEXT NOT NULL,
+  url TEXT NOT NULL,
+  file_id INTEGER REFERENCES files(id),
+  line_number INTEGER
+);
+```
+
+### Files to Create
+```
+src/ingest/
+├── index.ts              # Main orchestrator (exports ingestCodebase)
+├── static-analyzer.ts    # AST parsing with ts-morph
+├── graph-builder.ts      # Builds dependency graph
+├── storage.ts            # SQLite Graph DB interface
+├── file-scanner.ts       # Scans directories for files
+├── import-tracker.ts     # Tracks imports/exports
+├── function-tracker.ts   # Tracks function definitions/calls
+├── api-detector.ts       # Detects API endpoints and calls
+└── types.ts              # TypeScript types
+```
+
+### Key Functions
+```typescript
+// src/ingest/index.ts
+export async function ingestCodebase(
+  repoPath: string,
+  options?: IngestOptions
+): Promise<CodebaseMap> {
+  // 1. Scan directory for TS/JS files
+  // 2. Parse each file with ts-morph
+  // 3. Extract imports, exports, functions, API calls
+  // 4. Build dependency graph
+  // 5. Store in Graph DB
+  // 6. Return summary
+}
+
+// src/ingest/static-analyzer.ts
+export async function analyzeFile(
+  filePath: string
+): Promise<FileAnalysis> {
+  // Parse with ts-morph
+  // Extract: imports, exports, functions, calls
+  // Return structured data
+}
+
+// src/ingest/storage.ts
+export class GraphDB {
+  async addFile(file: FileNode): Promise<number>
+  async addImport(from: number, to: number, type: string): Promise<void>
+  async addFunction(func: FunctionNode): Promise<number>
+  async query(sql: string, params: any[]): Promise<any[]>
+}
+```
+
+### AST Parsing Strategy
+```typescript
+import { Project, SyntaxKind } from 'ts-morph';
+
+// Parse file
+const project = new Project();
+const sourceFile = project.addSourceFileAtPath(filePath);
+
+// Extract imports
+const imports = sourceFile.getImportDeclarations().map(imp => ({
+  from: filePath,
+  to: imp.getModuleSpecifierValue(),
+  type: imp.getDefaultImport() ? 'default' : 'named',
+  names: imp.getNamedImports().map(n => n.getName())
+}));
+
+// Extract functions
+const functions = sourceFile.getFunctions().map(fn => ({
+  name: fn.getName(),
+  isExported: fn.isExported(),
+  lineStart: fn.getStartLineNumber(),
+  lineEnd: fn.getEndLineNumber()
+}));
+
+// Extract API calls (fetch, axios)
+const apiCalls = sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression)
+  .filter(call => {
+    const expr = call.getExpression().getText();
+    return expr === 'fetch' || expr.includes('axios');
+  })
+  .map(call => ({
+    method: extractMethod(call),
+    url: extractUrl(call),
+    line: call.getStartLineNumber()
+  }));
+```
+
+## Dependencies
+- `ts-morph` - TypeScript AST parsing
+- `better-sqlite3` - SQLite database
+- `fast-glob` - Fast file scanning
+
+## Integration Points
+- **Input:** File paths from `arela index` or direct paths
+- **Output:** Graph DB at `.arela/memory/graph.db`
+- **Used by:** Feature 1.1 (Architecture Analyzer), Feature 6.2 (Slice Detection)
+
+## Testing Strategy
+- Test with Stride repos (large, complex)
+- Test with Arela repo (self-analysis)
+- Verify all imports are tracked
+- Verify function calls are tracked
+- Test multi-repo ingestion
+
+## Performance Considerations
+- Use fast-glob for efficient file scanning
+- Batch SQLite inserts (transactions)
+- Cache parsed ASTs during ingestion
+- Target: <30 seconds for 1000 files
+
+## Example Usage
+```bash
+# Ingest Stride mobile
+arela ingest codebase --repo /Users/Star/stride-mobile
+
+# Ingest Stride backend
+arela ingest codebase --repo /Users/Star/stride-backend
+
+# Query the graph
+arela memory query "SELECT * FROM files WHERE type = 'service'"
+```
+
+## Notes
+- Start with static analysis only (no runtime instrumentation yet)
+- Focus on TypeScript/JavaScript initially
+- Store relative paths for portability
+- Add indexes for common queries (file_id, repo)
+
+## Related Features
+- Enables: Feature 1.1 (Architecture Analyzer)
+- Enables: Feature 6.2 (Slice Detection)
+- Enables: Feature 6.5 (Tri-Memory System)
+
+## Estimated Time
+5-6 hours
+
+## Agent Assignment
+Claude (Complex data modeling and graph construction)

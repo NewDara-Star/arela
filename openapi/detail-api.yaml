@@ -1,0 +1,33 @@
+
+  info:
+    description: API contract for detail slice
+    title: Detail API
+    version: 1.0.0
+  openapi: 3.0.0
+  paths:
+    /:stack_id/details:
+      get:
+        description: Endpoint defined at line 172
+        parameters:
+          - 
+            description: The stack_id
+            in: path
+            name: stack_id
+            required: true
+            schema:
+              type: string
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Get details

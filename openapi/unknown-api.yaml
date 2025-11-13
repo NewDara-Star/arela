@@ -1,0 +1,329 @@
+
+  info:
+    description: API contract for unknown slice
+    title: Unknown API
+    version: 1.0.0
+  openapi: 3.0.0
+  paths:
+    /:
+      get:
+        description: Endpoint defined at line 113
+        parameters: []
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Get
+    /:log_id:
+      delete:
+        description: Endpoint defined at line 550
+        parameters:
+          - 
+            description: The log_id
+            in: path
+            name: log_id
+            required: true
+            schema:
+              type: string
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Delete undefined
+      get:
+        description: Endpoint defined at line 401
+        parameters:
+          - 
+            description: The log_id
+            in: path
+            name: log_id
+            required: true
+            schema:
+              type: string
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Get
+      patch:
+        description: Endpoint defined at line 512
+        parameters:
+          - 
+            description: The log_id
+            in: path
+            name: log_id
+            required: true
+            schema:
+              type: string
+        requestBody:
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Partial update undefined
+    /:session_id:
+      delete:
+        description: Endpoint defined at line 203
+        parameters:
+          - 
+            description: The session_id
+            in: path
+            name: session_id
+            required: true
+            schema:
+              type: string
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Delete undefined
+      get:
+        description: Endpoint defined at line 90
+        parameters:
+          - 
+            description: The session_id
+            in: path
+            name: session_id
+            required: true
+            schema:
+              type: string
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Get
+      patch:
+        description: Endpoint defined at line 158
+        parameters:
+          - 
+            description: The session_id
+            in: path
+            name: session_id
+            required: true
+            schema:
+              type: string
+        requestBody:
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Partial update undefined
+    /:slot_id:
+      delete:
+        description: Endpoint defined at line 294
+        parameters:
+          - 
+            description: The slot_id
+            in: path
+            name: slot_id
+            required: true
+            schema:
+              type: string
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Delete undefined
+      patch:
+        description: Endpoint defined at line 224
+        parameters:
+          - 
+            description: The slot_id
+            in: path
+            name: slot_id
+            required: true
+            schema:
+              type: string
+        requestBody:
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Partial update undefined
+    /:stack_id:
+      delete:
+        description: Endpoint defined at line 350
+        parameters:
+          - 
+            description: The stack_id
+            in: path
+            name: stack_id
+            required: true
+            schema:
+              type: string
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Delete undefined
+      get:
+        description: Endpoint defined at line 134
+        parameters:
+          - 
+            description: The stack_id
+            in: path
+            name: stack_id
+            required: true
+            schema:
+              type: string
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Get
+      patch:
+        description: Endpoint defined at line 308
+        parameters:
+          - 
+            description: The stack_id
+            in: path
+            name: stack_id
+            required: true
+            schema:
+              type: string
+        requestBody:
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+        responses:
+          200:
+            content:
+              application/json:
+                schema:
+                  additionalProperties: true
+                  type: object
+            description: Successful response
+          400:
+            description: Bad Request
+          404:
+            description: Not Found
+          500:
+            description: Internal Server Error
+        summary: Partial update undefined

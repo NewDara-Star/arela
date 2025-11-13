@@ -1,0 +1,145 @@
+{
+  "generatedAt": "2025-11-12T23:27:53.399Z",
+  "baseDir": "/Users/Star/arela/src",
+  "filesAnalyzed": 1,
+  "stats": {
+    "totalTests": 3,
+    "unitTests": 3,
+    "integrationTests": 0,
+    "testFiles": 1,
+    "frameworks": {
+      "vitest": 3
+    },
+    "namingConventions": {
+      "test": 1
+    },
+    "averageTestTimeSeconds": 0.4000000000000001,
+    "estimatedSuiteDurationSeconds": 1.2000000000000002
+  },
+  "files": [
+    {
+      "path": "cli.run.test.ts",
+      "absolutePath": "/Users/Star/arela/src/cli.run.test.ts",
+      "framework": "vitest",
+      "namingConvention": "test",
+      "testCount": 3,
+      "classification": "unit",
+      "mockCount": 1,
+      "mockPatterns": {
+        "mockResolvedValue": 1
+      },
+      "usesTestcontainers": false,
+      "testcontainersHints": [],
+      "endpointsReferenced": [],
+      "sliceMatches": [],
+      "pathSliceHints": [],
+      "errorAssertionCount": 1,
+      "contractIndicatorCount": 0,
+      "slowIndicators": [],
+      "hasMocks": true,
+      "hasIntegrationIndicators": false,
+      "hasErrorAssertions": true,
+      "directories": [
+        "cli.run.test.ts"
+      ]
+    }
+  ],
+  "mockUsage": {
+    "totalMocks": 1,
+    "filesWithMocks": 1,
+    "testsTouchedByMocks": 3,
+    "percentageOfSuite": 1,
+    "dominantPatterns": [
+      {
+        "name": "mockResolvedValue",
+        "count": 1
+      }
+    ]
+  },
+  "coverage": {
+    "endpoints": {
+      "total": 0,
+      "tested": 0,
+      "percentage": 0,
+      "untested": []
+    },
+    "slices": [],
+    "missingSlices": [],
+    "graphDbAvailable": true,
+    "graphDbPath": "/Users/Star/arela/.arela/memory/graph.db",
+    "notes": []
+  },
+  "slowTests": [],
+  "organization": {
+    "rootFolders": {
+      "cli.run.test.ts": 1
+    },
+    "hasDedicatedTestsFolder": false,
+    "scattered": false,
+    "suggestedStructure": [
+      "tests/authentication",
+      "tests/workout",
+      "tests/nutrition",
+      "tests/social"
+    ]
+  },
+  "issues": [
+    {
+      "severity": "critical",
+      "title": "Mock overuse detected",
+      "description": "100% of tests rely on mocks, increasing false-positive risk.",
+      "recommendation": "Introduce Testcontainers-based slice tests to validate real dependencies."
+    },
+    {
+      "severity": "info",
+      "title": "Graph DB unavailable",
+      "description": "Endpoint coverage could not be calculated without the graph database.",
+      "recommendation": "Run `arela ingest codebase` to build the index."
+    },
+    {
+      "severity": "warning",
+      "title": "No contract tests",
+      "description": "API drift risk is high without Pact/Dredd/Schemathesis coverage.",
+      "recommendation": "Introduce contract tests linked to OpenAPI specs."
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "critical",
+      "title": "Adopt Testcontainers",
+      "description": "Replace 3 mock-heavy tests with containerized slices.",
+      "impact": "40% fewer false positives and realistic integration coverage.",
+      "actionItems": [
+        "Install @testcontainers modules for PostgreSQL, Redis, and any external deps.",
+        "Refactor auth/workout suites to use real containers instead of jest mocks.",
+        "Run containers in parallel (one per slice) to keep suite fast."
+      ]
+    },
+    {
+      "priority": "high",
+      "title": "Close API coverage gaps",
+      "description": "0/0 endpoints covered.",
+      "impact": "Catch regressions before they hit production APIs.",
+      "actionItems": [
+        "Use Arela contracts to export OpenAPI specs for each slice.",
+        "Generate tests hitting the missing endpoints listed above."
+      ]
+    },
+    {
+      "priority": "medium",
+      "title": "Add contract tests",
+      "description": "Introduce Dredd or Pact flows to prevent API drift.",
+      "impact": "Guarantees backend + frontend stay aligned on schema changes.",
+      "actionItems": [
+        "Export OpenAPI via `arela contracts generate`.",
+        "Run Dredd against staging containers during CI."
+      ]
+    }
+  ],
+  "errorTests": 1,
+  "contractTests": 0,
+  "graph": {
+    "available": true,
+    "path": "/Users/Star/arela/.arela/memory/graph.db"
+  }
+}

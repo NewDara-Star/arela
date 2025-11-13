@@ -1,0 +1,7 @@
+
+  info:
+    description: "API contract for https: slice"
+    title: "Https: API"
+    version: 1.0.0
+  openapi: 3.0.0
+  paths: {}
