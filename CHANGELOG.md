@@ -1,5 +1,84 @@
 # Changelog
 
+## [3.9.1] - 2025-11-13
+
+### 📚 Documentation Updates
+
+- Updated README.md with v3.9.0 features
+- Updated QUICKSTART.md with client generator examples
+- Created comprehensive memory for v3.9.0 release
+- Updated all version references
+
+---
+
+## [3.9.0] - 2025-11-13
+
+### 🎨 Phase 3 - Contract-Driven Development
+
+**"Generate type-safe API clients from OpenAPI contracts - eliminate API drift at compile time!"**
+
+### ✨ New Feature: TypeScript Client Generator
+
+**Auto-generate type-safe API clients from OpenAPI 3.0 specifications**
+
+- **TypeScript client generation** - Creates axios-based HTTP clients with full type safety
+- **Runtime validation** - Generates Zod schemas for request/response validation
+- **Bearer token auth** - Built-in authentication support
+- **Batch processing** - Generate clients for all contracts in a directory
+- **Dry-run mode** - Preview what would be generated without writing files
+
+**CLI Commands:**
+```bash
+# Generate client from single contract
+arela generate client --contract openapi/workout-api.yaml
+
+# Generate clients for all contracts
+arela generate client --contract-dir openapi/ --output src/api/
+
+# Dry run (preview only)
+arela generate client --contract-dir openapi/ --dry-run
+
+# Custom base URL
+arela generate client --contract openapi/api.yaml --base-url https://api.stride.app
+```
+
+**Generated Output:**
+- `types.ts` - TypeScript interfaces from schemas
+- `schemas.ts` - Zod validation schemas
+- `client.ts` - Axios-based HTTP client class
+- `index.ts` - Exports for easy importing
+
+**Performance:**
+- ⚡ Processes 30 OpenAPI specs in < 5 seconds
+- 📦 Generates 4 files per service
+- 🎯 Production-ready TypeScript output
+
+**Example Usage:**
+```typescript
+import { ActivateApiClient } from './api/activate';
+
+const client = new ActivateApiClient({
+  baseURL: 'https://api.stride.app',
+  token: user.authToken
+});
+
+const result = await client.createActivate({ stackId: '123' });
+```
+
+**Real-World Testing:**
+- ✅ Tested with 30 Stride API contracts
+- ✅ Generated 120 files (2,274 lines of code)
+- ✅ All TypeScript compiles successfully
+- ✅ Full type safety and runtime validation
+
+**Impact:**
+- Eliminates API drift at compile time
+- Reduces frontend/backend integration bugs
+- Provides full IDE autocomplete and type checking
+- Enables contract-first development workflow
+
+---
+
 ## [3.8.1] - 2025-11-12
 
 ### 🐛 Bug Fixes

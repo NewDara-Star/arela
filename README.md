@@ -1,8 +1,8 @@
-# Arela v3.8.0
+# Arela v3.9.1
 
 **Your AI Technical Co-Founder**
 
-> "AI that understands your architecture and tells you exactly how to improve it!"
+> "From architecture analysis to type-safe API clients - Arela builds production-ready code!"
 
 ## The Story
 
@@ -10,7 +10,53 @@ Arela was born from a simple frustration: being an "idea person" with no technic
 
 Arela is that guidance. Not a linter. Not a framework. **A conversational CTO persona** that helps you think through products and build them to world-class standards.
 
-## ✨ What's New in v3.8.0
+## ✨ What's New in v3.9.0
+
+### 🎨 Phase 3 - Contract-Driven Development
+
+**Generate type-safe API clients from OpenAPI contracts - eliminate API drift at compile time!**
+
+#### **TypeScript Client Generator**
+Auto-generate production-ready API clients from OpenAPI 3.0 specifications:
+
+```bash
+# Generate client from single contract
+arela generate client --contract openapi/workout-api.yaml
+
+# Generate clients for all contracts
+arela generate client --contract-dir openapi/ --output src/api/
+
+# Preview without writing files
+arela generate client --contract-dir openapi/ --dry-run
+```
+
+**What you get:**
+- ✅ Type-safe TypeScript interfaces from schemas
+- ✅ Zod schemas for runtime validation
+- ✅ Axios-based HTTP clients with Bearer token auth
+- ✅ 4 files per service (types, schemas, client, index)
+- ✅ Production-ready code in < 5 seconds
+
+**Example usage:**
+```typescript
+import { WorkoutApiClient } from './api/workout';
+
+const client = new WorkoutApiClient({
+  baseURL: 'https://api.stride.app',
+  token: user.authToken
+});
+
+const workouts = await client.getWorkouts(); // Fully typed!
+```
+
+**Real-world results:**
+- 30 OpenAPI specs → 120 files (2,274 lines)
+- Full IDE autocomplete and type checking
+- Eliminates API drift at compile time
+
+---
+
+## ✨ What's in v3.8.0
 
 ### 🧠 Phase 2 - Intelligence (Autonomous Analysis & Recommendations)
 

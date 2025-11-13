@@ -13,7 +13,7 @@ import { registerMemoryCommands } from "./memory/cli.js";
 const program = new Command()
   .name("arela")
   .description("AI-powered CTO with multi-agent orchestration")
-  .version("3.8.1");
+  .version("3.9.1");
 
 /**
  * arela agents - List discovered agents
@@ -774,48 +774,80 @@ program
   });
 
 /**
- * arela generate contracts - Generate OpenAPI contracts from code
+ * arela generate - Generate contracts, clients, and other specifications
  */
 program
   .command("generate")
-  .description("Generate API contracts and specifications")
-  .argument("[type]", "Type of generation (contracts, flows, etc.)", "contracts")
+  .description("Generate API contracts, clients, and specifications")
+  .argument("[type]", "Type of generation (contracts, client)", "contracts")
   .argument("[repos...]", "Repository paths (optional)")
   .option("--cwd <dir>", "Working directory", process.cwd())
-  .option("--format <type>", "Output format: yaml or json", "yaml")
+  .option("--language <lang>", "Client language (typescript, python)", "typescript")
+  .option("--contract <path>", "Path to OpenAPI contract file")
+  .option("--contract-dir <path>", "Directory containing OpenAPI contracts")
+  .option("--base-url <url>", "Base URL for API client")
+  .option("--output <dir>", "Output directory")
+  .option("--format <type>", "Output format for contracts: yaml or json", "yaml")
   .option("--per-slice", "Generate contracts per vertical slice", true)
   .option("--drift-only", "Only show schema drift issues", false)
-  .option("--output <dir>", "Output directory", "openapi")
+  .option("--dry-run", "Show what would be generated without writing files", false)
   .action(async (type, repos, opts) => {
-    if (type !== "contracts") {
+    if (type === "contracts") {
+      await handleContractGeneration(repos, opts);
+    } else if (type === "client") {
+      await handleClientGeneration(opts);
+    } else {
       console.error(pc.red(`\n😵‍💫 Unknown generate command: ${type}`));
-      console.log(pc.gray("Available commands: contracts\n"));
-      process.exit(1);
-    }
-
-    try {
-      const { generateContracts } = await import("./contracts/index.js");
-
-      const repoPaths = repos && repos.length > 0 ? repos : [opts.cwd];
-
-      const report = await generateContracts({
-        repoPaths,
-        perSlice: opts.perSlice !== false,
-        format: opts.format as "yaml" | "json",
-        driftOnly: opts.driftOnly,
-        outputDir: opts.output,
-      });
-
-      // Success - exit with code 0
-      const driftCount = report.driftIssues.length;
-      if (driftCount > 0) {
-        process.exit(0); // Exit with warning but not failure
-      }
-    } catch (error) {
-      console.error(pc.red(`\n😵‍💫 Contract generation failed: ${(error as Error).message}\n`));
+      console.log(pc.gray("Available commands: contracts, client\n"));
       process.exit(1);
     }
   });
+
+async function handleContractGeneration(repos: string[] | undefined, opts: any): Promise<void> {
+  try {
+    const { generateContracts } = await import("./contracts/index.js");
+
+    const repoPaths = repos && repos.length > 0 ? repos : [opts.cwd];
+
+    const report = await generateContracts({
+      repoPaths,
+      perSlice: opts.perSlice !== false,
+      format: opts.format as "yaml" | "json",
+      driftOnly: opts.driftOnly,
+      outputDir: opts.output || "openapi",
+    });
+
+    // Success - exit with code 0
+    const driftCount = report.driftIssues.length;
+    if (driftCount > 0) {
+      process.exit(0); // Exit with warning but not failure
+    }
+  } catch (error) {
+    console.error(pc.red(`\n😵‍💫 Contract generation failed: ${(error as Error).message}\n`));
+    process.exit(1);
+  }
+}
+
+async function handleClientGeneration(opts: any): Promise<void> {
+  try {
+    const { generateClient } = await import("./generate/client/index.js");
+
+    await generateClient({
+      language: opts.language || "typescript",
+      contract: opts.contract,
+      contractDir: opts.contractDir,
+      outputDir: opts.output || "src/api",
+      baseURL: opts.baseUrl,
+      dryRun: opts.dryRun,
+    });
+  } catch (error) {
+    console.error(pc.red(`\n😵‍💫 Client generation failed: ${(error as Error).message}\n`));
+    if (opts.verbose) {
+      console.error((error as Error).stack);
+    }
+    process.exit(1);
+  }
+}
 
 registerMemoryCommands(program);
 

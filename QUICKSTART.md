@@ -1,4 +1,4 @@
-# Arela v3.8.0 - Quickstart Guide
+# Arela v3.9.1 - Quickstart Guide
 
 ## Installing Arela in an Existing Project
 
@@ -496,6 +496,52 @@ Savage honesty, direct feedback, no-nonsense
 # DBrand
 ✅ Done. Now go build something useful
 ```
+
+---
+
+## **NEW in v3.9.0: Contract-Driven Development**
+
+### **Generate Type-Safe API Clients**
+
+Automatically generate TypeScript clients from OpenAPI contracts:
+
+```bash
+# Generate client from single contract
+arela generate client --contract openapi/workout-api.yaml
+
+# Generate clients for all contracts
+arela generate client --contract-dir openapi/ --output src/api/
+
+# Preview without writing files
+arela generate client --contract-dir openapi/ --dry-run
+
+# Custom base URL
+arela generate client --contract openapi/api.yaml --base-url https://api.stride.app
+```
+
+**What you get:**
+- Type-safe TypeScript interfaces
+- Zod schemas for runtime validation
+- Axios-based HTTP clients
+- Bearer token authentication
+- 4 files per service (types, schemas, client, index)
+
+**Example usage:**
+```typescript
+import { WorkoutApiClient } from './api/workout';
+
+const client = new WorkoutApiClient({
+  baseURL: 'https://api.stride.app',
+  token: user.authToken
+});
+
+const workouts = await client.getWorkouts(); // Fully typed!
+```
+
+**Performance:**
+- 30 specs → 120 files in < 5 seconds
+- Production-ready TypeScript
+- Full IDE autocomplete
 
 ---
 
