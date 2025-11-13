@@ -3,6 +3,7 @@
  */
 
 import path from "path";
+import fs from "fs";
 import { GraphDB } from "./storage.js";
 import { FileAnalysis, FileNode } from "./types.js";
 
@@ -18,6 +19,9 @@ export async function buildGraph(
   const totalFiles = analyses.length;
 
   onProgress?.(`Building graph from ${totalFiles} analyzed files...`);
+
+  // Extract Go module name if this is a Go project
+  const goModuleName = extractGoModuleName(repoPath);
 
   // Phase 1: Add all files to the database
   const fileIdMap = new Map<string, number>();
@@ -69,7 +73,7 @@ export async function buildGraph(
 
       for (const imp of analysis.imports) {
         // Try to resolve the import to a file
-        const resolvedPath = resolveImport(imp.from, analysis.filePath, repoPath);
+        const resolvedPath = resolveImport(imp.from, analysis.filePath, repoPath, goModuleName, fileIdMap);
         const toFileId = resolvedPath ? fileIdMap.get(resolvedPath) : null;
 
         db.addImport(
@@ -111,7 +115,7 @@ export async function buildGraph(
           // Try imported modules
           if (!calledFunctionId) {
             for (const imp of analysis.imports) {
-              const resolvedPath = resolveImport(imp.from, analysis.filePath, repoPath);
+              const resolvedPath = resolveImport(imp.from, analysis.filePath, repoPath, goModuleName, fileIdMap);
               if (resolvedPath && imp.names.includes(callInfo.name)) {
                 const importedFunctionKey = `${resolvedPath}::${callInfo.name}`;
                 calledFunctionId = functionIdMap.get(importedFunctionKey) ?? null;
@@ -145,7 +149,9 @@ export async function buildGraph(
 function resolveImport(
   importPath: string,
   fromFilePath: string,
-  repoPath: string
+  repoPath: string,
+  goModuleName?: string | null,
+  fileIdMap?: Map<string, number>
 ): string | null {
   // Detect language from file extension
   const fileExt = path.extname(fromFilePath);
@@ -158,7 +164,7 @@ function resolveImport(
 
   // Handle Go imports
   if (language === 'go') {
-    return resolveGoImport(importPath, fromFilePath, repoPath);
+    return resolveGoImport(importPath, fromFilePath, repoPath, goModuleName, fileIdMap);
   }
 
   // Handle Rust imports
@@ -168,6 +174,38 @@ function resolveImport(
 
   // Handle TypeScript/JavaScript imports
   return resolveJsImport(importPath, fromFilePath, repoPath);
+}
+
+/**
+ * Extract Go module name from go.mod file
+ * Returns the module name (e.g., "zombie-survival" from "module zombie-survival")
+ * Returns null if go.mod doesn't exist or is not a Go project
+ */
+function extractGoModuleName(repoPath: string): string | null {
+  try {
+    const goModPath = path.join(repoPath, 'go.mod');
+
+    if (!fs.existsSync(goModPath)) {
+      return null;
+    }
+
+    const content = fs.readFileSync(goModPath, 'utf-8');
+    const lines = content.split('\n');
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('module ')) {
+        // Extract module name (e.g., "module zombie-survival" -> "zombie-survival")
+        const moduleName = trimmed.substring(7).trim();
+        return moduleName;
+      }
+    }
+  } catch (error) {
+    // If there's an error reading go.mod, just return null
+    // This allows other language projects to work without issues
+  }
+
+  return null;
 }
 
 /**
@@ -298,33 +336,86 @@ function resolvePythonImport(
 
 /**
  * Resolve Go imports
+ * Handles: relative imports, module-prefixed imports, and external packages
  */
 function resolveGoImport(
   importPath: string,
   fromFilePath: string,
-  repoPath: string
+  repoPath: string,
+  goModuleName?: string | null,
+  fileIdMap?: Map<string, number>
 ): string | null {
-  // Skip standard library
+  // Skip standard library imports (single word or stdlib packages)
   if (!importPath.includes('/')) {
     return null;
   }
 
-  // Handle relative imports
+  // Handle relative imports (e.g., ./sibling, ../parent)
   if (importPath.startsWith('.')) {
     const fromDir = path.dirname(fromFilePath);
     const resolvedPath = path.join(fromDir, importPath);
-    return path.relative(repoPath, resolvedPath);
+    const relPath = path.relative(repoPath, resolvedPath);
+
+    // Look for .go files in the resolved directory
+    if (fileIdMap) {
+      for (const [filePath] of fileIdMap.entries()) {
+        if (filePath.startsWith(relPath + '/') && filePath.endsWith('.go')) {
+          return filePath;
+        }
+        // Also check if it matches the directory directly
+        if (path.dirname(filePath) === relPath && filePath.endsWith('.go')) {
+          return filePath;
+        }
+      }
+    }
+
+    return null;
   }
 
-  // Handle module imports (e.g., github.com/user/repo/package)
-  // Extract the package path relative to module root
+  // Handle module-prefixed imports (e.g., module-name/package/subpackage)
+  if (goModuleName && importPath.startsWith(goModuleName + '/')) {
+    // Strip the module prefix to get the relative path
+    const relativePath = importPath.substring(goModuleName.length + 1);
+
+    // Look for any .go file in that directory
+    if (fileIdMap) {
+      for (const [filePath] of fileIdMap.entries()) {
+        // Check if this file is in the target directory
+        if (filePath.startsWith(relativePath + '/') && filePath.endsWith('.go')) {
+          return filePath;
+        }
+        // Check if the file is directly in the target directory (package-level)
+        if (path.dirname(filePath) === relativePath && filePath.endsWith('.go')) {
+          return filePath;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  // Handle external module imports (e.g., github.com/user/repo/package)
+  // Only process internal paths if they look like they're part of this repo
   const parts = importPath.split('/');
-  if (parts.length > 3) {
-    // Assume format: domain/user/repo/internal/path
+  if (parts.length > 3 && !importPath.includes('github.com') && !importPath.includes('gitlab.com')) {
+    // Might be a monorepo or multi-module setup
     const internalPath = parts.slice(3).join('/');
-    return internalPath;
+
+    if (fileIdMap) {
+      for (const [filePath] of fileIdMap.entries()) {
+        if (filePath.startsWith(internalPath + '/') && filePath.endsWith('.go')) {
+          return filePath;
+        }
+        if (path.dirname(filePath) === internalPath && filePath.endsWith('.go')) {
+          return filePath;
+        }
+      }
+    }
+
+    return null;
   }
 
+  // External packages (github.com, etc.) remain unresolved
   return null;
 }
 

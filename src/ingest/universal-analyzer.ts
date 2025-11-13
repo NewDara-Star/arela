@@ -123,8 +123,12 @@ const API_ENDPOINT_PATTERNS: Record<string, RegExp[]> = {
     /@route\s*\(['"]([^'"]+)['"],?\s*methods\s*=\s*\[['"](\w+)['"]\]/g, // Flask
   ],
   go: [
-    /router\.(GET|POST|PUT|DELETE|PATCH)\s*\(['"]([^'"]+)['"]/g,
-    /http\.HandleFunc\s*\(['"]([^'"]+)['"]/g,
+    // Gin framework
+    /\b\w+\.(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\s*\(\s*["']([^"']+)["']/g,
+    // Standard library
+    /http\.HandleFunc\s*\(\s*["']([^"']+)["']/g,
+    // Gorilla mux
+    /router\.(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\s*\(\s*["']([^"']+)["']/g,
   ],
   rust: [
     /#\[get\s*\(['"]([^'"]+)['"]\)\]/g,
@@ -184,14 +188,34 @@ function detectLanguage(filePath: string): string {
 function extractImports(content: string, language: string): ImportInfo[] {
   const imports: ImportInfo[] = [];
   const patterns = IMPORT_PATTERNS[language] || [];
-  
+
   for (const pattern of patterns) {
     let match;
     while ((match = pattern.exec(content)) !== null) {
-      const modulePath = match[1];
+      let modulePath = match[1];
       const lineNumber = content.substring(0, match.index).split('\n').length;
-      
-      if (modulePath && !imports.find(i => i.from === modulePath)) {
+
+      // Special handling for Go multi-line imports
+      if (language === 'go' && modulePath.includes('\n')) {
+        // Split multi-line import block into individual imports
+        const lines = modulePath.split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          // Extract quoted string from each line
+          const importMatch = trimmed.match(/^["']([^"']+)["']$/);
+          if (importMatch) {
+            const importPath = importMatch[1];
+            if (importPath && !imports.find(i => i.from === importPath)) {
+              imports.push({
+                from: importPath,
+                type: 'named',
+                names: [],
+                line: lineNumber,
+              });
+            }
+          }
+        }
+      } else if (modulePath && !imports.find(i => i.from === modulePath)) {
         imports.push({
           from: modulePath,
           type: 'named', // Simplified
@@ -201,7 +225,7 @@ function extractImports(content: string, language: string): ImportInfo[] {
       }
     }
   }
-  
+
   return imports;
 }
 
