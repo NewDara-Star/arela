@@ -27,6 +27,12 @@ export class FileMover {
     for (const filePath of slice.files) {
       const fullPath = path.join(cwd, filePath);
 
+      // Validate file exists before planning movement
+      if (!await fs.pathExists(fullPath)) {
+        console.warn(`⚠️  Skipping non-existent file: ${filePath}`);
+        continue;
+      }
+
       // Preserve directory structure within the slice
       // e.g., src/components/Button.tsx -> features/ui/components/Button.tsx
       let relativePath = filePath;
