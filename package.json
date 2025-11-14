@@ -1,6 +1,6 @@
 {
   "name": "arela",
-  "version": "3.10.0",
+  "version": "4.0.1",
   "description": "AI-powered CTO with multi-agent orchestration, visual testing (web + mobile) for blazing fast development.",
   "type": "module",
   "main": "./dist/index.js",

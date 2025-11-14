@@ -1,5 +1,57 @@
 # Changelog
 
+## [4.0.1] - 2025-11-14
+
+### 🐛 Critical Bug Fixes
+
+**"Fixed mobile dependency ingestion and graph DB resolution!"**
+
+#### Bug Fix #1: Graph DB Path Resolution
+- **Fixed:** Graph DB not found when running slice extraction on external projects
+- **Root cause:** Path resolution checked repo paths before `cwd`, causing failures when repo was moved
+- **Solution:** Always check `cwd` first (where ingestion runs), then fall back to repo paths
+- **Impact:** Slice extraction now works correctly on any project
+
+#### Bug Fix #2: Mobile Dependencies Excluded
+- **Fixed:** iOS Pods and Android build directories being ingested (16,837 files!)
+- **Root cause:** File scanner only excluded `node_modules`, not mobile-specific dependency directories
+- **Solution:** Added exclusion patterns for:
+  - `ios/Pods/**` (iOS CocoaPods)
+  - `android/build/**` (Android build artifacts)
+  - `android/.gradle/**` (Gradle cache)
+  - `venv/**`, `.venv/**` (Python virtual environments)
+  - `vendor/**` (Go/Ruby dependencies)
+- **Impact:** Ingestion now scans only app code (87 files vs 16,924!)
+
+#### Bug Fix #3: "." Repo Path Handling
+- **Fixed:** When calling `detectSlices(["."], cwd)`, it would try to filter by repo path instead of loading all files
+- **Solution:** Detect when `repoPaths` includes "." and skip repo filtering
+- **Impact:** Slice detection works correctly when extracting from current directory
+
+### 📊 Real-World Validation
+
+**Tested on Stride Mobile App:**
+- Before: 16,924 files (mostly iOS Pods)
+- After: 87 files (only app code)
+- Slices detected: 21 meaningful slices (authentication, workout, profile, messaging, etc.)
+- Execution time: 8.73s
+
+### 🎯 What's Fixed
+
+- ✅ Slice extraction works on external projects
+- ✅ Mobile dependencies properly excluded
+- ✅ Fast ingestion (0.12s vs 4s)
+- ✅ Accurate slice detection (21 vs 1,389 slices)
+- ✅ Graph DB found in correct location
+
+---
+
+## [4.0.0] - 2025-11-14 (REVERTED - See 4.0.1)
+
+**Note:** v4.0.0 was reverted due to bugs discovered during testing. All fixes included in v4.0.1.
+
+---
+
 ## [3.10.0] - 2025-11-14
 
 ### 🎯 Phase 3 Continued - Quality & Governance

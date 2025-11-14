@@ -31,6 +31,7 @@ const SUPPORTED_EXTENSIONS = [
   '.kt',
 ];
 const IGNORED_PATTERNS = [
+  // JavaScript/Node
   '**/node_modules/**',
   '**/.git/**',
   '**/dist/**',
@@ -41,7 +42,19 @@ const IGNORED_PATTERNS = [
   '**/*.test.ts',
   '**/*.spec.ts',
   '**/*.d.ts',
-  '.arela/**'
+  '.arela/**',
+  // Mobile dependencies (iOS/Android)
+  'ios/Pods/**',
+  'android/build/**',
+  'android/.gradle/**',
+  // Python dependencies
+  'venv/**',
+  '.venv/**',
+  '**/site-packages/**',
+  // Ruby dependencies
+  'vendor/bundle/**',
+  // Go dependencies
+  'vendor/**',
 ];
 
 /**

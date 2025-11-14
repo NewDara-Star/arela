@@ -19,41 +19,43 @@ export async function detectSlices(
   cwd: string = process.cwd(),
   options?: DetectOptions
 ): Promise<SliceReport> {
-  // Resolve repo paths to absolute paths
-  const absoluteRepoPaths = repoPaths.map(p => path.resolve(cwd, p));
-  
-  // Resolve graph DB path - check repo paths first, then cwd
+  // Resolve graph DB path - always check cwd first since that's where ingestion runs
   let dbPath: string | null = null;
+  const searchedPaths: string[] = [];
   
-  // Try provided repo paths first
-  for (const repoPath of absoluteRepoPaths) {
-    const candidatePath = path.join(repoPath, ".arela", "memory", "graph.db");
-    if (await fs.pathExists(candidatePath)) {
-      dbPath = candidatePath;
-      break;
-    }
+  // 1. Try cwd first (most common case)
+  const cwdPath = path.join(cwd, ".arela", "memory", "graph.db");
+  searchedPaths.push(cwdPath);
+  if (await fs.pathExists(cwdPath)) {
+    dbPath = cwdPath;
   }
   
-  // Fallback to cwd
-  if (!dbPath) {
-    const cwdPath = path.join(cwd, ".arela", "memory", "graph.db");
-    if (await fs.pathExists(cwdPath)) {
-      dbPath = cwdPath;
+  // 2. If not found and repo paths provided, try those
+  if (!dbPath && repoPaths.length > 0) {
+    const absoluteRepoPaths = repoPaths.map(p => path.resolve(cwd, p));
+    for (const repoPath of absoluteRepoPaths) {
+      const candidatePath = path.join(repoPath, ".arela", "memory", "graph.db");
+      searchedPaths.push(candidatePath);
+      if (await fs.pathExists(candidatePath)) {
+        dbPath = candidatePath;
+        break;
+      }
     }
   }
 
   if (!dbPath) {
-    const searchedPaths = repoPaths.length > 0 
-      ? repoPaths.map(p => path.join(p, ".arela", "memory", "graph.db")).join(', ')
-      : path.join(cwd, ".arela", "memory", "graph.db");
     throw new Error(
-      `Graph DB not found. Searched: ${searchedPaths}. Run 'arela ingest codebase' first.`
+      `Graph DB not found. Searched:\n  ${searchedPaths.join('\n  ')}\n\nRun 'arela ingest codebase' first.`
     );
   }
-
+  
   // Load graph
-  const graph = absoluteRepoPaths.length > 0
-    ? loadMultiRepoGraph(dbPath, absoluteRepoPaths)
+  // If repoPaths is ["."] or empty, load all files (no filtering)
+  // Otherwise, filter by specific repo paths
+  const shouldFilter = repoPaths.length > 0 && !repoPaths.includes(".");
+  
+  const graph = shouldFilter
+    ? loadMultiRepoGraph(dbPath, repoPaths.map(p => path.resolve(cwd, p)))
     : loadGraph(dbPath);
 
   if (graph.nodes.length === 0) {

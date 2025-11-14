@@ -16,7 +16,7 @@ import { createSliceVersion } from "./version/version-creator.js";
 const program = new Command()
   .name("arela")
   .description("AI-powered CTO with multi-agent orchestration")
-  .version("3.10.0");
+  .version("4.0.1");
 
 /**
  * arela agents - List discovered agents
