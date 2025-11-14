@@ -1,9 +1,5 @@
 ---
-id: arela.component_architecture
-title: Component Architecture
-category: frontend
-severity: should
-version: 1.0.0
+trigger: always_on
 ---
 
 # Component Architecture

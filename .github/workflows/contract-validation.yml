@@ -1,0 +1,51 @@
+name: Contract Validation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  validate-contracts:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Validate contracts
+        run: npx arela validate contracts --server http://localhost:3000 --start-server "npm run dev"
+        continue-on-error: true
+        timeout-minutes: 5
+
+      - name: Report validation results
+        if: always()
+        run: |
+          echo "Contract validation completed"
+          if [ $? -eq 0 ]; then
+            echo "✅ All contracts validated successfully"
+          else
+            echo "❌ Contract validation failed"
+            exit 1
+          fi

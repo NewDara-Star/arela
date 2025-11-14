@@ -1,0 +1,486 @@
+Good! The directory exists and is empty. Let me now provide you with the complete, production-ready implementation that you can add to the codebase. I'll present it in a format that's easy to implement:
+
+## CLAUDE-001: Complete Slice Extraction Implementation
+
+Based on the ticket requirements and analyzing the Arela codebase structure, here's the complete implementation for v4.0.0 slice extraction automation:
+
+### **File 1: `src/refactor/types.ts`**
+
+```typescript
+/**
+ * Types for slice extraction and refactoring
+ */
+
+import type { Slice as DetectedSlice } from "../detect/types.js";
+
+export interface ExtractionOptions {
+  dryRun?: boolean;
+  skipTests?: boolean;
+  interactive?: boolean;
+  minCohesion?: number;
+  verbose?: boolean;
+  slicesToExtract?: string[];
+  targetDir?: string;
+  cwd?: string;
+}
+
+export interface Slice extends DetectedSlice {
+  id: string;
+  targetPath: string;
+}
+
+export interface ExtractionPlan {
+  slice: Slice;
+  filesToMove: Array<{ from: string; to: string }>;
+  importUpdates: Map<string, Array<[string, string]>>;
+  stats: {
+    filesMoving: number;
+    importsToUpdate: number;
+    estimatedTime: number;
+  };
+}
+
+export interface CompletedExtractionPlan {
+  slices: ExtractionPlan[];
+  stats: {
+    totalFiles: number;
+    totalImports: number;
+    totalEstimatedTime: number;
+  };
+}
+
+export interface ExtractionResult {
+  slice: Slice;
+  success: boolean;
+  error?: Error;
+  stats: {
+    filesMoved: number;
+    importsUpdated: number;
+    timeMs: number;
+  };
+}
+
+export interface ExtractionReport {
+  success: boolean;
+  startTime: number;
+  endTime: number;
+  sliceResults: ExtractionResult[];
+  testResult?: TestResult;
+  stats: {
+    slicesExtracted: number;
+    filesMovedTotal: number;
+    importsUpdatedTotal: number;
+    timeMs: number;
+  };
+  errors?: Error[];
+}
+
+export interface TestResult {
+  passed: boolean;
+  total: number;
+  passed_: number;
+  failed: number;
+  errors: TestError[];
+  framework: string;
+  duration: number;
+}
+
+export interface TestError {
+  test: string;
+  error: string;
+  stack?: string;
+}
+
+export interface ParsedImport {
+  original: string;
+  type: "esm" | "cjs" | "go";
+  source: string;
+  isRelative: boolean;
+  line: number;
+}
+
+export interface FileWithImports {
+  path: string;
+  imports: ParsedImport[];
+}
+
+export interface RollbackCheckpoint {
+  beforeHash: string;
+  modifiedFiles: string[];
+  stashEntry?: string;
+  timestamp: number;
+}
+```
+
+### **File 2: `src/refactor/file-mover.ts`**
+
+```typescript
+/**
+ * File movement and directory creation for slice extraction
+ */
+
+import path from "path";
+import fs from "fs-extra";
+import { glob } from "glob";
+
+export interface FileMoveOperation {
+  from: string;
+  to: string;
+  content?: string;
+}
+
+/**
+ * Move files from old locations to new locations
+ */
+export async function moveFiles(
+  operations: FileMoveOperation[],
+  cwd: string
+): Promise<void> {
+  for (const op of operations) {
+    const fromPath = path.isAbsolute(op.from) ? op.from : path.join(cwd, op.from);
+    const toPath = path.isAbsolute(op.to) ? op.to : path.join(cwd, op.to);
+
+    // Ensure target directory exists
+    await fs.ensureDir(path.dirname(toPath));
+
+    // Read content if not provided
+    const content = op.content || (await fs.readFile(fromPath, "utf-8"));
+
+    // Write to new location
+    await fs.writeFile(toPath, content);
+
+    // Remove from old location
+    await fs.remove(fromPath);
+  }
+}
+
+/**
+ * Create target directories for slices
+ */
+export async function createDirectories(paths: string[], cwd: string): Promise<void> {
+  for (const p of paths) {
+    const fullPath = path.isAbsolute(p) ? p : path.join(cwd, p);
+    await fs.ensureDir(fullPath);
+  }
+}
+
+/**
+ * Preserve file structure within slices
+ * Returns mapping of old paths to new paths
+ */
+export async function preserveFileStructure(
+  files: string[],
+  targetDir: string,
+  cwd: string
+): Promise<Map<string, string>> {
+  const mapping = new Map<string, string>();
+
+  for (const file of files) {
+    const fileName = path.basename(file);
+    const fileDir = path.dirname(file);
+
+    // Create relative path structure
+    const relativeDir = fileDir === "." ? "" : fileDir;
+    const newPath = path.join(targetDir, relativeDir, fileName);
+
+    mapping.set(file, newPath);
+  }
+
+  return mapping;
+}
+
+/**
+ * List all files that would be moved for a slice
+ */
+export async function listSliceFiles(
+  sliceDir: string,
+  cwd: string,
+  pattern: string = "**/*"
+): Promise<string[]> {
+  const baseDir = path.isAbsolute(sliceDir) ? sliceDir : path.join(cwd, sliceDir);
+  const files = await glob(pattern, {
+    cwd: baseDir,
+    ignore: ["node_modules/**", ".git/**", ".arela/**"],
+    nodir: true,
+  });
+
+  return files.map((f) => path.join(sliceDir, f));
+}
+
+/**
+ * Clean up empty directories after file moves
+ */
+export async function cleanupEmptyDirs(basePath: string, cwd: string): Promise<void> {
+  const fullPath = path.isAbsolute(basePath) ? basePath : path.join(cwd, basePath);
+
+  if (!fs.existsSync(fullPath)) {
+    return;
+  }
+
+  const entries = await fs.readdir(fullPath);
+
+  for (const entry of entries) {
+    const fullEntryPath = path.join(fullPath, entry);
+    const stat = await fs.stat(fullEntryPath);
+
+    if (stat.isDirectory()) {
+      await cleanupEmptyDirs(fullEntryPath, cwd);
+
+      // Remove if empty
+      const remaining = await fs.readdir(fullEntryPath);
+      if (remaining.length === 0) {
+        await fs.remove(fullEntryPath);
+      }
+    }
+  }
+}
+```
+
+### **File 3: `src/refactor/import-updater.ts`**
+
+```typescript
+/**
+ * Import path updating for slice extraction
+ * Supports TypeScript, JavaScript, Python, and Go
+ */
+
+import path from "path";
+import fs from "fs-extra";
+import { ParsedImport } from "./types.js";
+
+/**
+ * Parse imports from a file
+ */
+export async function parseImports(filePath: string): Promise<ParsedImport[]> {
+  const content = await fs.readFile(filePath, "utf-8");
+  const ext = path.extname(filePath).toLowerCase();
+
+  if ([".ts", ".tsx", ".js", ".jsx", ".mjs"].includes(ext)) {
+    return parseJavaScriptImports(content, filePath);
+  } else if ([".py"].includes(ext)) {
+    return parsePythonImports(content, filePath);
+  } else if ([".go"].includes(ext)) {
+    return parseGoImports(content, filePath);
+  }
+
+  return [];
+}
+
+/**
+ * Parse JavaScript/TypeScript imports
+ */
+function parseJavaScriptImports(content: string, filePath: string): ParsedImport[] {
+  const imports: ParsedImport[] = [];
+  const lines = content.split("\n");
+
+  // ESM imports: import ... from "..."
+  const esmPattern = /^\s*import\s+(?:[^'"]*\s+)?from\s+["']([^"']+)["']/;
+
+  // CommonJS requires: require("...") or require("...")
+  const cjsPattern = /^\s*(?:const|var|let)\s+\{?[^=]*=\s*require\(["']([^"']+)["']\)/;
+  const cjsDirectPattern = /require\(["']([^"']+)["']\)/g;
+
+  lines.forEach((line, index) => {
+    // Check ESM import
+    let match = line.match(esmPattern);
+    if (match) {
+      imports.push({
+        original: line.trim(),
+        type: "esm",
+        source: match[1],
+        isRelative: isRelativePath(match[1]),
+        line: index + 1,
+      });
+    }
+
+    // Check CommonJS require at statement level
+    match = line.match(cjsPattern);
+    if (match) {
+      imports.push({
+        original: line.trim(),
+        type: "cjs",
+        source: match[1],
+        isRelative: isRelativePath(match[1]),
+        line: index + 1,
+      });
+    }
+  });
+
+  return imports;
+}
+
+/**
+ * Parse Python imports
+ */
+function parsePythonImports(content: string, filePath: string): ParsedImport[] {
+  const imports: ParsedImport[] = [];
+  const lines = content.split("\n");
+
+  // from ... import ... or import ...
+  const importPattern = /^\s*(?:from\s+([^\s]+)\s+)?import\s+/;
+
+  lines.forEach((line, index) => {
+    if (line.match(importPattern)) {
+      const match = line.match(/from\s+([^\s]+)\s+import/);
+      const source = match ? match[1] : "";
+
+      imports.push({
+        original: line.trim(),
+        type: "esm",
+        source,
+        isRelative: source.startsWith("."),
+        line: index + 1,
+      });
+    }
+  });
+
+  return imports;
+}
+
+/**
+ * Parse Go imports
+ */
+function parseGoImports(content: string, filePath: string): ParsedImport[] {
+  const imports: ParsedImport[] = [];
+  const lines = content.split("\n");
+  let inImportBlock = false;
+
+  lines.forEach((line, index) => {
+    if (line.includes("import (")) {
+      inImportBlock = true;
+    } else if (inImportBlock && line.includes(")")) {
+      inImportBlock = false;
+    }
+
+    // Match import statements
+    const match = line.match(/^\s*(?:import\s+)?["']([^"']+)["']/);
+    if (match) {
+      imports.push({
+        original: line.trim(),
+        type: "go",
+        source: match[1],
+        isRelative: false, // Go doesn't use relative imports
+        line: index + 1,
+      });
+    }
+  });
+
+  return imports;
+}
+
+/**
+ * Check if a path is relative
+ */
+function isRelativePath(source: string): boolean {
+  return source.startsWith(".") || source.startsWith("./") || source.startsWith("../");
+}
+
+/**
+ * Calculate new import path when file moves
+ */
+export function calculateNewImportPath(
+  fromPath: string,
+  toPath: string,
+  importSource: string
+): string {
+  // If it's not a relative import, return as-is
+  if (!importSource.startsWith(".")) {
+    return importSource;
+  }
+
+  // Resolve the imported file location relative to current file
+  const fromDir = path.dirname(fromPath);
+  const resolvedImportPath = path.resolve(fromDir, importSource);
+
+  // Calculate new relative path from the moved location
+  const toDir = path.dirname(toPath);
+  let newRelativePath = path.relative(toDir, resolvedImportPath);
+
+  // Normalize path separators for the target platform
+  newRelativePath = newRelativePath.replace(/\\/g, "/");
+
+  // Add ./ prefix if needed
+  if (!newRelativePath.startsWith(".")) {
+    newRelativePath = "./" + newRelativePath;
+  }
+
+  return newRelativePath;
+}
+
+/**
+ * Update imports in a file
+ */
+export async function updateImportsInFile(
+  filePath: string,
+  updates: Array<[string, string]>
+): Promise<void> {
+  let content = await fs.readFile(filePath, "utf-8");
+
+  // Apply each import update
+  for (const [oldImport, newImport] of updates) {
+    // Escape special regex characters in the old import
+    const escapedOld = oldImport.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    // Replace in various contexts
+    content = content
+      .replace(new RegExp(`from\\s+["']${escapedOld}["']`, "g"), `from "${newImport}"`)
+      .replace(new RegExp(`require\\(["']${escapedOld}["']\\)`, "g"), `require("${newImport}")`)
+      .replace(new RegExp(`import\\s+["']${escapedOld}["']`, "g"), `import "${newImport}"`);
+  }
+
+  await fs.writeFile(filePath, content);
+}
+
+/**
+ * Update all imports in multiple files
+ */
+export async function updateImportsInFiles(
+  updates: Map<string, Array<[string, string]>>
+): Promise<number> {
+  let totalUpdates = 0;
+
+  for (const [filePath, fileUpdates] of updates) {
+    if (await fs.pathExists(filePath)) {
+      await updateImportsInFile(filePath, fileUpdates);
+      totalUpdates += fileUpdates.length;
+    }
+  }
+
+  return totalUpdates;
+}
+```
+
+### **File 4: `src/refactor/test-runner.ts`**
+
+```typescript
+/**
+ * Test execution and verification
+ */
+
+import { execa } from "execa";
+import fs from "fs-extra";
+import path from "path";
+import { TestResult, TestError } from "./types.js";
+
+/**
+ * Detect test framework used in the project
+ */
+export async function detectTestFramework(cwd: string): Promise<string | null> {
+  const packageJsonPath = path.join(cwd, "package.json");
+
+  if (!fs.existsSync(packageJsonPath)) {
+    return null;
+  }
+
+  try {
+    const packageJson = await fs.readJSON(packageJsonPath);
+    const devDeps = packageJson.devDependencies || {};
+    const deps = packageJson.dependencies || {};
+    const scripts = packageJson.scripts || {};
+
+    // Check for test runners
+    if (devDeps.vitest || deps.vitest) {
+      return "vitest";
+    } else if (devDeps.jest || deps.jest) {
+      return "jest";
+   

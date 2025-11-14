@@ -1,5 +1,141 @@
 # Changelog
 
+## [3.10.0] - 2025-11-14
+
+### 🎯 Phase 3 Continued - Quality & Governance
+
+**"Prevent API drift and manage breaking changes automatically!"**
+
+### ✨ New Features
+
+#### 1. Contract Validation with Dredd Integration
+
+**Automatically validate OpenAPI contracts against running API servers**
+
+- **`arela validate contracts`** - Validate all OpenAPI specs or specific contracts
+- **Dredd integration** - Industry-standard specification-driven validation
+- **Auto-start server** - Automatically starts API server with retry logic
+- **CI/CD ready** - GitHub Actions workflow included
+- **Clear error reporting** - Formatted output with actionable messages
+
+**CLI Commands:**
+```bash
+# Validate all contracts
+arela validate contracts
+
+# Validate specific contract
+arela validate contracts --contract openapi/workout-api.yaml
+
+# Custom server URL
+arela validate contracts --server-url http://localhost:8080
+
+# Watch mode
+arela validate contracts --watch
+```
+
+**What it prevents:**
+- ✅ API drift between spec and implementation
+- ✅ Breaking changes shipping to production
+- ✅ Undocumented endpoints
+- ✅ Schema mismatches
+
+**Files created:**
+- `src/validate/contract-validator.ts` - Main validator logic
+- `src/validate/dredd-runner.ts` - Dredd wrapper
+- `.github/workflows/contract-validation.yml` - CI/CD workflow
+- `docs/contract-validation.md` - Complete documentation
+
+#### 2. API Versioning & Drift Detection
+
+**Detect breaking changes and manage API versions safely**
+
+- **`arela version detect-drift`** - Flags breaking changes in OpenAPI specs
+- **`arela version create <slice>`** - Creates versioned slices (v2, v3, etc.)
+- **Git-aware detection** - Compares current spec with git history
+- **Schema-level analysis** - Detects field/type regressions
+- **CI/CD integration** - Fails builds on breaking changes
+
+**CLI Commands:**
+```bash
+# Detect API drift
+arela version detect-drift
+
+# Create v2 of a slice
+arela version create workout --version 2
+
+# Detect drift for specific contract
+arela version detect-drift --contract openapi/workout-api.yaml
+```
+
+**What it detects:**
+- 🔴 Removed endpoints (CRITICAL)
+- 🔴 Removed operations (CRITICAL)
+- 🟠 Missing responses (HIGH)
+- 🟡 Schema field changes (MEDIUM)
+- 🟡 Type changes (MEDIUM)
+
+**Files created:**
+- `src/version/drift-detector.ts` - Git-aware drift detection
+- `src/version/schema-comparator.ts` - Schema comparison utilities
+- `src/version/version-creator.ts` - Slice versioning logic
+- `docs/versioning.md` - Complete documentation
+
+#### 3. Windsurf Workflow Integration
+
+**Structured processes for common development tasks**
+
+- **`/research-driven-decision`** - Systematic approach to technical decisions
+- **Workflow system** - Repeatable processes via slash commands
+- **Auto-initialization** - Workflows created during `arela init`
+
+**How to use:**
+```
+# In Windsurf Cascade
+/research-driven-decision
+```
+
+**Files created:**
+- `.windsurf/workflows/research-driven-decision.md` - Workflow definition
+- `docs/workflows.md` - Complete documentation
+
+### 🔧 Improvements
+
+- **Enhanced init process** - Now creates `.windsurf/workflows/` directory
+- **Better documentation** - Added workflow integration guide
+- **Memory updates** - Research-driven decision making protocol
+
+### 📚 Documentation
+
+- ✅ `docs/contract-validation.md` - Contract validation guide
+- ✅ `docs/versioning.md` - API versioning guide
+- ✅ `docs/workflows.md` - Workflow system guide
+- ✅ `WORKFLOW_INTEGRATION.md` - Technical integration details
+- ✅ Updated README with workflows section
+
+### 🧪 Testing
+
+- ✅ Contract validator unit tests
+- ✅ Drift detector unit tests
+- ✅ Version creator tests
+- ✅ All tests passing
+
+### 🎯 Impact
+
+**This release completes the API-Contract-First workflow:**
+1. Generate contracts from code (v3.8.0)
+2. Generate clients from contracts (v3.9.0)
+3. **Validate contracts match implementation (v3.10.0)** ✨
+4. **Detect and manage breaking changes (v3.10.0)** ✨
+
+**VSA + API-Contract-First architecture is now fully supported!**
+
+### 📦 Dependencies
+
+- Added `dredd` for contract validation
+- Added `yaml` for YAML parsing
+
+---
+
 ## [3.9.1] - 2025-11-13
 
 ### 📚 Documentation Updates

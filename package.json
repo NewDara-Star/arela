@@ -1,6 +1,6 @@
 {
   "name": "arela",
-  "version": "3.9.1",
+  "version": "3.10.0",
   "description": "AI-powered CTO with multi-agent orchestration, visual testing (web + mobile) for blazing fast development.",
   "type": "module",
   "main": "./dist/index.js",
@@ -37,6 +37,7 @@
     "url": "https://github.com/newdara/arela.git"
   },
   "dependencies": {
+    "@mapequation/infomap": "^2.8.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "appium": "^2.0.0",
     "appium-uiautomator2-driver": "^3.0.0",
@@ -44,6 +45,7 @@
     "axios": "^1.6.0",
     "better-sqlite3": "^11.0.0",
     "commander": "^12.0.0",
+    "dredd": "^14.1.0",
     "execa": "^9.0.0",
     "fast-glob": "^3.3.0",
     "fs-extra": "^11.2.0",

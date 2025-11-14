@@ -1,9 +1,5 @@
 ---
-id: arela.blameless_culture
-title: Blameless Culture
-category: culture
-severity: must
-version: 1.0.0
+trigger: always_on
 ---
 
 # Blameless Culture

@@ -1,9 +1,5 @@
 ---
-id: arela.refactor_over_rewrite
-title: Refactor Over Rewrite
-category: engineering
-severity: should
-version: 1.0.0
+trigger: always_on
 ---
 
 # Refactor Over Rewrite

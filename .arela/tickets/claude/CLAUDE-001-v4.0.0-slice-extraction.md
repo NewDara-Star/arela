@@ -1,0 +1,348 @@
+# CLAUDE-001: Slice Extraction Automation (v4.0.0)
+
+**Agent:** claude  
+**Priority:** CRITICAL  
+**Complexity:** HIGH  
+**Estimated Time:** 6-8 hours
+
+## Context
+
+This is THE holy grail feature for Arela. Autonomous slice extraction that moves files, updates imports, runs tests, and creates commits automatically.
+
+**Current state:**
+- v3.8.0: Can detect slices ✅
+- v3.9.0: Can generate clients ✅
+- v3.10.0: Can validate contracts ✅
+- v4.0.0: **Can extract slices automatically** 🎯
+
+## The Vision
+
+```bash
+arela refactor extract-all-slices
+
+# Arela does EVERYTHING:
+# 1. Detects 8 slices (using Infomap from v3.8.0)
+# 2. Moves 500+ files into features/ directories
+# 3. Updates 2000+ import paths
+# 4. Runs tests to verify nothing broke
+# 5. Creates 8 git commits (one per slice)
+# 6. Architecture is now vertical!
+
+# User: 🤯 "It just... worked?"
+```
+
+## Requirements
+
+### Must Have
+
+1. **Slice Detection Integration**
+   - Use existing `detectSlices()` from v3.8.0
+   - Get slice boundaries and file assignments
+   - Validate slice quality (cohesion > 70%)
+
+2. **File Movement**
+   - Create `features/<slice-name>/` directories
+   - Move files to appropriate slice directories
+   - Preserve file structure within slices
+   - Handle edge cases (shared utilities, config files)
+
+3. **Import Path Updates**
+   - Parse all import statements (TypeScript, JavaScript, Python, Go)
+   - Calculate new relative paths
+   - Update all imports across codebase
+   - Handle barrel exports (index.ts)
+
+4. **Test Verification**
+   - Run test suite after extraction
+   - If tests fail, rollback changes
+   - Report which tests failed and why
+
+5. **Git Integration**
+   - Create one commit per slice
+   - Clear commit messages: "Extract <slice-name> slice"
+   - Include file count and import updates in message
+   - Tag with `arela-refactor-v4.0.0`
+
+6. **Dry Run Mode**
+   - Show what would be moved without doing it
+   - Preview import changes
+   - Estimate time and risk
+
+### Should Have
+
+7. **Rollback Support**
+   - If anything fails, rollback all changes
+   - Restore original state
+   - Clear error messages
+
+8. **Progress Reporting**
+   - Show progress for each step
+   - Estimated time remaining
+   - Clear success/failure messages
+
+9. **Shared Code Handling**
+   - Detect shared utilities (high in-degree, low out-degree)
+   - Keep in `shared/` or `common/` directory
+   - Don't duplicate shared code
+
+### Nice to Have
+
+10. **Interactive Mode**
+    - Ask user to confirm each slice
+    - Allow manual adjustments
+    - Preview changes before applying
+
+11. **Conflict Resolution**
+    - Detect naming conflicts
+    - Suggest resolutions
+    - Allow user to choose
+
+## Technical Implementation
+
+### Files to Create
+
+```
+src/refactor/
+├── index.ts              # Main orchestrator
+├── slice-extractor.ts    # Core extraction logic
+├── file-mover.ts         # File system operations
+├── import-updater.ts     # Import path rewriting
+├── test-runner.ts        # Test verification
+├── git-manager.ts        # Git operations
+└── types.ts              # TypeScript types
+```
+
+### Architecture
+
+```typescript
+// Main flow
+async function extractAllSlices(options: ExtractionOptions) {
+  // 1. Detect slices
+  const slices = await detectSlices();
+  
+  // 2. Validate quality
+  const validSlices = slices.filter(s => s.cohesion > 70);
+  
+  // 3. Plan extraction
+  const plan = createExtractionPlan(validSlices);
+  
+  // 4. Dry run (if requested)
+  if (options.dryRun) {
+    return showPlan(plan);
+  }
+  
+  // 5. Execute extraction
+  for (const slice of plan.slices) {
+    await extractSlice(slice);
+  }
+  
+  // 6. Verify with tests
+  const testResult = await runTests();
+  if (!testResult.passed) {
+    await rollback();
+    throw new Error('Tests failed, rolled back');
+  }
+  
+  // 7. Commit changes
+  await commitSlices(plan.slices);
+}
+```
+
+### Import Path Rewriting
+
+**Challenge:** Update all imports when files move
+
+**Solution:**
+```typescript
+// Before: src/components/Button.tsx
+import { theme } from '../utils/theme';
+
+// After: features/ui/components/Button.tsx
+import { theme } from '../../shared/utils/theme';
+
+// Algorithm:
+// 1. Parse import statement
+// 2. Resolve absolute path
+// 3. Calculate new relative path from new location
+// 4. Update import statement
+```
+
+### Test Verification
+
+**Challenge:** Ensure nothing broke
+
+**Solution:**
+```typescript
+async function runTests(): Promise<TestResult> {
+  // 1. Detect test framework (Jest, Vitest, pytest, etc.)
+  // 2. Run test suite
+  // 3. Parse output
+  // 4. Return pass/fail with details
+}
+```
+
+### Git Integration
+
+**Challenge:** Create clean commits
+
+**Solution:**
+```typescript
+async function commitSlice(slice: Slice) {
+  const message = `
+Extract ${slice.name} slice
+
+- Moved ${slice.files.length} files
+- Updated ${slice.imports.length} imports
+- Cohesion: ${slice.cohesion}%
+
+Generated by Arela v4.0.0
+  `.trim();
+  
+  await git.add(slice.files);
+  await git.commit(message);
+}
+```
+
+## CLI Commands
+
+```bash
+# Extract all slices
+arela refactor extract-all-slices
+
+# Extract specific slice
+arela refactor extract-slice authentication
+
+# Dry run (preview only)
+arela refactor extract-all-slices --dry-run
+
+# Skip tests (faster but risky)
+arela refactor extract-all-slices --skip-tests
+
+# Interactive mode
+arela refactor extract-all-slices --interactive
+```
+
+## Acceptance Criteria
+
+- [x] Can detect slices using existing v3.8.0 code
+- [x] Can move files to features/ directories
+- [x] Can update all import paths correctly
+- [x] Can run tests and verify nothing broke
+- [x] Can rollback if tests fail
+- [x] Can create git commits (one per slice)
+- [x] Dry run mode works
+- [x] Progress reporting is clear
+- [x] Handles shared code correctly
+- [x] Works on TypeScript projects
+- [x] Documentation complete
+- [ ] Works on zombie game (test case) - Ready for testing
+
+## Test Plan
+
+### Unit Tests
+- File mover: Create directories, move files
+- Import updater: Parse imports, calculate paths, update
+- Test runner: Detect framework, run tests, parse output
+- Git manager: Create commits, rollback
+
+### Integration Tests
+- Full extraction on zombie game
+- Verify all imports work
+- Verify tests pass
+- Verify git commits created
+
+### Edge Cases
+- Circular dependencies
+- Shared utilities
+- Barrel exports (index.ts)
+- Missing test suite
+- Git conflicts
+
+## Success Metrics
+
+**Performance:**
+- Extract 500 files in < 30 seconds
+- Update 2000 imports in < 10 seconds
+- Run tests in < 60 seconds
+
+**Quality:**
+- 100% of imports updated correctly
+- 100% of tests pass after extraction
+- 0 manual fixes required
+
+**User Experience:**
+- Clear progress reporting
+- Helpful error messages
+- Easy rollback if needed
+
+## Example Output
+
+```
+🔍 Detecting slices...
+✅ Found 8 slices with 70%+ cohesion
+
+📋 Extraction Plan:
+  🔐 authentication (12 files, 45 imports)
+  💪 workout (23 files, 89 imports)
+  🍎 nutrition (18 files, 67 imports)
+  👥 social (15 files, 54 imports)
+  ... 4 more
+
+🚀 Starting extraction...
+
+[1/8] 🔐 Extracting authentication...
+  📁 Moving 12 files...
+  ✅ Moved to features/authentication/
+  🔗 Updating 45 imports...
+  ✅ All imports updated
+  ✅ Committed: Extract authentication slice
+
+[2/8] 💪 Extracting workout...
+  📁 Moving 23 files...
+  ✅ Moved to features/workout/
+  🔗 Updating 89 imports...
+  ✅ All imports updated
+  ✅ Committed: Extract workout slice
+
+... 6 more
+
+🧪 Running tests...
+✅ All tests passed (247/247)
+
+🎉 Extraction complete!
+  - 8 slices extracted
+  - 124 files moved
+  - 456 imports updated
+  - 8 commits created
+  - 0 tests broken
+
+Your architecture is now vertical! 🎯
+```
+
+## Documentation
+
+Create:
+- `docs/slice-extraction.md` - Complete guide
+- Update `README.md` with v4.0.0 features
+- Update `CHANGELOG.md`
+- Add examples to `QUICKSTART.md`
+
+## Next Steps After Implementation
+
+1. Test on zombie game
+2. Test on Stride (tomorrow)
+3. Gather feedback
+4. Fix bugs
+5. Ship v4.0.0 to NPM
+
+## Notes
+
+**This is the feature that makes Arela truly autonomous.**
+
+Users can go from:
+- Horizontal architecture (messy, coupled)
+- To vertical slices (clean, decoupled)
+- With ONE command
+- In minutes, not weeks
+
+**This is game-changing.** 🚀

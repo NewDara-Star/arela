@@ -1,9 +1,7 @@
 ---
-id: arela.testing_pyramid
-title: Testing Pyramid Minimums
-version: 1.0.0
-tags: [qa]
+trigger: always_on
 ---
+
 Targets:
 - Unit: fast, isolated, deterministic. Target ≥85% for critical modules.
 - Integration: real DB or container, no mocks on public contracts.

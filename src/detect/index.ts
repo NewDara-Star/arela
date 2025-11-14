@@ -4,7 +4,7 @@
 
 import path from "node:path";
 import fs from "fs-extra";
-import { louvainClustering } from "./louvain.js";
+import { detectCommunitiesInfomap } from "./infomap.js";
 import { loadGraph, loadMultiRepoGraph } from "./graph-loader.js";
 import { calculateCohesion, calculateAverageCohesion } from "./modularity.js";
 import { suggestSliceName, getFeatureEmoji } from "./slice-namer.js";
@@ -19,11 +19,14 @@ export async function detectSlices(
   cwd: string = process.cwd(),
   options?: DetectOptions
 ): Promise<SliceReport> {
+  // Resolve repo paths to absolute paths
+  const absoluteRepoPaths = repoPaths.map(p => path.resolve(cwd, p));
+  
   // Resolve graph DB path - check repo paths first, then cwd
   let dbPath: string | null = null;
   
   // Try provided repo paths first
-  for (const repoPath of repoPaths) {
+  for (const repoPath of absoluteRepoPaths) {
     const candidatePath = path.join(repoPath, ".arela", "memory", "graph.db");
     if (await fs.pathExists(candidatePath)) {
       dbPath = candidatePath;
@@ -49,16 +52,21 @@ export async function detectSlices(
   }
 
   // Load graph
-  const graph = repoPaths.length > 0
-    ? loadMultiRepoGraph(dbPath, repoPaths)
+  const graph = absoluteRepoPaths.length > 0
+    ? loadMultiRepoGraph(dbPath, absoluteRepoPaths)
     : loadGraph(dbPath);
 
   if (graph.nodes.length === 0) {
     throw new Error("No files found in graph. Run 'arela ingest codebase' first.");
   }
 
-  // Run Louvain clustering
-  const communities = louvainClustering(graph);
+  // Run Infomap clustering (information flow-based, conceptually superior for codebases)
+  const communities = detectCommunitiesInfomap(graph, {
+    directed: true,
+    twoLevel: true,
+    numTrials: 20,
+    seed: 42,
+  });
 
   // Convert communities to slices
   const slices = communitiesToSlices(communities, graph);

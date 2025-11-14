@@ -1,9 +1,5 @@
 ---
-id: arela.state_management
-title: State Management
-category: frontend
-severity: should
-version: 1.0.0
+trigger: always_on
 ---
 
 # State Management

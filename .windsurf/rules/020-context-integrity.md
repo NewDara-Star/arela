@@ -1,10 +1,7 @@
 ---
-id: arela.context_integrity
-title: Context Integrity Protocol
-version: 1.0.0
-priority: highest
-tags: [process, quality]
+trigger: always_on
 ---
+
 At session start:
 1) Re-read the latest project state note.
 2) Ingest new inputs from THIS turn first.

@@ -1,9 +1,7 @@
 ---
-id: arela.code_review_gates
-title: Code Review Quality Gates
-version: 1.0.0
-tags: [qa, review]
+trigger: always_on
 ---
+
 Gate the PR on:
 - Static checks clean; types precise; security warnings resolved.
 - Tests: unit for business logic; integration for contracts; smoke e2e for core journeys.

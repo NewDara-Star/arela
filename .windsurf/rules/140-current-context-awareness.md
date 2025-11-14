@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Rule 140: Current Context Awareness
 
 **Status:** Active  

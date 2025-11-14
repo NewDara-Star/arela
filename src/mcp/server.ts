@@ -4,6 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { search, type RagConfig, ensureOllamaInstalled, ensureModelAvailable, isOllamaRunning, startOllamaServer } from "../rag/index.js";
 import { createRequire } from "module";
+import { searchEnforcer } from "./search-enforcer.js";
 
 const require = createRequire(import.meta.url);
 const pkg = require("../../package.json");
@@ -84,6 +85,10 @@ export function createArelaMcpServer(options: ArelaMcpServerOptions = {}): McpSe
     },
     async ({ query, topK }) => {
       const start = Date.now();
+      
+      // Record arela_search usage
+      searchEnforcer.recordToolCall('arela_search', { query, topK });
+      
       try {
         const results = await search(query, ragConfig, topK ?? defaultTopK);
         const payload: SearchPayload = {
@@ -114,6 +119,51 @@ export function createArelaMcpServer(options: ArelaMcpServerOptions = {}): McpSe
           isError: true,
         };
       }
+    },
+  );
+
+  // Register grep_search wrapper that enforces arela_search first
+  server.registerTool(
+    "grep_search",
+    {
+      title: "Grep Search (Enforced)",
+      description: "Search files using grep. NOTE: You MUST try arela_search first!",
+      inputSchema: {
+        query: z.string().min(1, "Provide a search query"),
+        path: z.string().optional().describe("Path to search in"),
+      },
+      outputSchema: {
+        allowed: z.boolean(),
+        message: z.string(),
+      },
+    },
+    async ({ query, path }) => {
+      // Record grep attempt
+      searchEnforcer.recordToolCall('grep_search', { query, path });
+      
+      // Validate if grep is allowed
+      const validation = searchEnforcer.validateGrepAttempt(query);
+      
+      if (!validation.allowed) {
+        // BLOCKED! Return error message
+        return {
+          content: [{ type: "text", text: validation.message! }],
+          structuredContent: {
+            allowed: false,
+            message: validation.message!
+          },
+          isError: true,
+        };
+      }
+      
+      // Allowed - they tried arela_search first
+      return {
+        content: [{ type: "text", text: "✅ grep_search allowed (you tried arela_search first). Proceed with your grep command." }],
+        structuredContent: {
+          allowed: true,
+          message: "Allowed - arela_search was tried first"
+        },
+      };
     },
   );
 

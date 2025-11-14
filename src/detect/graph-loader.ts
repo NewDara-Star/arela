@@ -43,7 +43,7 @@ export function loadGraph(dbPath: string): Graph {
 
     const edges: ImportEdge[] = [];
 
-    // Calculate degrees and create edges
+    // Calculate degrees and create edges from explicit imports
     for (const row of importRows) {
       const fromNode = nodeMap.get(row.from_file_id);
       if (!fromNode) continue;
@@ -67,6 +67,52 @@ export function loadGraph(dbPath: string): Graph {
           // Update degrees
           fromNode.degree += row.weight;
           toNode.degree += row.weight;
+        }
+      }
+    }
+
+    // Add implicit edges between files in the same directory
+    // This reflects package-level coupling in languages like Go, Python, Java
+    const directoryGroups = new Map<string, number[]>();
+    
+    // Group files by directory
+    for (const node of nodes) {
+      const dir = node.path.includes('/') 
+        ? node.path.substring(0, node.path.lastIndexOf('/'))
+        : '.';
+      
+      if (!directoryGroups.has(dir)) {
+        directoryGroups.set(dir, []);
+      }
+      directoryGroups.get(dir)!.push(node.id);
+    }
+    
+    // Create edges between files in the same directory
+    for (const [dir, fileIds] of directoryGroups.entries()) {
+      if (fileIds.length > 1) {
+        // Create bidirectional edges between all pairs of files in the directory
+        for (let i = 0; i < fileIds.length; i++) {
+          for (let j = i + 1; j < fileIds.length; j++) {
+            // Add edge in both directions for stronger coupling
+            edges.push({
+              from: fileIds[i],
+              to: fileIds[j],
+              weight: 1.0, // Same weight as explicit imports
+            });
+            edges.push({
+              from: fileIds[j],
+              to: fileIds[i],
+              weight: 1.0,
+            });
+            
+            // Update degrees
+            const fromNode = nodeMap.get(fileIds[i]);
+            const toNode = nodeMap.get(fileIds[j]);
+            if (fromNode && toNode) {
+              fromNode.degree += 1.0;
+              toNode.degree += 1.0;
+            }
+          }
         }
       }
     }
@@ -212,6 +258,52 @@ export function loadMultiRepoGraph(dbPath: string, repos?: string[]): Graph {
 
           fromNode.degree += row.weight;
           toNode.degree += row.weight;
+        }
+      }
+    }
+
+    // Add implicit edges between files in the same directory
+    // This reflects package-level coupling in languages like Go, Python, Java
+    const directoryGroups = new Map<string, number[]>();
+    
+    // Group files by directory
+    for (const node of nodes) {
+      const dir = node.path.includes('/') 
+        ? node.path.substring(0, node.path.lastIndexOf('/'))
+        : '.';
+      
+      if (!directoryGroups.has(dir)) {
+        directoryGroups.set(dir, []);
+      }
+      directoryGroups.get(dir)!.push(node.id);
+    }
+    
+    // Create edges between all pairs of files in the same directory
+    for (const [dir, fileIds] of directoryGroups.entries()) {
+      if (fileIds.length > 1) {
+        // Create bidirectional edges between all pairs
+        for (let i = 0; i < fileIds.length; i++) {
+          for (let j = i + 1; j < fileIds.length; j++) {
+            // Add edge in both directions for stronger coupling
+            edges.push({
+              from: fileIds[i],
+              to: fileIds[j],
+              weight: 1.0,
+            });
+            edges.push({
+              from: fileIds[j],
+              to: fileIds[i],
+              weight: 1.0,
+            });
+            
+            // Update degrees
+            const fromNode = nodeMap.get(fileIds[i]);
+            const toNode = nodeMap.get(fileIds[j]);
+            if (fromNode && toNode) {
+              fromNode.degree += 1.0;
+              toNode.degree += 1.0;
+            }
+          }
         }
       }
     }

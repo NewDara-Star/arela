@@ -1,9 +1,5 @@
 ---
-id: arela.technical_debt_management
-title: Technical Debt Management
-category: architecture
-severity: must
-version: 1.0.0
+trigger: always_on
 ---
 
 # Technical Debt Management

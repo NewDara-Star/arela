@@ -1,9 +1,5 @@
 ---
-id: arela.prd_format
-title: PRD Format
-category: product
-severity: should
-version: 1.0.0
+trigger: always_on
 ---
 
 # PRD Format

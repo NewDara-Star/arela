@@ -1,10 +1,7 @@
 ---
-id: arela.testing_trophy
-title: Testing Trophy Focus
-version: 1.0.0
-tags: [qa]
-research_origin: "Kent C. Dodds — Trophy"
+trigger: always_on
 ---
+
 Priorities:
 - Static analysis baseline (TS, ESLint) mandatory.
 - Unit tests for pure logic only.

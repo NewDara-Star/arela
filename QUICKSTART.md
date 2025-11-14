@@ -1,4 +1,4 @@
-# Arela v3.9.1 - Quickstart Guide
+# Arela v3.10.0 - Quickstart Guide
 
 ## Installing Arela in an Existing Project
 
@@ -499,7 +499,110 @@ Savage honesty, direct feedback, no-nonsense
 
 ---
 
-## **NEW in v3.9.0: Contract-Driven Development**
+## **NEW in v3.10.0: Quality & Governance**
+
+### **Validate API Contracts with Dredd**
+
+Prevent API drift by validating OpenAPI contracts against running servers:
+
+```bash
+# Validate all contracts
+arela validate contracts
+
+# Validate specific contract
+arela validate contracts --contract openapi/workout-api.yaml
+
+# Custom server URL
+arela validate contracts --server-url http://localhost:8080
+
+# Watch mode (re-validate on changes)
+arela validate contracts --watch
+```
+
+**What it prevents:**
+- ✅ API drift between spec and implementation
+- ✅ Breaking changes shipping to production
+- ✅ Undocumented endpoints
+- ✅ Schema mismatches
+
+**Example output:**
+```
+🔍 Validating contracts...
+
+✅ openapi/workout-api.yaml
+   GET /api/workouts - PASS
+   POST /api/workouts - PASS
+   GET /api/workouts/:id - PASS
+
+❌ openapi/user-api.yaml
+   POST /api/users - FAIL
+   Expected: { name, email, password }
+   Got: { name, email }
+   Missing required field: password
+
+💡 Fix the implementation or update the contract
+```
+
+### **Detect API Drift & Manage Versions**
+
+Catch breaking changes before they reach production:
+
+```bash
+# Detect drift in all contracts
+arela version detect-drift
+
+# Detect drift in specific contract
+arela version detect-drift --contract openapi/workout-api.yaml
+
+# Create v2 of a slice when breaking changes needed
+arela version create workout --version 2
+```
+
+**What it detects:**
+- 🔴 Removed endpoints (CRITICAL)
+- 🔴 Removed operations (CRITICAL)
+- 🟠 Missing responses (HIGH)
+- 🟡 Schema field changes (MEDIUM)
+- 🟡 Type changes (MEDIUM)
+
+**Example output:**
+```
+🚨 Breaking changes detected!
+
+openapi/workout-api.yaml:
+  🔴 CRITICAL: Removed endpoint DELETE /api/workouts/:id
+  🟠 HIGH: Missing 404 response for GET /api/workouts/:id
+  🟡 MEDIUM: Field 'duration' changed from number to string
+
+💡 Create v2: arela version create workout --version 2
+```
+
+### **Use Workflows in Windsurf**
+
+Structured processes for common development tasks:
+
+```
+# In Windsurf Cascade
+/research-driven-decision
+```
+
+**What it does:**
+1. Identifies decision points
+2. Generates structured research prompts
+3. Guides you through ChatGPT + Gemini research
+4. Reviews findings together
+5. Implements with documented rationale
+6. Creates memory of the decision
+
+**Example use case:**
+- Choosing between algorithms (Louvain vs Infomap)
+- Evaluating new technologies
+- Architectural decisions
+- Performance-critical choices
+
+---
+
+## **Previous Release: v3.9.0 - Contract-Driven Development**
 
 ### **Generate Type-Safe API Clients**
 

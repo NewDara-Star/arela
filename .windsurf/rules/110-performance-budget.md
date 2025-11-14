@@ -1,9 +1,5 @@
 ---
-id: arela.performance_budget
-title: Performance Budget
-category: performance
-severity: should
-version: 1.0.0
+trigger: always_on
 ---
 
 # Performance Budget

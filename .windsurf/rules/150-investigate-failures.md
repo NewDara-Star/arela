@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Rule 140: Investigate Failures for Root Cause
 
 ## Context

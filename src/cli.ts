@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { pathToFileURL } from "node:url";
+import path from "node:path";
 import { Command } from "commander";
 import pc from "picocolors";
 import { discoverAgents } from "./agents/discovery.js";
@@ -9,11 +10,13 @@ import { getAgentCapabilities } from "./agents/dispatch.js";
 import { showStatus } from "./agents/status.js";
 import { initProject } from "./persona/loader.js";
 import { registerMemoryCommands } from "./memory/cli.js";
+import { detectBreakingChanges } from "./version/drift-detector.js";
+import { createSliceVersion } from "./version/version-creator.js";
 
 const program = new Command()
   .name("arela")
   .description("AI-powered CTO with multi-agent orchestration")
-  .version("3.9.1");
+  .version("3.10.0");
 
 /**
  * arela agents - List discovered agents
@@ -716,6 +719,34 @@ program
   });
 
 /**
+ * arela mcp stats - Show search enforcement statistics
+ */
+program
+  .command("mcp-stats")
+  .description("Show search enforcement statistics from MCP server")
+  .action(async () => {
+    console.log(pc.bold(pc.cyan("\n📊 Search Enforcement Statistics\n")));
+    
+    try {
+      const { searchEnforcer } = await import("./mcp/search-enforcer.js");
+      
+      searchEnforcer.printStats();
+      
+      const stats = searchEnforcer.getStats();
+      
+      if (parseInt(stats.complianceRate) < 50) {
+        console.log(pc.yellow("⚠️  Low compliance rate! Agents are not using arela_search enough.\n"));
+      } else if (parseInt(stats.complianceRate) >= 90) {
+        console.log(pc.green("🎉 Excellent compliance! Agents are using arela_search properly.\n"));
+      }
+      
+    } catch (error) {
+      console.error(pc.red(`\n❌ Failed to get stats: ${(error as Error).message}\n`));
+      process.exit(1);
+    }
+  });
+
+/**
  * arela detect slices - Detect vertical slices
  */
 program
@@ -848,6 +879,306 @@ async function handleClientGeneration(opts: any): Promise<void> {
     process.exit(1);
   }
 }
+
+/**
+ * arela validate contracts - Validate API against OpenAPI contracts
+ */
+program
+  .command("validate contracts")
+  .description("Validate API implementation against OpenAPI contracts")
+  .option("--contract <path>", "Specific contract to validate")
+  .option("--server <url>", "API server URL", "http://localhost:3000")
+  .option("--start-server <cmd>", "Command to start API server")
+  .option("--watch", "Watch mode for development")
+  .option("--cwd <dir>", "Working directory", process.cwd())
+  .action(async (options) => {
+    console.log(pc.bold(pc.cyan("\n🔍 Validating API Contracts...\n")));
+
+    try {
+      const { validateContracts } = await import("./validate/contract-validator.js");
+
+      const result = await validateContracts({
+        contractPath: options.contract,
+        serverUrl: options.server,
+        startServer: options.startServer,
+        watch: options.watch,
+        cwd: options.cwd,
+      });
+
+      if (result.passed) {
+        console.log(pc.bold(pc.green("✅ All contracts validated successfully!\n")));
+        console.log(pc.gray(`   Total endpoints: ${result.total}`));
+        console.log(pc.gray(`   Passed: ${result.total - result.failures}\n`));
+
+        // Show details for each contract
+        for (const contract of result.contracts) {
+          const status = contract.passed ? pc.green("✓") : pc.red("✗");
+          console.log(`${status} ${path.basename(contract.path)}`);
+          console.log(pc.gray(`   Endpoints: ${contract.total}, Passes: ${contract.passes}\n`));
+        }
+
+        process.exit(0);
+      } else {
+        console.log(pc.bold(pc.red("❌ Contract validation failed!\n")));
+        console.log(pc.gray(`   Total endpoints: ${result.total}`));
+        console.log(pc.gray(`   Failed: ${result.failures}\n`));
+
+        // Show details for each contract
+        for (const contract of result.contracts) {
+          const status = contract.passed ? pc.green("✓") : pc.red("✗");
+          console.log(`${status} ${path.basename(contract.path)}`);
+          console.log(pc.gray(`   Endpoints: ${contract.total}, Failures: ${contract.failures}`));
+          if (contract.details) {
+            console.log(pc.gray(`   Details: ${contract.details}\n`));
+          }
+        }
+
+        process.exit(1);
+      }
+    } catch (error) {
+      console.error(pc.red("\n❌ Contract validation error:"));
+      console.error(pc.red((error as Error).message + "\n"));
+      process.exit(1);
+    }
+  });
+
+/**
+ * arela refactor - Refactoring commands
+ */
+const refactorCommand = program.command("refactor");
+
+refactorCommand
+  .command("extract-all-slices")
+  .description("Extract all detected slices into separate vertical features")
+  .option("--dry-run", "Preview extraction without making changes", false)
+  .option("--skip-tests", "Skip test verification", false)
+  .option("--interactive", "Ask for confirmation before extraction", false)
+  .option("--min-cohesion <n>", "Minimum cohesion percentage (0-100)", "70")
+  .option("--cwd <dir>", "Working directory", process.cwd())
+  .option("--verbose", "Show detailed output", false)
+  .action(async (options) => {
+    console.log(pc.bold(pc.cyan("\n🚀 Arela v4.0.0 - Slice Extraction\n")));
+
+    try {
+      const { SliceExtractor } = await import("./refactor/index.js");
+
+      const extractor = new SliceExtractor();
+      const result = await extractor.extractAllSlices({
+        dryRun: options.dryRun,
+        skipTests: options.skipTests,
+        interactive: options.interactive,
+        minCohesion: parseInt(options.minCohesion, 10),
+        cwd: options.cwd,
+        verbose: options.verbose,
+      });
+
+      if (!result.success) {
+        console.error(pc.red(`\n❌ Extraction failed!\n`));
+        for (const error of result.errors) {
+          console.error(pc.red(`   • ${error}`));
+        }
+        console.log("");
+        process.exit(1);
+      } else {
+        console.log(pc.bold(pc.green(`\n✅ Success!\n`)));
+        console.log(pc.gray(`   Duration: ${(result.duration / 1000).toFixed(2)}s`));
+        process.exit(0);
+      }
+    } catch (error) {
+      console.error(pc.red(`\n❌ Extraction failed: ${(error as Error).message}\n`));
+      process.exit(1);
+    }
+  });
+
+refactorCommand
+  .command("extract-slice <name>")
+  .description("Extract a specific slice into a vertical feature")
+  .option("--dry-run", "Preview extraction without making changes", false)
+  .option("--skip-tests", "Skip test verification", false)
+  .option("--cwd <dir>", "Working directory", process.cwd())
+  .action(async (name, options) => {
+    console.log(pc.bold(pc.cyan(`\n🚀 Extracting Slice: ${name}\n`)));
+
+    try {
+      const { SliceExtractor } = await import("./refactor/index.js");
+      const { detectSlices } = await import("./detect/index.js");
+
+      // Detect slices first
+      const report = await detectSlices(["."], options.cwd);
+
+      // Find the slice matching the name
+      const slice = report.slices.find(
+        s => s.name.toLowerCase() === name.toLowerCase()
+      );
+
+      if (!slice) {
+        console.error(pc.red(`\n❌ Slice not found: ${name}\n`));
+        console.log(pc.gray("Available slices:"));
+        for (const s of report.slices) {
+          console.log(pc.gray(`   • ${s.name} (${s.fileCount} files)`));
+        }
+        console.log("");
+        process.exit(1);
+      }
+
+      const extractor = new SliceExtractor();
+      const result = await extractor.extractAllSlices({
+        dryRun: options.dryRun,
+        skipTests: options.skipTests,
+        cwd: options.cwd,
+      });
+
+      if (!result.success) {
+        console.error(pc.red(`\n❌ Extraction failed!\n`));
+        process.exit(1);
+      }
+
+      console.log(pc.bold(pc.green(`\n✅ Slice extracted!\n`)));
+    } catch (error) {
+      console.error(pc.red(`\n❌ Failed: ${(error as Error).message}\n`));
+      process.exit(1);
+    }
+  });
+
+/**
+ * arela claude - Launch Claude CLI with ticket context
+ */
+program
+  .command("claude [ticket]")
+  .description("Launch Claude CLI (optionally with ticket path)")
+  .action(async (ticket?: string) => {
+    const { execa } = await import('execa');
+
+    if (ticket) {
+      // Print the implement command for Claude
+      console.log(pc.bold(pc.cyan("\n📋 Ticket ready for Claude:\n")));
+      console.log(pc.gray(`implement ${ticket}\n`));
+      console.log(pc.gray("Paste this into Claude when it starts...\n"));
+
+      // Wait 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    // Launch Claude CLI
+    try {
+      await execa('claude', [], {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+      });
+    } catch (error) {
+      console.error(pc.red('\n❌ Failed to launch Claude CLI'));
+      console.error(pc.gray('Make sure Claude CLI is installed: https://claude.ai/cli\n'));
+      process.exit(1);
+    }
+  });
+
+/**
+ * arela codex - Launch Codex CLI with ticket context
+ */
+program
+  .command("codex [ticket]")
+  .description("Launch Codex CLI (optionally with ticket path)")
+  .action(async (ticket?: string) => {
+    const { execa } = await import('execa');
+    
+    if (ticket) {
+      // Print the implement command for Codex
+      console.log(pc.bold(pc.cyan("\n📋 Ticket ready for Codex:\n")));
+      console.log(pc.gray(`implement ${ticket}\n`));
+      console.log(pc.gray("Paste this into Codex when it starts...\n"));
+      
+      // Wait 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    // Launch Codex CLI
+    try {
+      await execa('codex', [], {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+      });
+    } catch (error) {
+      console.error(pc.red('\n❌ Failed to launch Codex CLI'));
+      console.error(pc.gray('Make sure Codex CLI is installed\n'));
+      process.exit(1);
+    }
+  });
+
+const versionCommand = program
+  .command("version")
+  .description("Detect and manage API versions");
+
+versionCommand
+  .command("detect-drift")
+  .description("Detect breaking OpenAPI changes in git history")
+  .option("--cwd <dir>", "Repository root", process.cwd())
+  .action(async (opts) => {
+    console.log(pc.bold(pc.cyan("\n🔍 Checking for API drift...\n")));
+
+    try {
+      const drift = await detectBreakingChanges(opts.cwd);
+
+      if (drift.length === 0) {
+        console.log(pc.bold(pc.green("✅ No breaking changes detected\n")));
+        return;
+      }
+
+      for (const change of drift) {
+        const severityIcon = change.severity === "critical" ? "🚨" : "⚠️";
+        console.log(`${severityIcon} ${pc.bold(change.type)} ${pc.gray(`(${change.file})`)}`);
+        if (change.endpoint) {
+          console.log(pc.gray(`   Endpoint: ${change.endpoint}`));
+        }
+        if (change.method) {
+          console.log(pc.gray(`   Method: ${change.method.toUpperCase()}`));
+        }
+        console.log(pc.gray(`   Field: ${change.field}`));
+        console.log(pc.gray(`   Old: ${change.oldValue}`));
+        console.log(pc.gray(`   New: ${change.newValue}\n`));
+      }
+
+      console.log(pc.yellow("💡 Consider creating a new slice version for breaking changes.\n"));
+      process.exit(1);
+    } catch (error) {
+      console.error(pc.red(`\n❌ Drift detection failed: ${(error as Error).message}\n`));
+      process.exit(1);
+    }
+  });
+
+versionCommand
+  .command("create <slice>")
+  .description("Create a new version of a slice and its OpenAPI contract")
+  .option("--cwd <dir>", "Repository root", process.cwd())
+  .option("--version <number>", "Version number to create", "2")
+  .action(async (slice, opts) => {
+    const versionNumber = parseInt(opts.version, 10);
+    if (Number.isNaN(versionNumber)) {
+      console.error(pc.red("\n❌ Version must be a valid number\n"));
+      process.exit(1);
+    }
+
+    console.log(pc.bold(pc.cyan(`\n📦 Creating ${slice} v${versionNumber}...\n`)));
+
+    try {
+      const result = await createSliceVersion(opts.cwd, slice, versionNumber);
+
+      console.log(pc.green("✅ Slice version created!\n"));
+      console.log(pc.gray(`   Directory: ${result.newSlicePath}`));
+      if (result.newSpecPath) {
+        console.log(pc.gray(`   OpenAPI spec: ${result.newSpecPath}`));
+      } else {
+        console.log(pc.yellow("   No OpenAPI spec found to duplicate."));
+      }
+      console.log(pc.bold(pc.cyan("\nNext steps:")));
+      console.log(pc.gray("1. Implement changes in the new slice"));
+      console.log(pc.gray("2. Update the versioned OpenAPI contract"));
+      console.log(pc.gray("3. Test v1 and v2 side-by-side"));
+      console.log(pc.gray("4. Deploy with both versions enabled\n"));
+    } catch (error) {
+      console.error(pc.red(`\n❌ Failed to create version: ${(error as Error).message}\n`));
+      process.exit(1);
+    }
+  });
 
 registerMemoryCommands(program);
 

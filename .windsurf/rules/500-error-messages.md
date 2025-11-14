@@ -1,9 +1,5 @@
 ---
-id: arela.error_messages
-title: Error Messages
-category: communication
-severity: should
-version: 1.0.0
+trigger: always_on
 ---
 
 # Error Messages

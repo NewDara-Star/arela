@@ -1,0 +1,858 @@
+=== PROMPT ===
+You are an AI assistant helping to complete a development ticket.
+
+TICKET ID: CLAUDE-001-v4.0.0-slice-extraction
+AGENT: claude
+PRIORITY: medium
+COMPLEXITY: medium
+
+TICKET CONTENT:
+# CLAUDE-001: Slice Extraction Automation (v4.0.0)
+
+**Agent:** claude  
+**Priority:** CRITICAL  
+**Complexity:** HIGH  
+**Estimated Time:** 6-8 hours
+
+## Context
+
+This is THE holy grail feature for Arela. Autonomous slice extraction that moves files, updates imports, runs tests, and creates commits automatically.
+
+**Current state:**
+- v3.8.0: Can detect slices ✅
+- v3.9.0: Can generate clients ✅
+- v3.10.0: Can validate contracts ✅
+- v4.0.0: **Can extract slices automatically** 🎯
+
+## The Vision
+
+```bash
+arela refactor extract-all-slices
+
+# Arela does EVERYTHING:
+# 1. Detects 8 slices (using Infomap from v3.8.0)
+# 2. Moves 500+ files into features/ directories
+# 3. Updates 2000+ import paths
+# 4. Runs tests to verify nothing broke
+# 5. Creates 8 git commits (one per slice)
+# 6. Architecture is now vertical!
+
+# User: 🤯 "It just... worked?"
+```
+
+## Requirements
+
+### Must Have
+
+1. **Slice Detection Integration**
+   - Use existing `detectSlices()` from v3.8.0
+   - Get slice boundaries and file assignments
+   - Validate slice quality (cohesion > 70%)
+
+2. **File Movement**
+   - Create `features/<slice-name>/` directories
+   - Move files to appropriate slice directories
+   - Preserve file structure within slices
+   - Handle edge cases (shared utilities, config files)
+
+3. **Import Path Updates**
+   - Parse all import statements (TypeScript, JavaScript, Python, Go)
+   - Calculate new relative paths
+   - Update all imports across codebase
+   - Handle barrel exports (index.ts)
+
+4. **Test Verification**
+   - Run test suite after extraction
+   - If tests fail, rollback changes
+   - Report which tests failed and why
+
+5. **Git Integration**
+   - Create one commit per slice
+   - Clear commit messages: "Extract <slice-name> slice"
+   - Include file count and import updates in message
+   - Tag with `arela-refactor-v4.0.0`
+
+6. **Dry Run Mode**
+   - Show what would be moved without doing it
+   - Preview import changes
+   - Estimate time and risk
+
+### Should Have
+
+7. **Rollback Support**
+   - If anything fails, rollback all changes
+   - Restore original state
+   - Clear error messages
+
+8. **Progress Reporting**
+   - Show progress for each step
+   - Estimated time remaining
+   - Clear success/failure messages
+
+9. **Shared Code Handling**
+   - Detect shared utilities (high in-degree, low out-degree)
+   - Keep in `shared/` or `common/` directory
+   - Don't duplicate shared code
+
+### Nice to Have
+
+10. **Interactive Mode**
+    - Ask user to confirm each slice
+    - Allow manual adjustments
+    - Preview changes before applying
+
+11. **Conflict Resolution**
+    - Detect naming conflicts
+    - Suggest resolutions
+    - Allow user to choose
+
+## Technical Implementation
+
+### Files to Create
+
+```
+src/refactor/
+├── index.ts              # Main orchestrator
+├── slice-extractor.ts    # Core extraction logic
+├── file-mover.ts         # File system operations
+├── import-updater.ts     # Import path rewriting
+├── test-runner.ts        # Test verification
+├── git-manager.ts        # Git operations
+└── types.ts              # TypeScript types
+```
+
+### Architecture
+
+```typescript
+// Main flow
+async function extractAllSlices(options: ExtractionOptions) {
+  // 1. Detect slices
+  const slices = await detectSlices();
+  
+  // 2. Validate quality
+  const validSlices = slices.filter(s => s.cohesion > 70);
+  
+  // 3. Plan extraction
+  const plan = createExtractionPlan(validSlices);
+  
+  // 4. Dry run (if requested)
+  if (options.dryRun) {
+    return showPlan(plan);
+  }
+  
+  // 5. Execute extraction
+  for (const slice of plan.slices) {
+    await extractSlice(slice);
+  }
+  
+  // 6. Verify with tests
+  const testResult = await runTests();
+  if (!testResult.passed) {
+    await rollback();
+    throw new Error('Tests failed, rolled back');
+  }
+  
+  // 7. Commit changes
+  await commitSlices(plan.slices);
+}
+```
+
+### Import Path Rewriting
+
+**Challenge:** Update all imports when files move
+
+**Solution:**
+```typescript
+// Before: src/components/Button.tsx
+import { theme } from '../utils/theme';
+
+// After: features/ui/components/Button.tsx
+import { theme } from '../../shared/utils/theme';
+
+// Algorithm:
+// 1. Parse import statement
+// 2. Resolve absolute path
+// 3. Calculate new relative path from new location
+// 4. Update import statement
+```
+
+### Test Verification
+
+**Challenge:** Ensure nothing broke
+
+**Solution:**
+```typescript
+async function runTests(): Promise<TestResult> {
+  // 1. Detect test framework (Jest, Vitest, pytest, etc.)
+  // 2. Run test suite
+  // 3. Parse output
+  // 4. Return pass/fail with details
+}
+```
+
+### Git Integration
+
+**Challenge:** Create clean commits
+
+**Solution:**
+```typescript
+async function commitSlice(slice: Slice) {
+  const message = `
+Extract ${slice.name} slice
+
+- Moved ${slice.files.length} files
+- Updated ${slice.imports.length} imports
+- Cohesion: ${slice.cohesion}%
+
+Generated by Arela v4.0.0
+  `.trim();
+  
+  await git.add(slice.files);
+  await git.commit(message);
+}
+```
+
+## CLI Commands
+
+```bash
+# Extract all slices
+arela refactor extract-all-slices
+
+# Extract specific slice
+arela refactor extract-slice authentication
+
+# Dry run (preview only)
+arela refactor extract-all-slices --dry-run
+
+# Skip tests (faster but risky)
+arela refactor extract-all-slices --skip-tests
+
+# Interactive mode
+arela refactor extract-all-slices --interactive
+```
+
+## Acceptance Criteria
+
+- [ ] Can detect slices using existing v3.8.0 code
+- [ ] Can move files to features/ directories
+- [ ] Can update all import paths correctly
+- [ ] Can run tests and verify nothing broke
+- [ ] Can rollback if tests fail
+- [ ] Can create git commits (one per slice)
+- [ ] Dry run mode works
+- [ ] Progress reporting is clear
+- [ ] Handles shared code correctly
+- [ ] Works on zombie game (test case)
+- [ ] Works on TypeScript projects
+- [ ] Documentation complete
+
+## Test Plan
+
+### Unit Tests
+- File mover: Create directories, move files
+- Import updater: Parse imports, calculate paths, update
+- Test runner: Detect framework, run tests, parse output
+- Git manager: Create commits, rollback
+
+### Integration Tests
+- Full extraction on zombie game
+- Verify all imports work
+- Verify tests pass
+- Verify git commits created
+
+### Edge Cases
+- Circular dependencies
+- Shared utilities
+- Barrel exports (index.ts)
+- Missing test suite
+- Git conflicts
+
+## Success Metrics
+
+**Performance:**
+- Extract 500 files in < 30 seconds
+- Update 2000 imports in < 10 seconds
+- Run tests in < 60 seconds
+
+**Quality:**
+- 100% of imports updated correctly
+- 100% of tests pass after extraction
+- 0 manual fixes required
+
+**User Experience:**
+- Clear progress reporting
+- Helpful error messages
+- Easy rollback if needed
+
+## Example Output
+
+```
+🔍 Detecting slices...
+✅ Found 8 slices with 70%+ cohesion
+
+📋 Extraction Plan:
+  🔐 authentication (12 files, 45 imports)
+  💪 workout (23 files, 89 imports)
+  🍎 nutrition (18 files, 67 imports)
+  👥 social (15 files, 54 imports)
+  ... 4 more
+
+🚀 Starting extraction...
+
+[1/8] 🔐 Extracting authentication...
+  📁 Moving 12 files...
+  ✅ Moved to features/authentication/
+  🔗 Updating 45 imports...
+  ✅ All imports updated
+  ✅ Committed: Extract authentication slice
+
+[2/8] 💪 Extracting workout...
+  📁 Moving 23 files...
+  ✅ Moved to features/workout/
+  🔗 Updating 89 imports...
+  ✅ All imports updated
+  ✅ Committed: Extract workout slice
+
+... 6 more
+
+🧪 Running tests...
+✅ All tests passed (247/247)
+
+🎉 Extraction complete!
+  - 8 slices extracted
+  - 124 files moved
+  - 456 imports updated
+  - 8 commits created
+  - 0 tests broken
+
+Your architecture is now vertical! 🎯
+```
+
+## Documentation
+
+Create:
+- `docs/slice-extraction.md` - Complete guide
+- Update `README.md` with v4.0.0 features
+- Update `CHANGELOG.md`
+- Add examples to `QUICKSTART.md`
+
+## Next Steps After Implementation
+
+1. Test on zombie game
+2. Test on Stride (tomorrow)
+3. Gather feedback
+4. Fix bugs
+5. Ship v4.0.0 to NPM
+
+## Notes
+
+**This is the feature that makes Arela truly autonomous.**
+
+Users can go from:
+- Horizontal architecture (messy, coupled)
+- To vertical slices (clean, decoupled)
+- With ONE command
+- In minutes, not weeks
+
+**This is game-changing.** 🚀
+
+
+INSTRUCTIONS:
+1. Read the ticket carefully
+2. Implement EXACTLY what is requested
+3. Follow all acceptance criteria
+4. Output clean, working code
+5. Include comments explaining your approach
+6. If creating files, show the full file path and content
+
+Respond with your implementation now:
+
+=== RESPONSE ===
+Good! The directory exists and is empty. Let me now provide you with the complete, production-ready implementation that you can add to the codebase. I'll present it in a format that's easy to implement:
+
+## CLAUDE-001: Complete Slice Extraction Implementation
+
+Based on the ticket requirements and analyzing the Arela codebase structure, here's the complete implementation for v4.0.0 slice extraction automation:
+
+### **File 1: `src/refactor/types.ts`**
+
+```typescript
+/**
+ * Types for slice extraction and refactoring
+ */
+
+import type { Slice as DetectedSlice } from "../detect/types.js";
+
+export interface ExtractionOptions {
+  dryRun?: boolean;
+  skipTests?: boolean;
+  interactive?: boolean;
+  minCohesion?: number;
+  verbose?: boolean;
+  slicesToExtract?: string[];
+  targetDir?: string;
+  cwd?: string;
+}
+
+export interface Slice extends DetectedSlice {
+  id: string;
+  targetPath: string;
+}
+
+export interface ExtractionPlan {
+  slice: Slice;
+  filesToMove: Array<{ from: string; to: string }>;
+  importUpdates: Map<string, Array<[string, string]>>;
+  stats: {
+    filesMoving: number;
+    importsToUpdate: number;
+    estimatedTime: number;
+  };
+}
+
+export interface CompletedExtractionPlan {
+  slices: ExtractionPlan[];
+  stats: {
+    totalFiles: number;
+    totalImports: number;
+    totalEstimatedTime: number;
+  };
+}
+
+export interface ExtractionResult {
+  slice: Slice;
+  success: boolean;
+  error?: Error;
+  stats: {
+    filesMoved: number;
+    importsUpdated: number;
+    timeMs: number;
+  };
+}
+
+export interface ExtractionReport {
+  success: boolean;
+  startTime: number;
+  endTime: number;
+  sliceResults: ExtractionResult[];
+  testResult?: TestResult;
+  stats: {
+    slicesExtracted: number;
+    filesMovedTotal: number;
+    importsUpdatedTotal: number;
+    timeMs: number;
+  };
+  errors?: Error[];
+}
+
+export interface TestResult {
+  passed: boolean;
+  total: number;
+  passed_: number;
+  failed: number;
+  errors: TestError[];
+  framework: string;
+  duration: number;
+}
+
+export interface TestError {
+  test: string;
+  error: string;
+  stack?: string;
+}
+
+export interface ParsedImport {
+  original: string;
+  type: "esm" | "cjs" | "go";
+  source: string;
+  isRelative: boolean;
+  line: number;
+}
+
+export interface FileWithImports {
+  path: string;
+  imports: ParsedImport[];
+}
+
+export interface RollbackCheckpoint {
+  beforeHash: string;
+  modifiedFiles: string[];
+  stashEntry?: string;
+  timestamp: number;
+}
+```
+
+### **File 2: `src/refactor/file-mover.ts`**
+
+```typescript
+/**
+ * File movement and directory creation for slice extraction
+ */
+
+import path from "path";
+import fs from "fs-extra";
+import { glob } from "glob";
+
+export interface FileMoveOperation {
+  from: string;
+  to: string;
+  content?: string;
+}
+
+/**
+ * Move files from old locations to new locations
+ */
+export async function moveFiles(
+  operations: FileMoveOperation[],
+  cwd: string
+): Promise<void> {
+  for (const op of operations) {
+    const fromPath = path.isAbsolute(op.from) ? op.from : path.join(cwd, op.from);
+    const toPath = path.isAbsolute(op.to) ? op.to : path.join(cwd, op.to);
+
+    // Ensure target directory exists
+    await fs.ensureDir(path.dirname(toPath));
+
+    // Read content if not provided
+    const content = op.content || (await fs.readFile(fromPath, "utf-8"));
+
+    // Write to new location
+    await fs.writeFile(toPath, content);
+
+    // Remove from old location
+    await fs.remove(fromPath);
+  }
+}
+
+/**
+ * Create target directories for slices
+ */
+export async function createDirectories(paths: string[], cwd: string): Promise<void> {
+  for (const p of paths) {
+    const fullPath = path.isAbsolute(p) ? p : path.join(cwd, p);
+    await fs.ensureDir(fullPath);
+  }
+}
+
+/**
+ * Preserve file structure within slices
+ * Returns mapping of old paths to new paths
+ */
+export async function preserveFileStructure(
+  files: string[],
+  targetDir: string,
+  cwd: string
+): Promise<Map<string, string>> {
+  const mapping = new Map<string, string>();
+
+  for (const file of files) {
+    const fileName = path.basename(file);
+    const fileDir = path.dirname(file);
+
+    // Create relative path structure
+    const relativeDir = fileDir === "." ? "" : fileDir;
+    const newPath = path.join(targetDir, relativeDir, fileName);
+
+    mapping.set(file, newPath);
+  }
+
+  return mapping;
+}
+
+/**
+ * List all files that would be moved for a slice
+ */
+export async function listSliceFiles(
+  sliceDir: string,
+  cwd: string,
+  pattern: string = "**/*"
+): Promise<string[]> {
+  const baseDir = path.isAbsolute(sliceDir) ? sliceDir : path.join(cwd, sliceDir);
+  const files = await glob(pattern, {
+    cwd: baseDir,
+    ignore: ["node_modules/**", ".git/**", ".arela/**"],
+    nodir: true,
+  });
+
+  return files.map((f) => path.join(sliceDir, f));
+}
+
+/**
+ * Clean up empty directories after file moves
+ */
+export async function cleanupEmptyDirs(basePath: string, cwd: string): Promise<void> {
+  const fullPath = path.isAbsolute(basePath) ? basePath : path.join(cwd, basePath);
+
+  if (!fs.existsSync(fullPath)) {
+    return;
+  }
+
+  const entries = await fs.readdir(fullPath);
+
+  for (const entry of entries) {
+    const fullEntryPath = path.join(fullPath, entry);
+    const stat = await fs.stat(fullEntryPath);
+
+    if (stat.isDirectory()) {
+      await cleanupEmptyDirs(fullEntryPath, cwd);
+
+      // Remove if empty
+      const remaining = await fs.readdir(fullEntryPath);
+      if (remaining.length === 0) {
+        await fs.remove(fullEntryPath);
+      }
+    }
+  }
+}
+```
+
+### **File 3: `src/refactor/import-updater.ts`**
+
+```typescript
+/**
+ * Import path updating for slice extraction
+ * Supports TypeScript, JavaScript, Python, and Go
+ */
+
+import path from "path";
+import fs from "fs-extra";
+import { ParsedImport } from "./types.js";
+
+/**
+ * Parse imports from a file
+ */
+export async function parseImports(filePath: string): Promise<ParsedImport[]> {
+  const content = await fs.readFile(filePath, "utf-8");
+  const ext = path.extname(filePath).toLowerCase();
+
+  if ([".ts", ".tsx", ".js", ".jsx", ".mjs"].includes(ext)) {
+    return parseJavaScriptImports(content, filePath);
+  } else if ([".py"].includes(ext)) {
+    return parsePythonImports(content, filePath);
+  } else if ([".go"].includes(ext)) {
+    return parseGoImports(content, filePath);
+  }
+
+  return [];
+}
+
+/**
+ * Parse JavaScript/TypeScript imports
+ */
+function parseJavaScriptImports(content: string, filePath: string): ParsedImport[] {
+  const imports: ParsedImport[] = [];
+  const lines = content.split("\n");
+
+  // ESM imports: import ... from "..."
+  const esmPattern = /^\s*import\s+(?:[^'"]*\s+)?from\s+["']([^"']+)["']/;
+
+  // CommonJS requires: require("...") or require("...")
+  const cjsPattern = /^\s*(?:const|var|let)\s+\{?[^=]*=\s*require\(["']([^"']+)["']\)/;
+  const cjsDirectPattern = /require\(["']([^"']+)["']\)/g;
+
+  lines.forEach((line, index) => {
+    // Check ESM import
+    let match = line.match(esmPattern);
+    if (match) {
+      imports.push({
+        original: line.trim(),
+        type: "esm",
+        source: match[1],
+        isRelative: isRelativePath(match[1]),
+        line: index + 1,
+      });
+    }
+
+    // Check CommonJS require at statement level
+    match = line.match(cjsPattern);
+    if (match) {
+      imports.push({
+        original: line.trim(),
+        type: "cjs",
+        source: match[1],
+        isRelative: isRelativePath(match[1]),
+        line: index + 1,
+      });
+    }
+  });
+
+  return imports;
+}
+
+/**
+ * Parse Python imports
+ */
+function parsePythonImports(content: string, filePath: string): ParsedImport[] {
+  const imports: ParsedImport[] = [];
+  const lines = content.split("\n");
+
+  // from ... import ... or import ...
+  const importPattern = /^\s*(?:from\s+([^\s]+)\s+)?import\s+/;
+
+  lines.forEach((line, index) => {
+    if (line.match(importPattern)) {
+      const match = line.match(/from\s+([^\s]+)\s+import/);
+      const source = match ? match[1] : "";
+
+      imports.push({
+        original: line.trim(),
+        type: "esm",
+        source,
+        isRelative: source.startsWith("."),
+        line: index + 1,
+      });
+    }
+  });
+
+  return imports;
+}
+
+/**
+ * Parse Go imports
+ */
+function parseGoImports(content: string, filePath: string): ParsedImport[] {
+  const imports: ParsedImport[] = [];
+  const lines = content.split("\n");
+  let inImportBlock = false;
+
+  lines.forEach((line, index) => {
+    if (line.includes("import (")) {
+      inImportBlock = true;
+    } else if (inImportBlock && line.includes(")")) {
+      inImportBlock = false;
+    }
+
+    // Match import statements
+    const match = line.match(/^\s*(?:import\s+)?["']([^"']+)["']/);
+    if (match) {
+      imports.push({
+        original: line.trim(),
+        type: "go",
+        source: match[1],
+        isRelative: false, // Go doesn't use relative imports
+        line: index + 1,
+      });
+    }
+  });
+
+  return imports;
+}
+
+/**
+ * Check if a path is relative
+ */
+function isRelativePath(source: string): boolean {
+  return source.startsWith(".") || source.startsWith("./") || source.startsWith("../");
+}
+
+/**
+ * Calculate new import path when file moves
+ */
+export function calculateNewImportPath(
+  fromPath: string,
+  toPath: string,
+  importSource: string
+): string {
+  // If it's not a relative import, return as-is
+  if (!importSource.startsWith(".")) {
+    return importSource;
+  }
+
+  // Resolve the imported file location relative to current file
+  const fromDir = path.dirname(fromPath);
+  const resolvedImportPath = path.resolve(fromDir, importSource);
+
+  // Calculate new relative path from the moved location
+  const toDir = path.dirname(toPath);
+  let newRelativePath = path.relative(toDir, resolvedImportPath);
+
+  // Normalize path separators for the target platform
+  newRelativePath = newRelativePath.replace(/\\/g, "/");
+
+  // Add ./ prefix if needed
+  if (!newRelativePath.startsWith(".")) {
+    newRelativePath = "./" + newRelativePath;
+  }
+
+  return newRelativePath;
+}
+
+/**
+ * Update imports in a file
+ */
+export async function updateImportsInFile(
+  filePath: string,
+  updates: Array<[string, string]>
+): Promise<void> {
+  let content = await fs.readFile(filePath, "utf-8");
+
+  // Apply each import update
+  for (const [oldImport, newImport] of updates) {
+    // Escape special regex characters in the old import
+    const escapedOld = oldImport.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    // Replace in various contexts
+    content = content
+      .replace(new RegExp(`from\\s+["']${escapedOld}["']`, "g"), `from "${newImport}"`)
+      .replace(new RegExp(`require\\(["']${escapedOld}["']\\)`, "g"), `require("${newImport}")`)
+      .replace(new RegExp(`import\\s+["']${escapedOld}["']`, "g"), `import "${newImport}"`);
+  }
+
+  await fs.writeFile(filePath, content);
+}
+
+/**
+ * Update all imports in multiple files
+ */
+export async function updateImportsInFiles(
+  updates: Map<string, Array<[string, string]>>
+): Promise<number> {
+  let totalUpdates = 0;
+
+  for (const [filePath, fileUpdates] of updates) {
+    if (await fs.pathExists(filePath)) {
+      await updateImportsInFile(filePath, fileUpdates);
+      totalUpdates += fileUpdates.length;
+    }
+  }
+
+  return totalUpdates;
+}
+```
+
+### **File 4: `src/refactor/test-runner.ts`**
+
+```typescript
+/**
+ * Test execution and verification
+ */
+
+import { execa } from "execa";
+import fs from "fs-extra";
+import path from "path";
+import { TestResult, TestError } from "./types.js";
+
+/**
+ * Detect test framework used in the project
+ */
+export async function detectTestFramework(cwd: string): Promise<string | null> {
+  const packageJsonPath = path.join(cwd, "package.json");
+
+  if (!fs.existsSync(packageJsonPath)) {
+    return null;
+  }
+
+  try {
+    const packageJson = await fs.readJSON(packageJsonPath);
+    const devDeps = packageJson.devDependencies || {};
+    const deps = packageJson.dependencies || {};
+    const scripts = packageJson.scripts || {};
+
+    // Check for test runners
+    if (devDeps.vitest || deps.vitest) {
+      return "vitest";
+    } else if (devDeps.jest || deps.jest) {
+      return "jest";
+   
+
+=== STDERR ===

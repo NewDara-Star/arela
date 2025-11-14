@@ -1,10 +1,7 @@
 ---
-id: arela.responsible_ai
-title: Responsible AI Minimums
-version: 1.0.0
-tags: [ethics, ai]
-research_origin: "Google AI Principles"
+trigger: always_on
 ---
+
 - Fairness: document intended user impact in ADR.
 - Transparency: log model + prompt versions per release.
 - Accountability: owner in ticket; postmortem template for incidents.

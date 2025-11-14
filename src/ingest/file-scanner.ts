@@ -63,10 +63,13 @@ export async function scanDirectory(
   const ignorePatterns = [...IGNORED_PATTERNS, ...(options?.ignore ?? [])];
 
   try {
-    const files = await glob(`**/*{${SUPPORTED_EXTENSIONS.join(',')}}`, {
+    // Build glob pattern: **/*.{ts,tsx,js,jsx,...}
+    const extensionsWithoutDot = SUPPORTED_EXTENSIONS.map(ext => ext.slice(1));
+    const files = await glob(`**/*.{${extensionsWithoutDot.join(',')}}`, {
       cwd: absolutePath,
       ignore: ignorePatterns,
       absolute: false,
+      dot: false,
     });
 
     return files.filter(file => {

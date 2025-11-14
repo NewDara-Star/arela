@@ -1,9 +1,5 @@
 ---
-id: arela.async_first_communication
-title: Async-First Communication
-category: process
-severity: should
-version: 1.0.0
+trigger: always_on
 ---
 
 # Async-First Communication

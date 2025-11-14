@@ -1,9 +1,5 @@
 ---
-id: arela.design_tokens
-title: Design Tokens
-category: design
-severity: should
-version: 1.0.0
+trigger: always_on
 ---
 
 # Design Tokens

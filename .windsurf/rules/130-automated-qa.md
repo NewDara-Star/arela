@@ -1,9 +1,5 @@
 ---
-id: arela.automated_qa
-title: Automated QA Testing
-category: testing
-severity: should
-version: 1.0.0
+trigger: always_on
 ---
 
 # Automated QA Testing

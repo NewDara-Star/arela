@@ -1,8 +1,8 @@
-# Arela v3.9.1
+# Arela v3.10.0
 
 **Your AI Technical Co-Founder**
 
-> "From architecture analysis to type-safe API clients - Arela builds production-ready code!"
+> "From architecture analysis to contract validation - Arela prevents API drift and manages breaking changes automatically!"
 
 ## The Story
 
@@ -10,9 +10,67 @@ Arela was born from a simple frustration: being an "idea person" with no technic
 
 Arela is that guidance. Not a linter. Not a framework. **A conversational CTO persona** that helps you think through products and build them to world-class standards.
 
-## ✨ What's New in v3.9.0
+## ✨ What's New in v3.10.0
 
-### 🎨 Phase 3 - Contract-Driven Development
+### 🎯 Phase 3 Continued - Quality & Governance
+
+**Prevent API drift and manage breaking changes automatically!**
+
+### 1. Contract Validation with Dredd
+
+Automatically validate OpenAPI contracts against running API servers:
+
+```bash
+# Validate all contracts
+arela validate contracts
+
+# Validate specific contract
+arela validate contracts --contract openapi/workout-api.yaml
+
+# Custom server URL
+arela validate contracts --server-url http://localhost:8080
+```
+
+**What it prevents:**
+- ✅ API drift between spec and implementation
+- ✅ Breaking changes shipping to production
+- ✅ Undocumented endpoints
+- ✅ Schema mismatches
+
+### 2. API Versioning & Drift Detection
+
+Detect breaking changes and manage API versions safely:
+
+```bash
+# Detect API drift
+arela version detect-drift
+
+# Create v2 of a slice
+arela version create workout --version 2
+```
+
+**What it detects:**
+- 🔴 Removed endpoints (CRITICAL)
+- 🔴 Removed operations (CRITICAL)
+- 🟠 Missing responses (HIGH)
+- 🟡 Schema field/type changes (MEDIUM)
+
+### 3. Windsurf Workflow Integration
+
+Structured processes for common development tasks:
+
+```
+# In Windsurf Cascade
+/research-driven-decision
+```
+
+Systematic approach to making evidence-based technical decisions.
+
+---
+
+## Previous Release: v3.9.0
+
+### 🎨 TypeScript Client Generator
 
 **Generate type-safe API clients from OpenAPI contracts - eliminate API drift at compile time!**
 
@@ -290,6 +348,7 @@ Arela v3.1+ is a **Windsurf-native CTO persona** that:
 - 📚 **Learns patterns** - Tracks what works (and what doesn't) across projects
 - 🎯 **Has opinions** - Based on research from successful startup CTOs
 - 🚀 **Sets up instantly** - Auto-installs dependencies so you can start immediately
+- 🔄 **Structured workflows** - Repeatable processes for research, validation, and deployment
 
 ## Quick Start
 
@@ -308,7 +367,27 @@ arela mcp
 
 # Discover available AI agents
 arela agents
+
+# Use workflows in Cascade
+/research-driven-decision
 ```
+
+## Workflows
+
+Arela includes structured workflows for common development processes:
+
+### `/research-driven-decision`
+Systematic approach to making evidence-based technical decisions. Generates research prompts for ChatGPT + Gemini, reviews findings, and implements with documented rationale.
+
+**When to use:**
+- Choosing between algorithms/approaches
+- Evaluating new technologies
+- Architectural decisions
+- Performance-critical choices
+
+**Example:** Used in CASCADE-003 to switch from Louvain to Infomap algorithm, resulting in successful slice detection.
+
+See [docs/workflows.md](docs/workflows.md) for complete documentation.
 
 ## Current Status
 

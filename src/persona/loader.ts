@@ -42,6 +42,10 @@ export async function initProject(opts: InitProjectOptions): Promise<InitProject
   const windsurfRulesDir = path.join(cwd, ".windsurf", "rules");
   await fs.ensureDir(windsurfRulesDir);
 
+  // Create .windsurf/workflows directory
+  const windsurfWorkflowsDir = path.join(cwd, ".windsurf", "workflows");
+  await fs.ensureDir(windsurfWorkflowsDir);
+
   // Create .arela/tickets directory structure
   const ticketsDir = path.join(cwd, ".arela", "tickets");
   await fs.ensureDir(ticketsDir);
@@ -92,6 +96,26 @@ export async function initProject(opts: InitProjectOptions): Promise<InitProject
         created.push(path.relative(cwd, ruleDest));
       } else {
         skipped.push(path.relative(cwd, ruleDest));
+      }
+    }
+
+    // Copy workflows
+    const workflowsDir = path.join(templatesDir, "workflows");
+    if (await fs.pathExists(workflowsDir)) {
+      const workflowFiles = await fs.readdir(workflowsDir);
+      for (const workflowFile of workflowFiles) {
+        if (workflowFile.endsWith('.md')) {
+          const workflowSource = path.join(workflowsDir, workflowFile);
+          const workflowDest = path.join(windsurfWorkflowsDir, workflowFile);
+          
+          const exists = await fs.pathExists(workflowDest);
+          if (!exists || force) {
+            await fs.copyFile(workflowSource, workflowDest);
+            created.push(path.relative(cwd, workflowDest));
+          } else {
+            skipped.push(path.relative(cwd, workflowDest));
+          }
+        }
       }
     }
   }
