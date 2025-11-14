@@ -21,8 +21,15 @@ export class ImportUpdater {
         const oldPath = path.relative(cwd, movement.source);
         const newPath = path.relative(cwd, movement.destination);
         this.fileMapping.set(oldPath, newPath);
+        
+        // Also add without extension for imports that omit .ts/.js
+        const oldPathNoExt = oldPath.replace(/\.(ts|tsx|js|jsx)$/, '');
+        const newPathNoExt = newPath.replace(/\.(ts|tsx|js|jsx)$/, '');
+        this.fileMapping.set(oldPathNoExt, newPathNoExt);
       }
     }
+    
+    console.log(`📋 Built file mapping with ${this.fileMapping.size} entries`);
   }
 
   /**
@@ -34,6 +41,8 @@ export class ImportUpdater {
   ): Promise<ImportUpdate[]> {
     const updates: ImportUpdate[] = [];
     const allFiles = await this.findAllSourceFiles(cwd);
+    
+    console.log(`🔍 Scanning ${allFiles.length} files for import updates...`);
 
     for (const filePath of allFiles) {
       const fullPath = path.join(cwd, filePath);
@@ -47,8 +56,14 @@ export class ImportUpdater {
         cwd
       );
 
+      if (fileUpdates.length > 0) {
+        console.log(`  📝 ${filePath}: ${fileUpdates.length} imports to update`);
+      }
+      
       updates.push(...fileUpdates);
     }
+    
+    console.log(`📊 Total: ${updates.length} import updates needed`);
 
     return updates;
   }
