@@ -16,7 +16,8 @@
     "dev": "tsc --watch",
     "prepublishOnly": "npm run build",
     "test": "vitest",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "arela": "node dist/cli.js"
   },
   "keywords": [
     "ai",
