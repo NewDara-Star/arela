@@ -53,23 +53,27 @@ export class GitManager {
     cwd: string = process.cwd()
   ): Promise<string> {
     const commitMessage = this.generateCommitMessage(slice, stagedFiles);
+    return this.commitWithMessage(commitMessage, cwd);
+  }
 
+  /**
+   * Commit with a custom message
+   */
+  async commitWithMessage(
+    message: string,
+    cwd: string = process.cwd()
+  ): Promise<string> {
     try {
-      // Stage the features directory to include new files
-      const featuresDir = path.join(cwd, 'features');
-      try {
-        await execa("git", ["add", "features/"], { cwd });
-      } catch {
-        // Features dir might not exist yet, that's ok
-      }
+      // Stage all changes (new files in features/ and deletions in src/)
+      await execa("git", ["add", "-A"], { cwd });
       
-      const result = await execa("git", ["commit", "-m", commitMessage], {
+      const result = await execa("git", ["commit", "-m", message], {
         cwd,
       });
       return result.stdout;
     } catch (error) {
       throw new Error(
-        `Failed to commit slice ${slice.name}: ${
+        `Failed to commit: ${
           error instanceof Error ? error.message : String(error)
         }`
       );
