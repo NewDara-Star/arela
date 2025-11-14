@@ -55,6 +55,14 @@ export class GitManager {
     const commitMessage = this.generateCommitMessage(slice, stagedFiles);
 
     try {
+      // Stage the features directory to include new files
+      const featuresDir = path.join(cwd, 'features');
+      try {
+        await execa("git", ["add", "features/"], { cwd });
+      } catch {
+        // Features dir might not exist yet, that's ok
+      }
+      
       const result = await execa("git", ["commit", "-m", commitMessage], {
         cwd,
       });
