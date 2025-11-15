@@ -36,8 +36,10 @@ export class ProjectMemory {
   private dbPath: string;
   private projectId?: string;
   private initialized = false;
+  private projectPath: string;
 
-  constructor(private readonly projectPath: string = process.cwd()) {
+  constructor(projectPath: string = process.cwd()) {
+    this.projectPath = projectPath;
     this.dbPath = path.join(projectPath, ".arela", "memory", "project.db");
   }
 
