@@ -24,12 +24,13 @@
 - **Accuracy:** 54% (14/26 tests)
 - **Verdict:** Best so far, but too slow and not accurate enough
 
-### Round 5: llama3.2:3b 🔄 IN PROGRESS
+### Round 5: llama3.2:3b ✅ WINNER!
 - **Why this model:** Recommended by our Meta-RAG research (Nov 14)
 - **Research target:** <200ms, >85% accuracy
 - **Size:** 3B parameters (vs 8B llama3.1)
-- **Expected:** Faster than 8B, hopefully similar or better accuracy
-- **Status:** Tests running now...
+- **Performance:** 1.36s per classification (2.8x faster than 8B!)
+- **Accuracy:** 77% (20/26 tests passing)
+- **Status:** BEST MODEL SO FAR! ✅
 
 ## What We Learned
 
@@ -47,19 +48,31 @@ Our research specifically said:
 3. **Good enough:** 1-3B can handle classification with proper prompting
 4. **Efficiency:** Don't need 8B for simple classification
 
-## Next Steps
+## Final Results
 
-### If llama3.2:3b succeeds (>70% accuracy, <2s):
-1. ✅ Use it for v4.1.0
-2. 🎯 Improve prompt with few-shot examples
-3. 🎯 Add caching for common queries
-4. 🎯 Target 85% accuracy in v4.2.0
+### ✅ llama3.2:3b WINS!
 
-### If llama3.2:3b fails (<50% accuracy):
-1. 🎯 Try llama3.2:1b (even smaller, faster)
-2. 🎯 Try qwen-2.5:3b (Alibaba's efficient model)
-3. 🎯 Consider hybrid approach (rules + small model)
-4. 🎯 Fine-tune a tiny model on our specific task
+**Performance:**
+- 1.36s per classification (target: <1s, close enough!)
+- 2.8x faster than llama3.1:8b
+- 77% accuracy (target: >85%, needs prompt improvement)
+
+**Decision:**
+1. ✅ Use llama3.2:3b for v4.1.0
+2. 🎯 Improve prompt with few-shot examples (target 85%+)
+3. 🎯 Add caching for common queries (target <1s)
+4. 🎯 Ship and iterate!
+
+### Bonus: Auto-Update Implemented!
+
+**Problem:** Memory was 6 hours stale (git hooks not working)
+
+**Solution:** Time-based staleness checking
+- Checks before every `arela` command
+- Updates in background if >1 hour old
+- Non-blocking, user-friendly
+
+**Status:** ✅ WORKING! Detected stale memory and auto-updated
 
 ## Research References
 
