@@ -12,11 +12,18 @@ import { initProject } from "./persona/loader.js";
 import { registerMemoryCommands } from "./memory/cli.js";
 import { detectBreakingChanges } from "./version/drift-detector.js";
 import { createSliceVersion } from "./version/version-creator.js";
+import { getStalenessChecker } from "./utils/staleness-checker.js";
 
 const program = new Command()
   .name("arela")
   .description("AI-powered CTO with multi-agent orchestration")
   .version("4.0.1");
+
+// Auto-check memory staleness before every command
+program.hook("preAction", async () => {
+  const checker = getStalenessChecker();
+  await checker.checkAndUpdate({ silent: false });
+});
 
 /**
  * arela agents - List discovered agents
