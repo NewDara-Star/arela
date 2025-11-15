@@ -1,4 +1,39 @@
-# Arela v3.10.0 - Quickstart Guide
+# Arela v4.2.0 - Quickstart Guide
+
+## ✨ What's New in v4.2.0
+
+### 🚀 Advanced Code Summarization
+
+**AI-powered code understanding with semantic caching for 5-10x token reduction!**
+
+Transform large code files into concise technical summaries:
+
+```bash
+arela summarize src/auth/auth-service.ts
+
+# Output:
+# Main Responsibility: Handles user authentication with JWT tokens
+# Public API: authenticateUser, verifyToken, refreshToken
+# Dependencies: bcrypt, jsonwebtoken, database
+# Side Effects: Writes to database, generates tokens
+# Performance: ~50ms avg, 3 DB calls
+```
+
+**Key Features:**
+- 🎯 **AST-based extraction** - Parse code structure with tree-sitter
+- 🤖 **LLM synthesis** - Generate summaries using OpenAI/Ollama
+- 💾 **Semantic caching** - 70-80% cache hit rate, ignores comments
+- ⚡ **Fast** - <3s with LLM, <100ms on cache hit
+- 💰 **Cost-effective** - ~$0.0001 per summary
+- 🔄 **Auto-fallback** - OpenAI → Ollama → Local deterministic
+
+### 🔄 Auto-Refresh Graph DB
+
+**Keep your dependency graph fresh automatically!**
+
+Arela now automatically detects when your graph database is stale (>24 hours) and refreshes it in the background on session start. No manual intervention needed!
+
+---
 
 ## Installing Arela in an Existing Project
 
@@ -50,7 +85,31 @@ arela init --preset solo --personality fun         # Lightweight for solo devs (
 
 ---
 
-### **Step 3: Verify Setup**
+### **Step 3: Configure OpenAI (Optional but Recommended)**
+
+For faster, smarter query classification:
+
+```bash
+# Create .env file
+echo "OPENAI_API_KEY=sk-proj-your-key-here" >> .env
+```
+
+**Get your API key:** https://platform.openai.com/api-keys
+
+**Benefits:**
+- ⚡ Fast classification (700-1500ms)
+- 💰 Cheap (~$0.0001 per query)
+- 🎯 Smart memory routing
+- 🔄 Auto-fallback to Ollama if unavailable
+
+**Without OpenAI:**
+- Uses Ollama (local, free, private)
+- Slightly slower (600-2200ms)
+- Still works great!
+
+---
+
+### **Step 4: Verify Setup**
 
 ```bash
 arela doctor --personality fun
@@ -146,7 +205,83 @@ Your codebase is now searchable by AI!
 
 ---
 
-### **Step 6: Start Using Arela**
+### **Step 6: Ingest Codebase (Recommended)**
+
+Build the dependency graph for architecture analysis:
+
+```bash
+arela ingest codebase --personality fun
+```
+
+**Output (Fun Mode):**
+```
+📊 Scanning your codebase...
+Found 247 files to analyze
+
+Ingesting: [████████████████████] 100% (247/247) - 63.2 files/sec
+
+🎉 Boom! Ingested 247 files
+   - 1,234 functions
+   - 567 imports
+   - 89 API endpoints
+
+Duration: 3.9s
+Your codebase is now mapped!
+```
+
+**What this enables:**
+- ✅ Vertical slice detection
+- ✅ Dependency analysis
+- ✅ Architecture scoring
+- ✅ API contract generation
+
+---
+
+### **Step 7: Summarize Code (NEW in v4.2.0)**
+
+Get AI-powered summaries of any code file:
+
+```bash
+arela summarize src/auth/auth-service.ts --personality fun
+```
+
+**Output (Fun Mode):**
+```
+📝 Summarizing src/auth/auth-service.ts...
+
+✨ Summary:
+Main Responsibility: Handles user authentication with JWT tokens
+Public API: authenticateUser, verifyToken, refreshToken
+Dependencies: bcrypt, jsonwebtoken, database
+Side Effects: Writes to database, generates tokens
+Performance: ~50ms avg, 3 DB calls
+
+💾 Cache Stats: New summary, $0.0001 cost
+⚡ Duration: 2.8s
+```
+
+**Features:**
+- 🎯 AST-based extraction (tree-sitter)
+- 🤖 LLM synthesis (OpenAI/Ollama)
+- 💾 Semantic caching (70-80% hit rate)
+- ⚡ Fast (<3s with LLM, <100ms on cache hit)
+- 💰 Cost-effective (~$0.0001 per summary)
+
+**Commands:**
+```bash
+# Summarize any file
+arela summarize src/your-file.ts
+
+# Force re-summarization (skip cache)
+arela summarize src/your-file.ts --no-cache
+
+# JSON output
+arela summarize src/your-file.ts --output json
+```
+
+---
+
+### **Step 8: Start Using Arela**
 
 #### **Option A: Talk to Arela in Windsurf**
 

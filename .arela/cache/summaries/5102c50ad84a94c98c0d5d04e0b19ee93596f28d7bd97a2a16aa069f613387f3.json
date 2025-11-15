@@ -1,0 +1,311 @@
+{
+  "semanticHash": "5102c50ad84a94c98c0d5d04e0b19ee93596f28d7bd97a2a16aa069f613387f3",
+  "summary": {
+    "filePath": "src/summarization/extractor/ast-extractor.ts",
+    "mainResponsibility": "Extracts abstract syntax trees (AST) from code files, enabling semantic analysis and language detection.",
+    "publicAPI": [
+      "ASTExtractor",
+      "extract",
+      "detectLanguage",
+      "computeLineOffsets",
+      "extractFileDescription",
+      "extractExports"
+    ],
+    "ioContracts": [
+      {
+        "name": "extract",
+        "definition": "extract(code: string, filePath: string): Promise<SemanticContract>"
+      },
+      {
+        "name": "detectLanguage",
+        "definition": "detectLanguage(filePath: string): string"
+      },
+      {
+        "name": "computeLineOffsets",
+        "definition": "computeLineOffsets(lines: string[]): number[]"
+      },
+      {
+        "name": "extractFileDescription",
+        "definition": "extractFileDescription(lines: string[]): string | undefined"
+      },
+      {
+        "name": "extractExports",
+        "definition": "extractExports(code: string, lines: string[], lineOffsets: number[]): ExportInfo[]"
+      }
+    ],
+    "dependencies": "Depends on tree-sitter for parsing and tree-sitter-typescript for TypeScript support.",
+    "sideEffects": "None - operates in memory without external state changes.",
+    "keyAlgorithms": "Utilizes tree-sitter parsing for code analysis and line offset computation for efficient AST extraction.",
+    "metadata": {
+      "tokenCount": 306,
+      "compressionRatio": 2.173202614379085,
+      "synthesizedAt": "2025-11-15T17:15:52.700Z"
+    }
+  },
+  "contract": {
+    "filePath": "src/summarization/extractor/ast-extractor.ts",
+    "exports": [
+      {
+        "name": "ASTExtractor",
+        "kind": "class",
+        "methods": [
+          {
+            "name": "constructor",
+            "signature": {
+              "params": [],
+              "isAsync": false
+            }
+          },
+          {
+            "name": "extract",
+            "signature": {
+              "params": [
+                {
+                  "name": "code",
+                  "type": "string",
+                  "optional": false
+                },
+                {
+                  "name": "filePath",
+                  "type": "string",
+                  "optional": false
+                }
+              ],
+              "returnType": "Promise<SemanticContract>",
+              "isAsync": false
+            }
+          },
+          {
+            "name": "detectLanguage",
+            "signature": {
+              "params": [
+                {
+                  "name": "filePath",
+                  "type": "string",
+                  "optional": false
+                }
+              ],
+              "returnType": "string",
+              "isAsync": false
+            }
+          },
+          {
+            "name": "computeLineOffsets",
+            "signature": {
+              "params": [
+                {
+                  "name": "lines",
+                  "type": "string[]",
+                  "optional": false
+                }
+              ],
+              "returnType": "number[]",
+              "isAsync": false
+            }
+          },
+          {
+            "name": "for",
+            "signature": {
+              "params": [
+                {
+                  "name": "const line of lines",
+                  "optional": false
+                }
+              ],
+              "isAsync": false
+            }
+          },
+          {
+            "name": "indexToLine",
+            "signature": {
+              "params": [
+                {
+                  "name": "index",
+                  "type": "number",
+                  "optional": false
+                },
+                {
+                  "name": "lineOffsets",
+                  "type": "number[]",
+                  "optional": false
+                }
+              ],
+              "returnType": "number",
+              "isAsync": false
+            }
+          },
+          {
+            "name": "while",
+            "signature": {
+              "params": [
+                {
+                  "name": "low <",
+                  "optional": false,
+                  "defaultValue": "high"
+                }
+              ],
+              "isAsync": false
+            }
+          },
+          {
+            "name": "if",
+            "signature": {
+              "params": [
+                {
+                  "name": "offset < index",
+                  "optional": false
+                }
+              ],
+              "isAsync": false
+            }
+          },
+          {
+            "name": "extractFileDescription",
+            "signature": {
+              "params": [
+                {
+                  "name": "lines",
+                  "type": "string[]",
+                  "optional": false
+                }
+              ],
+              "returnType": "string | undefined",
+              "isAsync": false
+            }
+          },
+          {
+            "name": "for",
+            "signature": {
+              "params": [
+                {
+                  "name": "let i",
+                  "optional": false,
+                  "defaultValue": "0; i < lines.length; i++"
+                }
+              ],
+              "isAsync": false
+            }
+          },
+          {
+            "name": "extractExports",
+            "signature": {
+              "params": [
+                {
+                  "name": "code",
+                  "type": "string",
+                  "optional": false
+                },
+                {
+                  "name": "lines",
+                  "type": "string[]",
+                  "optional": false
+                },
+                {
+                  "name": "lineOffsets",
+                  "type": "number[]",
+                  "optional": false
+                }
+              ],
+              "returnType": "ExportInfo[]",
+              "isAsync": false
+            }
+          },
+          {
+            "name": "if",
+            "signature": {
+              "params": [
+                {
+                  "name": "kindToken",
+                  "optional": false,
+                  "defaultValue": "== \"function\""
+                }
+              ],
+              "isAsync": false
+            }
+          },
+          {
+            "name": "if",
+            "signature": {
+              "params": [
+                {
+                  "name": "kindToken",
+                  "optional": false,
+                  "defaultValue": "== \"class\""
+                }
+              ],
+              "isAsync": false
+            }
+          },
+          {
+            "name": "if",
+            "signature": {
+              "params": [
+                {
+                  "name": "kindToken",
+                  "optional": false,
+                  "defaultValue": "== \"type\""
+                }
+              ],
+              "isAsync": false
+            }
+          },
+          {
+            "name": "if",
+            "signature": {
+              "params": [
+                {
+                  "name": "kindToken",
+                  "optional": false,
+                  "defaultValue": "== \"interface\""
+                }
+              ],
+              "isAsync": false
+            }
+          },
+          {
+            "name": "for",
+            "signature": {
+              "params": [
+                {
+                  "name": "const spec of specs",
+                  "optional": false
+                }
+              ],
+              "isAsync": false
+            }
+          }
+        ]
+      }
+    ],
+    "imports": [
+      {
+        "module": "tree-sitter",
+        "names": [
+          "Parser"
+        ],
+        "isDefault": true
+      },
+      {
+        "module": "tree-sitter-typescript",
+        "names": [
+          "TypeScript"
+        ],
+        "isDefault": true
+      },
+      {
+        "module": "./types.js",
+        "names": [
+          "{\n  type ExportInfo"
+        ],
+        "isDefault": true
+      }
+    ],
+    "metadata": {
+      "language": "typescript",
+      "linesOfCode": 598,
+      "extractedAt": "2025-11-15T17:15:45.426Z"
+    }
+  },
+  "cachedAt": "2025-11-15T17:15:52.701Z",
+  "hits": 2
+}

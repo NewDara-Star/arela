@@ -6,7 +6,7 @@
 
 ---
 
-## Current Status (v4.0.1)
+## Current Status (v4.0.2 - SHIPPED!)
 
 ### ✅ Completed (Week 2)
 - **Hexi-Memory System** - All 6 layers (Session, Project, User, Vector, Graph, Governance)
@@ -14,10 +14,16 @@
 - **<120ms performance** - Parallel queries
 - **80% token savings** - arela_search vs grep validated
 
-### 🔄 In Progress (Week 3)
-- **META-RAG-001** - Query Classifier (testing llama3.2:3b)
-- **Model Selection** - Finding optimal 1-3B model
-- **Prompt Engineering** - Improving classification accuracy
+### ✅ Completed (v4.0.2)
+- **OpenAI Integration** - gpt-4o-mini as primary classifier
+- **700-1500ms classification** - Fast and reliable
+- **Auto-fallback** - Uses Ollama if OpenAI unavailable
+- **Environment config** - Simple .env setup
+
+### 🎯 Next (v4.1.0)
+- **Memory Router** - Layer selection logic
+- **Fusion Engine** - Combine + deduplicate results
+- **Context Router** - End-to-end integration
 
 ---
 

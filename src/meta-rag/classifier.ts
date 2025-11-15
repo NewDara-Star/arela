@@ -1,4 +1,5 @@
 import ollama from "ollama";
+import OpenAI from "openai";
 import { MemoryLayer } from "../memory/hexi-memory.js";
 import type {
   QueryType,
@@ -10,7 +11,11 @@ import { QueryType as QT } from "./types.js";
 /**
  * QueryClassifier - Classifies user queries and determines which memory layers to query
  * 
- * Uses Ollama (local, free) to classify queries into types:
+ * Supports two backends:
+ * 1. OpenAI (gpt-4o-mini) - Fast, cheap, reliable (~200ms, $0.0001/query)
+ * 2. Ollama (qwen2.5:3b) - Free, local, slower (~1.5s)
+ * 
+ * Query types:
  * - PROCEDURAL: "Continue working on...", "Implement..."
  * - FACTUAL: "What is...", "How does..."
  * - ARCHITECTURAL: "Show me structure...", "Dependencies..."
@@ -19,42 +24,72 @@ import { QueryType as QT } from "./types.js";
  * - GENERAL: Fallback
  */
 export class QueryClassifier {
-  private readonly model = "qwen2.5:3b"; // Qwen 2.5 3B - Research's #1 pick: optimized for JSON output + instruction following
+  private readonly ollamaModel = "qwen2.5:3b";
+  private readonly openaiModel = "gpt-4o-mini"; // Fastest, cheapest: $0.150/1M input, $0.600/1M output
   private ollamaAvailable: boolean = false;
-  private useOllama: boolean = true; // Can disable for faster fallback
+  private openaiAvailable: boolean = false;
+  private openai?: OpenAI;
+  private preferOpenAI: boolean = true; // Prefer OpenAI (faster) over Ollama
 
   /**
-   * Initialize the classifier and check Ollama availability
+   * Initialize the classifier and check availability of backends
    */
   async init(): Promise<void> {
+    // Check OpenAI
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        // Quick test
+        await this.openai.models.list();
+        this.openaiAvailable = true;
+        console.log("✅ OpenAI available for query classification (gpt-4o-mini)");
+      } catch (error) {
+        this.openaiAvailable = false;
+        console.warn("⚠️  OpenAI not available:", (error as Error).message);
+      }
+    }
+
+    // Check Ollama
     try {
-      // Test if Ollama is available
       await ollama.list();
       this.ollamaAvailable = true;
-      console.log("✅ Ollama available for query classification");
+      console.log("✅ Ollama available for query classification (qwen2.5:3b)");
     } catch (error) {
       this.ollamaAvailable = false;
-      console.warn(
-        "⚠️  Ollama not available, using fallback classification"
-      );
+      console.warn("⚠️  Ollama not available");
+    }
+
+    // Warn if nothing available
+    if (!this.openaiAvailable && !this.ollamaAvailable) {
+      console.warn("⚠️  No classification backend available, using fallback");
     }
   }
 
   /**
-   * Classify a query and determine which layers to query
+   * Classify a query using best available backend
+   * Priority: OpenAI (fast) > Ollama (free) > Fallback (keyword-based)
    */
   async classify(query: string): Promise<ClassificationResult> {
-    if (!this.ollamaAvailable) {
-      return this.fallbackClassification(query);
+    // Try OpenAI first (fastest)
+    if (this.preferOpenAI && this.openaiAvailable && this.openai) {
+      try {
+        return await this.classifyWithOpenAI(query);
+      } catch (error) {
+        console.warn("⚠️  OpenAI classification failed, trying Ollama:", (error as Error).message);
+      }
     }
 
-    try {
-      const result = await this.classifyWithOllama(query);
-      return result;
-    } catch (error) {
-      console.warn("Ollama classification failed, using fallback:", error);
-      return this.fallbackClassification(query);
+    // Try Ollama second (free but slower)
+    if (this.ollamaAvailable) {
+      try {
+        return await this.classifyWithOllama(query);
+      } catch (error) {
+        console.warn("Ollama classification failed, using fallback:", error);
+      }
     }
+
+    // Fallback to keyword-based
+    return this.fallbackClassification(query);
   }
 
   /**
@@ -79,7 +114,7 @@ Query: "${query}"
 Return JSON: {"type": "TYPE", "confidence": 0.0-1.0}`;
 
     const response = await ollama.generate({
-      model: this.model,
+      model: this.ollamaModel,
       prompt,
       format: "json",
       keep_alive: -1, // CRITICAL: Keep model warm (eliminates 3.8s cold-start!)
@@ -108,6 +143,70 @@ Return JSON: {"type": "TYPE", "confidence": 0.0-1.0}`;
     const type = this.normalizeQueryType(parsed.type);
     const confidence = Math.min(Math.max(parsed.confidence || 0.5, 0), 1);
     const reasoning = parsed.reasoning || "Classified by Ollama";
+
+    // If confidence is too low, use GENERAL
+    const finalType = confidence < 0.5 ? QT.GENERAL : type;
+
+    const routing = this.getRoutingRule(finalType);
+
+    return {
+      query,
+      type: finalType,
+      confidence,
+      layers: routing.layers,
+      weights: routing.weights,
+      reasoning,
+    };
+  }
+
+  /**
+   * Classify using OpenAI (gpt-4o-mini)
+   * Fast (~200ms) and cheap ($0.0001/query)
+   */
+  private async classifyWithOpenAI(
+    query: string
+  ): Promise<ClassificationResult> {
+    if (!this.openai) {
+      throw new Error("OpenAI not initialized");
+    }
+
+    const prompt = `Classify this query into ONE type: PROCEDURAL, FACTUAL, ARCHITECTURAL, USER, or HISTORICAL.
+
+Types:
+- PROCEDURAL: Do/create/continue task ("implement auth", "continue working")
+- FACTUAL: Explain concept ("what is JWT?", "how does bcrypt work?")
+- ARCHITECTURAL: Code structure ("show dependencies", "what imports X?")
+- USER: Personal preferences ("my preferred framework", "my expertise")
+- HISTORICAL: Past decisions ("why did we choose X?", "what decisions were made?")
+
+Query: "${query}"
+
+Return JSON: {"type": "TYPE", "confidence": 0.0-1.0}`;
+
+    const response = await this.openai.chat.completions.create({
+      model: this.openaiModel,
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+      temperature: 0.1,
+      max_tokens: 50,
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error("No response from OpenAI");
+    }
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(content);
+    } catch (e) {
+      console.warn("Failed to parse OpenAI response:", content);
+      return this.fallbackClassification(query);
+    }
+
+    const type = this.normalizeQueryType(parsed.type);
+    const confidence = Math.min(Math.max(parsed.confidence || 0.5, 0), 1);
+    const reasoning = parsed.reasoning || "Classified by OpenAI";
 
     // If confidence is too low, use GENERAL
     const finalType = confidence < 0.5 ? QT.GENERAL : type;

@@ -22,3 +22,22 @@ export interface LayerRoutingRule {
   layers: MemoryLayer[];
   weights: Record<MemoryLayer, number>;
 }
+
+export interface RoutingResult {
+  query: string;
+  classification: ClassificationResult;
+  results: LayerResult[];
+  stats: {
+    totalTime: number;
+    layersQueried: number;
+    cacheHit: boolean;
+  };
+}
+
+export interface LayerResult {
+  layer: MemoryLayer;
+  items: any;
+  time: number;
+  weight?: number;
+  error?: string;
+}

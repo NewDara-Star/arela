@@ -1,8 +1,8 @@
-# Arela v3.10.0
+# Arela v4.2.0
 
 **Your AI Technical Co-Founder**
 
-> "From architecture analysis to contract validation - Arela prevents API drift and manages breaking changes automatically!"
+> "From code summarization to intelligent context routing - Arela uses AI to understand your codebase and deliver the right context, fast!"
 
 ## The Story
 
@@ -10,9 +10,251 @@ Arela was born from a simple frustration: being an "idea person" with no technic
 
 Arela is that guidance. Not a linter. Not a framework. **A conversational CTO persona** that helps you think through products and build them to world-class standards.
 
-## ✨ What's New in v3.10.0
+## ✨ What's New in v4.2.0
 
-### 🎯 Phase 3 Continued - Quality & Governance
+### 🚀 Advanced Code Summarization
+
+**AI-powered code understanding with semantic caching for 5-10x token reduction!**
+
+Transform large code files into concise technical summaries:
+
+```bash
+# Summarize any code file
+arela summarize src/auth/auth-service.ts
+
+# Output:
+# Main Responsibility: Handles user authentication with JWT tokens
+# Public API: authenticateUser, verifyToken, refreshToken
+# Dependencies: bcrypt, jsonwebtoken, database
+# Side Effects: Writes to database, generates tokens
+# Performance: ~50ms avg, 3 DB calls
+```
+
+**Features:**
+- 🎯 **AST-based extraction:** Parse code structure with tree-sitter
+- 🤖 **LLM synthesis:** Generate summaries using OpenAI/Ollama
+- 💾 **Semantic caching:** Cache by API signature (ignores comments)
+- ⚡ **Fast:** <3s with LLM, <100ms on cache hit
+- 💰 **Cost-effective:** 70-80% cache hit rate, ~$0.0001 per summary
+
+**Auto-fallback:** OpenAI → Ollama → Local deterministic summarizer
+
+### 🔄 Auto-Refresh Graph DB
+
+**Keep your dependency graph fresh automatically!**
+
+Arela now automatically detects when your graph database is stale (>24 hours) and refreshes it in the background on session start. No manual intervention needed!
+
+---
+
+## 🎯 Core Features
+
+### 🧠 **Intelligent Code Understanding**
+
+#### Code Summarization (v4.2.0)
+- **AST-based extraction** - Parse code structure with tree-sitter
+- **LLM synthesis** - Generate summaries using OpenAI/Ollama
+- **Semantic caching** - 70-80% cache hit rate, ignores comments
+- **5-10x compression** - Reduce token usage dramatically
+- **Auto-fallback** - OpenAI → Ollama → Local deterministic
+- **Cost-effective** - ~$0.0001 per summary, <3s with LLM
+
+```bash
+arela summarize src/auth/auth-service.ts
+# Main Responsibility: Handles user authentication with JWT tokens
+# Public API: authenticateUser, verifyToken, refreshToken
+# Dependencies: bcrypt, jsonwebtoken, database
+```
+
+#### Meta-RAG Context Routing (v4.0.2)
+- **OpenAI classification** - 700-1500ms, ~$0.0001 per query
+- **Smart routing** - Only queries relevant memory layers
+- **Query types** - Procedural, Factual, Architectural, Historical
+- **Auto-fallback** - Uses Ollama if OpenAI unavailable
+- **Privacy option** - 100% local classification available
+
+### 🤖 **Multi-Agent Orchestration**
+
+#### Agent Discovery & Management
+- **4 agents supported** - Codex, Claude, DeepSeek, Ollama
+- **Cost optimization** - Smart routing ($0.001-$0.015/1k tokens)
+- **Ticket system** - Markdown-based task management
+- **Parallel execution** - Run multiple tickets simultaneously
+- **Status tracking** - Real-time progress monitoring
+
+```bash
+arela agents                    # Discover available agents
+arela orchestrate --parallel    # Run all pending tickets
+arela status --verbose          # Check ticket progress
+```
+
+### 🧠 **Hexi-Memory System (6 Layers)**
+
+#### Memory Architecture
+1. **Session Memory** - Current conversation context
+2. **Project Memory** - Codebase-specific knowledge
+3. **User Memory** - Personal preferences and patterns
+4. **Vector Memory** - Semantic code search (RAG)
+5. **Graph Memory** - Structural dependencies (SQLite)
+6. **Governance Memory** - Audit trail and decisions
+
+#### Capabilities
+- **Cross-session persistence** - Never lose context
+- **Intelligent routing** - Right memory for right query
+- **Auto-refresh** - Detects staleness (>24h) and updates
+- **Multi-repo support** - Analyze mobile + backend together
+
+### 🧪 **Visual Testing & Analysis**
+
+#### Web Testing (v3.2.0)
+- **Playwright integration** - Automated browser testing
+- **Flow execution** - YAML-based test scenarios
+- **Screenshot capture** - Visual regression testing
+- **AI analysis** - Moondream-powered UX insights
+
+#### Mobile Testing (v3.3.0)
+- **Appium integration** - iOS + Android support
+- **Expo auto-detection** - Seamless React Native testing
+- **Web fallback** - Works without simulators
+- **Mobile viewport** - Accurate device dimensions
+
+#### AI-Powered Analysis (v3.4.0)
+- **FREE vision analysis** - Moondream via Ollama
+- **WCAG compliance** - AA/AAA contrast checking
+- **Touch targets** - 44x44px minimum validation
+- **Accessibility scoring** - 0-100 rating
+
+```bash
+arela run web --flow signup --analyze
+arela run mobile --platform ios
+arela run mobile --web-fallback  # No simulator needed!
+```
+
+### 🏗️ **Architecture Analysis**
+
+#### Vertical Slice Detection (v3.8.0)
+- **Infomap algorithm** - Optimal slice boundary detection
+- **Cohesion scoring** - 0-100% quality metrics
+- **Multi-repo analysis** - Analyze entire system
+- **Smart naming** - Pattern-based slice identification
+
+#### Code Flow Analysis (v3.5.0)
+- **Entry point discovery** - API routes, handlers, components
+- **Execution tracing** - Follow code paths
+- **25 standards checking** - Security, UX, Architecture, Performance
+- **Refactor proposals** - Priority-ranked, effort-estimated
+
+#### Universal Language Support (v3.7.0)
+- **15+ languages** - TypeScript, Python, Go, Rust, Java, C#, etc.
+- **Blazing fast** - 3,585 files in 3.91 seconds
+- **Regex-based** - No AI needed, pure pattern matching
+- **Graph database** - SQLite at `.arela/memory/graph.db`
+
+```bash
+arela detect slices                    # Find optimal boundaries
+arela analyze flow "user-login"        # Trace execution
+arela analyze architecture             # Full system analysis
+arela ingest codebase                  # Build dependency graph
+```
+
+### 📝 **API Contract Management**
+
+#### Contract Generation (v3.8.0)
+- **OpenAPI 3.0** - Generate from code
+- **Schema drift detection** - Frontend/backend mismatches
+- **Fuzzy matching** - Levenshtein distance
+- **Per-slice organization** - Vertical slice contracts
+
+#### Client Generation (v3.9.0)
+- **TypeScript clients** - Type-safe API consumption
+- **Zod schemas** - Runtime validation
+- **Axios-based** - Bearer token authentication
+- **Batch processing** - 30 specs in <5 seconds
+
+#### Contract Validation (v3.10.0)
+- **Dredd integration** - Industry-standard validation
+- **Auto-start server** - Retry logic included
+- **CI/CD workflows** - GitHub Actions templates
+- **Drift prevention** - Catch breaking changes early
+
+#### API Versioning (v3.10.0)
+- **Breaking change detection** - Git-aware comparison
+- **Schema regression** - Field/type changes
+- **Version creation** - Auto-generate v2, v3 slices
+- **CI/CD integration** - Fail builds on drift
+
+```bash
+arela generate contracts /mobile /backend
+arela generate client --contract openapi/api.yaml
+arela validate contracts
+arela version detect-drift
+arela version create workout --version 2
+```
+
+### 🧪 **Test Strategy & Quality**
+
+#### Test Analysis (v3.8.0)
+- **Quality scoring** - Analyze test effectiveness
+- **Mock detection** - Identify overuse
+- **Testcontainers** - Recommend real dependencies
+- **Coverage gaps** - Find untested code
+- **Slice-aware** - Per-feature testing
+
+```bash
+arela analyze tests --dir src
+# 🧪 247 tests analyzed
+# 🔴 Mock overuse: 142 tests (57%)
+# 💡 Recommendation: Adopt Testcontainers
+```
+
+### 🔄 **Structured Workflows**
+
+#### Research-Driven Decisions
+- **Systematic approach** - Evidence-based choices
+- **Multi-source research** - ChatGPT + Gemini
+- **Documented rationale** - ADR-style records
+- **Implementation tracking** - From research to code
+
+```bash
+# In Windsurf Cascade
+/research-driven-decision
+```
+
+---
+
+## 🚀 Previous Releases
+
+### v4.0.2 - OpenAI Integration
+
+**Intelligent query classification for faster, smarter context routing!**
+
+```bash
+# Set up OpenAI (optional but recommended)
+echo "OPENAI_API_KEY=sk-proj-..." >> .env
+
+# Arela automatically uses OpenAI for classification
+# Falls back to Ollama if unavailable
+```
+
+**Benefits:**
+- ⚡ **Fast classification:** 700-1500ms (consistent and reliable)
+- 💰 **Cheap:** ~$0.0001 per query (~$0.01 per 100 queries)
+- 🎯 **Smart routing:** Only queries relevant memory layers
+- 🔄 **Auto-fallback:** Uses Ollama if OpenAI unavailable
+- 🔒 **Privacy option:** Use Ollama for 100% local classification
+
+**Query types detected:**
+- **PROCEDURAL:** "Continue working on auth" → Session + Project + Graph
+- **FACTUAL:** "What is JWT?" → Vector search only
+- **ARCHITECTURAL:** "Show dependencies" → Graph + Vector
+- **USER:** "My preferred framework?" → User preferences
+- **HISTORICAL:** "Why did we choose X?" → Governance + Project
+
+---
+
+## 🎯 Previous Releases
+
+### v3.10.0 - Contract Validation & API Versioning
 
 **Prevent API drift and manage breaking changes automatically!**
 
@@ -353,23 +595,45 @@ Arela v3.1+ is a **Windsurf-native CTO persona** that:
 ## Quick Start
 
 ```bash
-# Install
+# 1. Install
 npm install -g arela@latest
 
-# Initialize your project
+# 2. Initialize your project
 arela init
 
-# Build semantic index (auto-installs Ollama + models)
+# 3. Build semantic index (auto-installs Ollama + models)
 arela index
 
-# Start MCP server for Windsurf integration
+# 4. Ingest codebase into graph database
+arela ingest codebase
+
+# 5. NEW: Summarize a code file
+arela summarize src/your-file.ts
+
+# 6. Start MCP server for IDE integration (Windsurf/Cursor)
 arela mcp
 
-# Discover available AI agents
+# 7. Discover available AI agents
 arela agents
 
-# Use workflows in Cascade
-/research-driven-decision
+# 8. Run multi-agent orchestration
+arela orchestrate
+```
+
+### **New in v4.2.0: Code Summarization**
+
+```bash
+# Summarize any file
+arela summarize src/auth/auth-service.ts
+
+# Force re-summarization (skip cache)
+arela summarize src/auth/auth-service.ts --no-cache
+
+# JSON output
+arela summarize src/auth/auth-service.ts --output json
+
+# Check cache stats (shown automatically)
+# Cache Stats: 100% hit rate, $0.0001 saved
 ```
 
 ## Workflows

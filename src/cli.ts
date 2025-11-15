@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { config } from "dotenv";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import { Command } from "commander";
@@ -13,16 +14,25 @@ import { registerMemoryCommands } from "./memory/cli.js";
 import { detectBreakingChanges } from "./version/drift-detector.js";
 import { createSliceVersion } from "./version/version-creator.js";
 import { getStalenessChecker } from "./utils/staleness-checker.js";
+import { checkForUpdatesAsync } from "./utils/update-checker.js";
+
+// Load .env file if it exists
+config();
+
+const VERSION = "4.1.0";
 
 const program = new Command()
   .name("arela")
   .description("AI-powered CTO with multi-agent orchestration")
-  .version("4.0.1");
+  .version(VERSION);
+
+// Auto-check for updates (non-blocking, async, cached for 24h)
+checkForUpdatesAsync(VERSION);
 
 // Auto-check memory staleness before every command
 program.hook("preAction", async () => {
   const checker = getStalenessChecker();
-  await checker.checkAndUpdate({ silent: false });
+  await checker.checkAndUpdate({ silent: true }); // Silent to avoid spam
 });
 
 /**
@@ -132,11 +142,57 @@ program
         console.log(pc.gray("\n💡 Use --force to overwrite"));
       }
 
-      console.log(pc.bold(pc.cyan("\n📚 Next: Run `arela agents` to meet your AI team\n")));
+      // Create .env files
+      console.log(pc.bold(pc.cyan("\n🔑 Setting up environment...\n")));
+      const { setupKeys } = await import("./setup/keys.js");
+      
+      // Create .env and .env.example if they don't exist
+      const fs = await import("fs");
+      const VERSION = "4.0.2";
+      const envPath = path.join(opts.cwd, ".env");
+      const envExamplePath = path.join(opts.cwd, ".env.example");
+      
+      const envTemplate = `# Arela Configuration
+
+# OpenAI API Key (optional but recommended for fast classification)
+# Get yours at: https://platform.openai.com/api-keys
+# Cost: ~$0.0001 per query (1 cent per 100 queries)
+# Speed: ~200ms vs 1.5s with Ollama
+OPENAI_API_KEY=
+
+# Anthropic API Key (optional, for future features)
+ANTHROPIC_API_KEY=
+`;
+      
+      if (!fs.existsSync(envExamplePath)) {
+        fs.writeFileSync(envExamplePath, envTemplate);
+        console.log(pc.gray("  ✅ Created .env.example"));
+      }
+      
+      if (!fs.existsSync(envPath)) {
+        fs.writeFileSync(envPath, envTemplate);
+        console.log(pc.gray("  ✅ Created .env"));
+      }
+
+      console.log(pc.bold(pc.cyan("\n📚 Next steps:\n")));
+      console.log(pc.gray("  1. Run `arela setup` to configure API keys (optional)"));
+      console.log(pc.gray("  2. Run `arela agents` to meet your AI team"));
+      console.log(pc.gray("  3. Run `arela index` to build your RAG brain\n"));
     } catch (error) {
       console.error(pc.red(`\n😵‍💫 Initialization went sideways: ${(error as Error).message}\n`));
       process.exit(1);
     }
+  });
+
+/**
+ * arela setup - Interactive setup wizard
+ */
+program
+  .command("setup")
+  .description("Interactive setup wizard for API keys and configuration")
+  .action(async () => {
+    const { setupKeys } = await import("./setup/keys.js");
+    await setupKeys();
   });
 
 /**
@@ -295,6 +351,86 @@ export function buildRunCommand(
 buildRunCommand(program);
 
 /**
+ * arela route - Test Meta-RAG context routing
+ */
+program
+  .command("route")
+  .description("Test Meta-RAG context routing")
+  .argument("<query>", "Query to route")
+  .option("--verbose", "Show detailed routing info")
+  .action(async (query: string, opts: any) => {
+    try {
+      const { ContextRouter } = await import("./context-router.js");
+      const { QueryClassifier } = await import("./meta-rag/classifier.js");
+      const { MemoryRouter } = await import("./meta-rag/router.js");
+      const { FusionEngine } = await import("./fusion/index.js");
+      const { HexiMemory } = await import("./memory/hexi-memory.js");
+
+      const heximemory = new HexiMemory();
+      await heximemory.init(process.cwd());
+
+      const classifier = new QueryClassifier();
+      await classifier.init();
+
+      const memoryRouter = new MemoryRouter({
+        heximemory,
+        classifier,
+      });
+
+      const fusion = new FusionEngine();
+
+      const router = new ContextRouter({
+        heximemory,
+        classifier,
+        router: memoryRouter,
+        fusion,
+        debug: opts.verbose,
+      });
+
+      await router.init();
+
+      console.log(`\n🧠 Routing query: "${query}"\n`);
+
+      const response = await router.route({ query });
+
+      console.log(
+        `📊 Classification: ${response.classification.type} (${response.classification.confidence})`
+      );
+      console.log(`🎯 Layers: ${response.routing.layers.join(", ")}`);
+      console.log(`💡 Reasoning: ${response.routing.reasoning}`);
+      console.log(`\n⏱️  Stats:`);
+      console.log(`   Classification: ${response.stats.classificationTime}ms`);
+      console.log(`   Retrieval: ${response.stats.retrievalTime}ms`);
+      console.log(`   Fusion: ${response.stats.fusionTime}ms`);
+      console.log(`   Total: ${response.stats.totalTime}ms`);
+      console.log(`   Estimated tokens: ${response.stats.tokensEstimated}`);
+      console.log(`   Context items: ${response.context.length}`);
+
+      if (opts.verbose) {
+        console.log(`\n📦 Context:`);
+        console.log(JSON.stringify(response.context, null, 2));
+      }
+      
+      process.exit(0);
+    } catch (error) {
+      console.error(pc.red(`\n❌ Context routing failed: ${(error as Error).message}\n`));
+      console.error(pc.dim((error as Error).stack));
+      process.exit(1);
+    }
+  });
+
+/**
+ * arela update - Check for updates
+ */
+program
+  .command("update")
+  .description("Check for arela updates")
+  .action(async () => {
+    const { forceUpdateCheck } = await import("./utils/update-checker.js");
+    await forceUpdateCheck(VERSION);
+  });
+
+/**
  * arela status - Show ticket status
  */
 program
@@ -393,6 +529,38 @@ program
       console.log(pc.bold(pc.cyan("🚀 Go build something amazing!\n")));
     } catch (error) {
       console.error(pc.red(`\n😵‍💫 Indexing went sideways: ${(error as Error).message}\n`));
+      process.exit(1);
+    }
+  });
+
+/**
+ * arela summarize - Summarize a code file
+ */
+program
+  .command("summarize <file>")
+  .description("Summarize a code file using AST + LLM pipeline")
+  .option("--no-cache", "Skip cache, force re-summarization")
+  .option("--output <format>", "Output format (json|markdown)", "markdown")
+  .option("--cwd <dir>", "Working directory", process.cwd())
+  .action(async (file, opts) => {
+    try {
+      const { CodeSummarizer, summaryToMarkdown } = await import("./summarization/code-summarizer.js");
+      
+      console.log(pc.cyan(`\n📝 Summarizing ${file}...\n`));
+      
+      const summarizer = new CodeSummarizer(opts.cwd);
+      const summary = await summarizer.summarize(file, { noCache: !opts.cache });
+      
+      if (opts.output === "json") {
+        console.log(JSON.stringify(summary, null, 2));
+      } else {
+        console.log(summaryToMarkdown(summary));
+      }
+      
+      const stats = summarizer.getCacheStats();
+      console.log(pc.cyan(`\n📊 Cache Stats: ${stats.hitRate ?? 0}% hit rate, $${stats.savings.toFixed(4)} saved\n`));
+    } catch (error) {
+      console.error(pc.red(`\n❌ Summarization failed: ${(error as Error).message}\n`));
       process.exit(1);
     }
   });
@@ -1169,16 +1337,10 @@ versionCommand
 registerMemoryCommands(program);
 
 function isDirectCliExecution(): boolean {
-  const entry = process.argv[1];
-  if (!entry) {
-    return true;
-  }
-
-  try {
-    return import.meta.url === pathToFileURL(entry).href;
-  } catch {
-    return true;
-  }
+  // When installed globally, process.argv[1] is a symlink/wrapper
+  // Check if we're being run as a CLI (has argv) vs imported as a module
+  // If we have command line arguments, we're being run directly
+  return process.argv.length >= 2;
 }
 
 /**
@@ -1278,7 +1440,22 @@ program
     }
   });
 
+// Only parse if running as CLI (not imported as module)
 if (isDirectCliExecution()) {
+  // Check and auto-refresh graph DB on session start (async, non-blocking)
+  (async () => {
+    try {
+      const { checkAndRefreshGraph } = await import("./ingest/auto-refresh.js");
+      await checkAndRefreshGraph({
+        cwd: process.cwd(),
+        maxAgeHours: 24,
+        silent: true, // Silent by default, user can check with `arela status`
+      });
+    } catch (error) {
+      // Silently fail - graph refresh is not critical for all commands
+    }
+  })();
+
   program.parse();
 }
 

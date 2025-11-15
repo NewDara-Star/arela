@@ -102,7 +102,10 @@ export async function ingestCodebase(
 
     closeProject();
 
-    // Phase 4: Get statistics
+    // Phase 4: Update metadata with last ingest time
+    db.setMetadata('last_ingest_time', new Date().toISOString());
+
+    // Phase 5: Get statistics
     const summary = db.getSummary();
     const graphStats = getGraphStats(db);
 

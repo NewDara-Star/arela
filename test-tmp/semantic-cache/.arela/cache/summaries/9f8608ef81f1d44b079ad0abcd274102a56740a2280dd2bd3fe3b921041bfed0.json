@@ -1,0 +1,59 @@
+{
+  "semanticHash": "9f8608ef81f1d44b079ad0abcd274102a56740a2280dd2bd3fe3b921041bfed0",
+  "summary": {
+    "filePath": "src/utils/math.ts",
+    "mainResponsibility": "Provides arithmetic utilities#4",
+    "publicAPI": [
+      "add"
+    ],
+    "ioContracts": [
+      {
+        "name": "add",
+        "definition": "add(a: number, b: number): number"
+      }
+    ],
+    "dependencies": "None",
+    "sideEffects": "None - pure functions",
+    "keyAlgorithms": "Simple arithmetic",
+    "metadata": {
+      "tokenCount": 42,
+      "compressionRatio": 2,
+      "synthesizedAt": "2025-11-15T17:53:44.976Z"
+    }
+  },
+  "contract": {
+    "filePath": "src/utils/math-4.ts",
+    "description": "Utility functions for arithmetic.",
+    "exports": [
+      {
+        "name": "add",
+        "kind": "function",
+        "jsDoc": "Adds two numbers together.",
+        "signature": {
+          "params": [
+            {
+              "name": "a",
+              "type": "number",
+              "optional": false
+            },
+            {
+              "name": "b",
+              "type": "number",
+              "optional": false
+            }
+          ],
+          "returnType": "number",
+          "isAsync": false
+        }
+      }
+    ],
+    "imports": [],
+    "metadata": {
+      "language": "typescript",
+      "linesOfCode": 5,
+      "extractedAt": "2025-11-15T17:53:44.976Z"
+    }
+  },
+  "cachedAt": "2025-11-15T17:53:44.976Z",
+  "hits": 0
+}

@@ -20,6 +20,8 @@ export * from './mcp/server.js';
 export * from './rag/index.js';
 export * from './memory/index.js';
 export * from './compression/index.js';
+export * from './summarization/extractor/index.js';
+export * from './summarization/synthesizer/index.js';
 
 // Utils
 export * from './utils/progress.js';

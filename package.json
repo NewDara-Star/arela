@@ -1,7 +1,7 @@
 {
   "name": "arela",
-  "version": "4.0.1",
-  "description": "AI-powered CTO with multi-agent orchestration, visual testing (web + mobile) for blazing fast development.",
+  "version": "4.2.0",
+  "description": "AI-powered CTO with multi-agent orchestration, code summarization, visual testing (web + mobile) for blazing fast development.",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
@@ -47,6 +47,7 @@
     "better-sqlite3": "^11.0.0",
     "chokidar": "^3.6.0",
     "commander": "^12.0.0",
+    "dotenv": "^17.2.3",
     "dredd": "^14.1.0",
     "execa": "^9.0.0",
     "fast-glob": "^3.3.0",
@@ -54,6 +55,7 @@
     "glob": "^11.0.0",
     "gray-matter": "^4.0.3",
     "ollama": "^0.6.3",
+    "openai": "^6.9.0",
     "ora": "^8.0.0",
     "picocolors": "^1.1.0",
     "playwright": "^1.40.0",
@@ -70,6 +72,8 @@
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.56.0",
+    "tree-sitter": "^0.21.0",
+    "tree-sitter-typescript": "^0.23.2",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
   }

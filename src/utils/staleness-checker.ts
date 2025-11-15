@@ -54,37 +54,34 @@ export class StalenessChecker {
 
     const maxAgeMs = Math.max(ragAge, graphAge);
 
+    // If files don't exist, skip (don't force update on first run)
+    if (maxAgeMs === Infinity) {
+      return;
+    }
+
     // Fresh enough, no update needed
     if (maxAgeMs < this.maxAge) {
       return;
     }
 
-    // Very stale (>24 hours) - block and update now
+    // Very stale (>24 hours) - just notify, don't block
+    // Blocking updates hang the CLI, so we always do background updates
     if (maxAgeMs > this.blockingThreshold) {
       if (!options.silent) {
         console.log(
           `⚠️  Memory very stale (last updated ${this.formatAge(maxAgeMs)} ago)`
         );
-        console.log("🔄 Updating now (this may take 30 seconds)...");
+        console.log("💡 Run 'arela index' to update");
       }
-
-      await this.updateBlocking();
-
-      if (!options.silent) {
-        console.log("✅ Memory updated!");
-      }
-
       return;
     }
 
-    // Stale (>1 hour) - update in background (non-blocking)
-    if (!options.silent) {
+    // Stale (>1 hour) - just notify
+    if (!options.silent && maxAgeMs > this.maxAge) {
       console.log(
-        `🔄 Memory stale (last updated ${this.formatAge(maxAgeMs)} ago), updating in background...`
+        `💡 Memory stale (${this.formatAge(maxAgeMs)} old). Run 'arela index' to update.`
       );
     }
-
-    this.updateInBackground();
   }
 
   /**

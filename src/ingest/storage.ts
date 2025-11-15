@@ -110,6 +110,15 @@ export class GraphDB {
       CREATE INDEX IF NOT EXISTS idx_api_calls_file ON api_calls(file_id);
       CREATE INDEX IF NOT EXISTS idx_api_calls_method_url ON api_calls(method, url);
     `);
+
+    // Metadata table for tracking last ingest
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS metadata (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
   }
 
   /**
@@ -307,6 +316,43 @@ export class GraphDB {
       DELETE FROM functions;
       DELETE FROM files;
     `);
+  }
+
+  /**
+   * Update metadata (e.g., last_ingest_time)
+   */
+  setMetadata(key: string, value: string): void {
+    const stmt = this.db.prepare(`
+      INSERT INTO metadata (key, value, updated_at)
+      VALUES (?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(key) DO UPDATE SET
+        value = excluded.value,
+        updated_at = CURRENT_TIMESTAMP
+    `);
+    stmt.run(key, value);
+  }
+
+  /**
+   * Get metadata value
+   */
+  getMetadata(key: string): string | null {
+    const stmt = this.db.prepare('SELECT value FROM metadata WHERE key = ?');
+    const result = stmt.get(key) as { value: string } | undefined;
+    return result?.value ?? null;
+  }
+
+  /**
+   * Check if graph is stale (> 24 hours old)
+   */
+  isStale(maxAgeHours: number = 24): boolean {
+    const lastIngest = this.getMetadata('last_ingest_time');
+    if (!lastIngest) return true; // Never ingested
+
+    const lastIngestTime = new Date(lastIngest).getTime();
+    const now = Date.now();
+    const ageHours = (now - lastIngestTime) / (1000 * 60 * 60);
+
+    return ageHours > maxAgeHours;
   }
 
   /**
