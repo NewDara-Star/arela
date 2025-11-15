@@ -1,0 +1,35 @@
+{
+  "name": "arela-extension",
+  "version": "5.0.0",
+  "description": "Arela VS Code extension entry point",
+  "private": true,
+  "main": "./out/extension.js",
+  "types": "./out/extension.d.ts",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "activationEvents": [
+    "onCommand:arela.openChat"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "arela.openChat",
+        "title": "Arela: Open Chat"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "lint": "eslint ./src --ext .ts",
+    "clean": "rimraf out",
+    "test": "echo 'No tests for the extension package yet'"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0"
+  },
+  "dependencies": {
+    "tslib": "^2.6.2"
+  }
+}

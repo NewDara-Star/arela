@@ -1,0 +1,22 @@
+{
+  "name": "arela-server",
+  "version": "5.0.0",
+  "description": "Node.js companion server for the Arela VS Code extension",
+  "private": true,
+  "main": "./out/index.js",
+  "types": "./out/index.d.ts",
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "lint": "eslint ./src --ext .ts",
+    "clean": "rimraf out",
+    "test": "echo 'No tests for the server package yet'"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "tree-sitter": "^0.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0"
+  }
+}
