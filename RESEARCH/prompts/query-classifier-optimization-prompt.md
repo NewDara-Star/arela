@@ -56,18 +56,25 @@ Return JSON: {"type": "...", "confidence": 0.0-1.0, "reasoning": "..."}
 **Question:** What's the optimal model for fast, accurate query classification?
 
 **Requirements:**
-- **Speed:** <1s per classification (ideally <500ms)
+- **Speed:** <1s per classification (ideally <200ms per our Meta-RAG research)
 - **Accuracy:** >85% on our 5-type classification
-- **Size:** <4B parameters (must run on laptop CPU)
+- **Size:** 1-3B parameters (per our Meta-RAG research recommendation)
 - **Availability:** Available via Ollama or easy to run locally
 - **Cost:** FREE (no API costs)
 
-**Candidates to consider:**
+**From Our Previous Meta-RAG Research:**
+Our research specifically recommended **1-3B parameter models** for classification:
+- `llama3.2:1b` or `llama3.2:3b` - Meta's latest small models
+- `qwen-2.5:3b` - Alibaba's efficient model
+- `deepseek-r1:1.5b` - Specialized for search tasks
+- `llama2-3b` - Proven for classification
+
+**Why we haven't tested these yet:**
+We jumped straight to llama3.1:8b (too big, too slow). We should test the 1-3B models first as recommended.
+
+**Additional candidates to consider:**
 - Phi-3-mini (3.8B) - Microsoft's efficient model
-- Llama-3.2-3B-Instruct - Meta's latest small model
-- Mistral-7B-Instruct - Known for instruction following
-- Qwen2.5-3B-Instruct - Alibaba's efficient model
-- Other lightweight instruction-tuned models
+- Mistral-7B-Instruct - Known for instruction following (but might be too big)
 
 **What we need:**
 - Benchmarks on classification tasks
