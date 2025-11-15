@@ -1,8 +1,30 @@
-# Arela v4.2.0 - Quickstart Guide
+# Arela v4.3.0 - Quickstart Guide
 
-## ✨ What's New in v4.2.0
+## ✨ What's New in v4.3.0
 
-### 🚀 Advanced Code Summarization
+### 🧠 Learning from Feedback
+
+**Arela now learns from your corrections and continuously improves!**
+
+Provide feedback on whether retrieved context was helpful, and Arela automatically adjusts its routing weights:
+
+```bash
+arela feedback --helpful
+arela feedback --not-helpful --correct-layers vector,graph
+arela feedback:stats
+```
+
+### 🔍 Multi-Hop Reasoning
+
+**Handle complex queries that require multiple steps!**
+
+Arela now breaks down complex queries into sub-queries and executes them intelligently:
+
+```bash
+arela route "How does auth flow work from login to dashboard?" --multi-hop --verbose
+```
+
+### 🚀 Advanced Code Summarization (v4.2.0)
 
 **AI-powered code understanding with semantic caching for 5-10x token reduction!**
 
@@ -324,6 +346,135 @@ Then run:
 ```bash
 arela orchestrate
 ```
+
+---
+
+### **Step 9: Improve with Feedback (NEW in v4.3.0)**
+
+Help Arela learn and improve routing accuracy over time:
+
+```bash
+# After running a query
+arela route "How does authentication work?"
+
+# If the context was helpful
+arela feedback --helpful
+
+# If not helpful, provide corrections
+arela feedback --not-helpful --correct-layers vector,graph --comment "Should use vector search for code examples"
+
+# Or correct the query type
+arela feedback --not-helpful --correct-type FACTUAL --comment "This is a factual question, not procedural"
+
+# View learning progress
+arela feedback:stats
+```
+
+**Output (Fun Mode):**
+```
+📊 Learning Statistics
+
+Helpful Rate: 85% (17/20 queries) 🎉
+Accuracy Improvement: +18% (over last 20 queries) 📈
+
+Layer Weights:
+  Vector: 1.4 (↑ 40%) 🚀
+  Graph: 1.2 (↑ 20%) 📊
+  Project: 1.0 (unchanged) ➡️
+  Session: 0.8 (↓ 20%) 📉
+
+Common Mistakes:
+  - PROCEDURAL queries incorrectly routed to User layer (3 times)
+  - FACTUAL queries missing Vector layer (2 times)
+
+💡 Arela is getting smarter! Keep providing feedback.
+```
+
+**How It Works:**
+
+1. **Query Tracking:** Every `arela route` command stores query details in session memory
+2. **Feedback Collection:** Use `arela feedback` to mark helpful/not helpful
+3. **Weight Adjustment:** Arela adjusts layer weights automatically
+   - Correct layers: +10% weight
+   - Incorrect layers: -10% weight
+4. **Continuous Learning:** Accuracy improves with each feedback
+5. **Audit Trail:** All feedback stored in Governance layer
+
+**Benefits:**
+- 🎯 **Personalized routing** - Learns your specific patterns
+- 📈 **Measurable improvement** - Track accuracy gains over time
+- 🔄 **Automatic optimization** - No manual tuning required
+- 📊 **Transparent** - See exactly how weights change
+- 🧠 **Team learning** - Shared knowledge across your team
+
+**Pro Tips:**
+- Provide feedback on 20+ queries for best results
+- Be specific with corrections (use `--correct-layers` and `--correct-type`)
+- Check `arela feedback:stats` weekly to track improvement
+- Export feedback data for fine-tuning: `learner.exportForFineTuning()`
+
+---
+
+### **Step 10: Use Multi-Hop for Complex Queries (NEW in v4.3.0)**
+
+Handle complex queries that require multiple steps:
+
+```bash
+# Enable multi-hop reasoning
+arela route "How does auth flow work from login to dashboard?" --multi-hop --verbose
+```
+
+**Output:**
+```
+🔍 Decomposing query...
+Sub-query 1: "What is the login endpoint?"
+Sub-query 2: "How is the token generated after login?"
+Sub-query 3: "How is the session created with the token?"
+Sub-query 4: "What is the dashboard route?"
+
+🎯 Executing 4 hops (sequential)...
+
+Hop 1: Login Endpoint
+  ✅ Found 3 results
+  - src/api/auth/login.ts
+  - src/routes/auth.ts
+  - docs/api/authentication.md
+
+Hop 2: Token Generation
+  ✅ Found 2 results
+  - src/auth/jwt.ts
+  - src/utils/token-generator.ts
+
+Hop 3: Session Creation
+  ✅ Found 4 results
+  - src/session/session-manager.ts
+  - src/middleware/session.ts
+  - src/database/session-store.ts
+
+Hop 4: Dashboard Route
+  ✅ Found 2 results
+  - src/routes/dashboard.ts
+  - src/pages/Dashboard.tsx
+
+✅ Combined 11 results (deduplicated from 15)
+
+📊 Multi-Hop Stats:
+  Total hops: 4
+  Total time: 3.2s
+  Results per hop: 2.75 avg
+  Deduplication: 27% reduction
+```
+
+**When to Use Multi-Hop:**
+- Understanding complex flows (auth, payment, data processing)
+- Tracing multi-step processes
+- Following dependencies across modules
+- Analyzing end-to-end user journeys
+
+**Execution Strategies:**
+- **Sequential:** When hops have dependencies (A → B → C)
+- **Parallel:** When hops are independent (A, B, C)
+- **Hybrid:** Mix of both (A → [B, C] → D)
 
 ---
 

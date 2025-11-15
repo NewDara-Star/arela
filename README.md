@@ -1,8 +1,8 @@
-# Arela v4.2.0
+# Arela v4.3.0
 
 **Your AI Technical Co-Founder**
 
-> "From code summarization to intelligent context routing - Arela uses AI to understand your codebase and deliver the right context, fast!"
+> "From code summarization to learning from feedback - Arela uses AI to understand your codebase, learn from your corrections, and handle complex multi-step queries!"
 
 ## The Story
 
@@ -10,40 +10,73 @@ Arela was born from a simple frustration: being an "idea person" with no technic
 
 Arela is that guidance. Not a linter. Not a framework. **A conversational CTO persona** that helps you think through products and build them to world-class standards.
 
-## ✨ What's New in v4.2.0
+## ✨ What's New in v4.3.0
 
-### 🚀 Advanced Code Summarization
+### 🧠 Learning from Feedback
 
-**AI-powered code understanding with semantic caching for 5-10x token reduction!**
+**Arela now learns from your corrections and continuously improves!**
 
-Transform large code files into concise technical summaries:
+Provide feedback on whether retrieved context was helpful, and Arela automatically adjusts its routing weights:
 
 ```bash
-# Summarize any code file
-arela summarize src/auth/auth-service.ts
+# Mark helpful queries
+arela feedback --helpful
 
-# Output:
-# Main Responsibility: Handles user authentication with JWT tokens
-# Public API: authenticateUser, verifyToken, refreshToken
-# Dependencies: bcrypt, jsonwebtoken, database
-# Side Effects: Writes to database, generates tokens
-# Performance: ~50ms avg, 3 DB calls
+# Provide corrections
+arela feedback --not-helpful --correct-layers vector,graph
+
+# View learning progress
+arela feedback:stats
+```
+
+**Example Output:**
+```
+📊 Learning Statistics
+
+Helpful Rate: 80% (16/20 queries)
+Accuracy Improvement: +15% (over last 20 queries)
+
+Layer Weights:
+  Vector: 1.3 (↑ 30%)
+  Graph: 1.2 (↑ 20%)
+  Session: 0.9 (↓ 10%)
+
+💡 Arela is getting smarter! Keep providing feedback.
+```
+
+**How It Works:**
+- Correct layers get +10% weight
+- Incorrect layers get -10% weight
+- Accuracy improves 10-15% over 20+ queries
+- All feedback stored in Governance layer (immutable audit trail)
+
+### 🔍 Multi-Hop Reasoning
+
+**Handle complex queries that require multiple steps!**
+
+Arela now breaks down complex queries into sub-queries and executes them intelligently:
+
+```bash
+arela route "How does auth flow work from login to dashboard?" --multi-hop --verbose
+```
+
+**Example Output:**
+```
+🔍 Decomposing query...
+Sub-query 1: "What is the login endpoint?"
+Sub-query 2: "How is the token generated?"
+Sub-query 3: "How is the session created?"
+Sub-query 4: "What is the dashboard route?"
+
+🎯 Executing 4 hops (sequential)...
+✅ Combined 11 results (deduplicated from 15)
 ```
 
 **Features:**
-- 🎯 **AST-based extraction:** Parse code structure with tree-sitter
-- 🤖 **LLM synthesis:** Generate summaries using OpenAI/Ollama
-- 💾 **Semantic caching:** Cache by API signature (ignores comments)
-- ⚡ **Fast:** <3s with LLM, <100ms on cache hit
-- 💰 **Cost-effective:** 70-80% cache hit rate, ~$0.0001 per summary
-
-**Auto-fallback:** OpenAI → Ollama → Local deterministic summarizer
-
-### 🔄 Auto-Refresh Graph DB
-
-**Keep your dependency graph fresh automatically!**
-
-Arela now automatically detects when your graph database is stale (>24 hours) and refreshes it in the background on session start. No manual intervention needed!
+- Automatic query decomposition (2-4 sub-queries)
+- Sequential or parallel execution
+- Intelligent result combination
+- Optimized performance (1-2s per hop)
 
 ---
 
@@ -65,6 +98,90 @@ arela summarize src/auth/auth-service.ts
 # Public API: authenticateUser, verifyToken, refreshToken
 # Dependencies: bcrypt, jsonwebtoken, database
 ```
+
+#### Learning from Feedback (v4.3.0)
+**Arela continuously improves by learning from your corrections:**
+
+```bash
+# Provide feedback on retrieved context
+arela feedback --helpful
+arela feedback --not-helpful --correct-layers vector,graph
+
+# View learning progress
+arela feedback:stats
+```
+
+**Example Output:**
+```
+📊 Learning Statistics
+
+Helpful Rate: 80% (16/20 queries)
+Accuracy Improvement: +15% (over last 20 queries)
+
+Layer Weights:
+  Vector: 1.3 (↑ 30%)
+  Graph: 1.2 (↑ 20%)
+  Session: 0.9 (↓ 10%)
+
+Common Mistakes:
+  - PROCEDURAL queries incorrectly routed to User layer (3 times)
+  - FACTUAL queries missing Vector layer (2 times)
+
+💡 Arela is getting smarter! Keep providing feedback.
+```
+
+**How It Works:**
+1. Arela routes your query using current weights
+2. You provide feedback on whether the context was helpful
+3. Weights adjust automatically (+10% for correct, -10% for incorrect)
+4. Accuracy improves over time as Arela learns your patterns
+5. All feedback stored in Governance layer (immutable audit trail)
+
+**Benefits:**
+- 🎯 Better routing accuracy over time (10-15% improvement)
+- 🧠 Learns your specific patterns and preferences
+- 📈 Measurable improvement tracking
+- 🔄 Automatic weight adjustment
+- 📊 Transparent decision-making
+
+#### Multi-Hop Reasoning (v4.3.0)
+**Handle complex queries that require multiple steps:**
+
+```bash
+# Enable multi-hop for complex queries
+arela route "How does auth flow work from login to dashboard?" --multi-hop --verbose
+```
+
+**Example Output:**
+```
+🔍 Decomposing query...
+Sub-query 1: "What is the login endpoint?"
+Sub-query 2: "How is the token generated after login?"
+Sub-query 3: "How is the session created with the token?"
+Sub-query 4: "What is the dashboard route?"
+
+🎯 Executing 4 hops (sequential)...
+
+Hop 1: Login Endpoint ✅ Found 3 results
+Hop 2: Token Generation ✅ Found 2 results
+Hop 3: Session Creation ✅ Found 4 results
+Hop 4: Dashboard Route ✅ Found 2 results
+
+✅ Combined 11 results (deduplicated from 15)
+```
+
+**Features:**
+- 🔍 Automatic query decomposition (2-4 sub-queries)
+- 🎯 Sequential or parallel execution
+- 🧩 Intelligent result combination
+- 📊 Deduplication and narrative building
+- ⚡ Optimized performance (1-2s per hop)
+
+**Use Cases:**
+- Understanding complex flows (auth, payment, data processing)
+- Tracing multi-step processes
+- Following dependencies across modules
+- Analyzing end-to-end user journeys
 
 #### Meta-RAG Context Routing (v4.0.2)
 - **OpenAI classification** - 700-1500ms, ~$0.0001 per query

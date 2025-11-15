@@ -358,6 +358,7 @@ program
   .description("Test Meta-RAG context routing")
   .argument("<query>", "Query to route")
   .option("--verbose", "Show detailed routing info")
+  .option("--multi-hop", "Enable multi-hop reasoning for complex queries")
   .action(async (query: string, opts: any) => {
     try {
       const { ContextRouter } = await import("./context-router.js");
@@ -389,6 +390,106 @@ program
 
       await router.init();
 
+      // Multi-hop reasoning path
+      if (opts.multiHop) {
+        const { QueryDecomposer } = await import("./reasoning/decomposer.js");
+        const { MultiHopRouter } = await import("./reasoning/multi-hop-router.js");
+
+        const decomposer = new QueryDecomposer();
+        await decomposer.init();
+
+        const multiHopRouter = new MultiHopRouter(router);
+
+        console.log(`\n🧠 Routing query with multi-hop reasoning: "${query}"\n`);
+
+        const startDecomp = Date.now();
+        const decomposition = await decomposer.decompose(query);
+        const decompTime = Date.now() - startDecomp;
+
+        if (!decomposition.isComplex) {
+          console.log(pc.yellow("Query is not complex enough for multi-hop reasoning"));
+          console.log(pc.gray("Falling back to single-hop routing\n"));
+
+          // Fall through to regular routing
+          const response = await router.route({ query });
+
+          console.log(
+            `📊 Classification: ${response.classification.type} (${response.classification.confidence})`
+          );
+          console.log(`🎯 Layers: ${response.routing.layers.join(", ")}`);
+          console.log(`💡 Reasoning: ${response.routing.reasoning}`);
+          console.log(`\n⏱️  Stats:`);
+          console.log(`   Classification: ${response.stats.classificationTime}ms`);
+          console.log(`   Retrieval: ${response.stats.retrievalTime}ms`);
+          console.log(`   Fusion: ${response.stats.fusionTime}ms`);
+          console.log(`   Total: ${response.stats.totalTime}ms`);
+          console.log(`   Estimated tokens: ${response.stats.tokensEstimated}`);
+          console.log(`   Context items: ${response.context.length}`);
+        } else {
+          console.log(pc.bold(pc.cyan("🔍 Decomposing query...")));
+          console.log(pc.gray(`   Time: ${decompTime}ms`));
+          console.log(pc.gray(`   Strategy: ${decomposition.strategy}\n`));
+
+          if (opts.verbose) {
+            decomposition.subQueries.forEach((sq) => {
+              const deps = sq.dependencies.length > 0 ? ` (depends on ${sq.dependencies.join(", ")})` : "";
+              console.log(pc.gray(`   Sub-query ${sq.id}: "${sq.query}"${deps}`));
+            });
+            console.log("");
+          }
+
+          console.log(pc.bold(pc.cyan(`🎯 Executing ${decomposition.subQueries.length} hops (${decomposition.strategy})...\n`)));
+
+          const result = await multiHopRouter.route(decomposition);
+
+          // Display hop results
+          for (const hop of result.hops) {
+            const icon = hop.context.length > 0 ? "✅" : "⚠️";
+            console.log(`${icon} Hop ${hop.subQueryId}: ${hop.subQuery}`);
+            console.log(pc.gray(`   Classification: ${hop.classification.type}`));
+            console.log(pc.gray(`   Results: ${hop.context.length}`));
+            console.log(pc.gray(`   Relevance: ${(hop.relevanceScore * 100).toFixed(0)}%`));
+            console.log(pc.gray(`   Time: ${hop.executionTime}ms\n`));
+          }
+
+          console.log(pc.bold(pc.green(`✅ Combined ${result.combinedContext.filter(c => c.metadata?.type !== "separator").length} results (deduplicated from ${result.hops.reduce((sum, h) => sum + h.context.length, 0)})\n`)));
+
+          console.log(pc.bold("📊 Multi-Hop Stats:"));
+          console.log(pc.gray(`   Total hops: ${result.stats.totalHops}`));
+          console.log(pc.gray(`   Execution strategy: ${decomposition.strategy}`));
+          console.log(pc.gray(`   Total time: ${result.stats.totalTime}ms`));
+          console.log(pc.gray(`   Decomposition: ${decompTime}ms`));
+          console.log(pc.gray(`   Execution: ${result.stats.executionTime}ms`));
+          console.log(pc.gray(`   Combination: ${result.stats.combinationTime}ms`));
+          console.log(pc.gray(`   Results per hop: ${result.stats.resultsPerHop.toFixed(1)} avg`));
+          console.log(pc.gray(`   Deduplication: ${result.stats.deduplicationRate.toFixed(1)}% reduction`));
+          console.log(pc.gray(`   Estimated tokens: ${result.stats.tokensEstimated}\n`));
+
+          if (opts.verbose) {
+            console.log(pc.bold("\n📦 Combined Context:"));
+            console.log(JSON.stringify(result.combinedContext, null, 2));
+          }
+        }
+
+        // Store last query in session for feedback
+        try {
+          const { SessionMemory } = await import("./memory/session.js");
+          const session = new SessionMemory(process.cwd());
+          await session.init();
+          await session.setContext("lastQuery", {
+            query,
+            classification: null,
+            routing: null,
+            timestamp: Date.now(),
+          });
+        } catch (error) {
+          console.debug("Failed to store query in session:", error);
+        }
+
+        process.exit(0);
+      }
+
+      // Regular single-hop routing
       console.log(`\n🧠 Routing query: "${query}"\n`);
 
       const response = await router.route({ query });
@@ -410,7 +511,23 @@ program
         console.log(`\n📦 Context:`);
         console.log(JSON.stringify(response.context, null, 2));
       }
-      
+
+      // Store last query in session for feedback
+      try {
+        const { SessionMemory } = await import("./memory/session.js");
+        const session = new SessionMemory(process.cwd());
+        await session.init();
+        await session.setContext("lastQuery", {
+          query,
+          classification: response.classification,
+          routing: response.routing,
+          timestamp: Date.now(),
+        });
+      } catch (error) {
+        // Non-critical - just log silently
+        console.debug("Failed to store query in session:", error);
+      }
+
       process.exit(0);
     } catch (error) {
       console.error(pc.red(`\n❌ Context routing failed: ${(error as Error).message}\n`));
@@ -1330,6 +1447,138 @@ versionCommand
       console.log(pc.gray("4. Deploy with both versions enabled\n"));
     } catch (error) {
       console.error(pc.red(`\n❌ Failed to create version: ${(error as Error).message}\n`));
+      process.exit(1);
+    }
+  });
+
+/**
+ * arela feedback - Provide feedback on last query result
+ */
+program
+  .command("feedback")
+  .description("Provide feedback on last query result")
+  .option("--helpful", "Mark as helpful")
+  .option("--not-helpful", "Mark as not helpful")
+  .option("--correct-layers <layers>", "Correct layer selection (comma-separated)")
+  .option("--correct-type <type>", "Correct query type")
+  .option("--comment <text>", "Additional comment")
+  .action(async (options) => {
+    try {
+      const { FeedbackLearner } = await import("./learning/index.js");
+      const { SessionMemory } = await import("./memory/session.js");
+      const { MemoryLayer } = await import("./memory/hexi-memory.js");
+      const { QueryType } = await import("./meta-rag/types.js");
+
+      // Initialize feedback learner and session
+      const learner = new FeedbackLearner(process.cwd());
+      await learner.init();
+
+      const session = new SessionMemory(process.cwd());
+      await session.init();
+
+      // Get last query from session
+      const lastQueryData = await session.getContext("lastQuery");
+
+      if (!lastQueryData) {
+        console.error(pc.red("\n❌ No recent query found in session"));
+        console.log(pc.gray("   Run a query with 'arela route' first\n"));
+        process.exit(1);
+      }
+
+      const { query, classification, routing } = lastQueryData;
+
+      // Build feedback object
+      const feedback: any = {
+        helpful: options.helpful || false,
+        comment: options.comment,
+      };
+
+      // Parse correct layers if provided
+      if (options.correctLayers) {
+        const layerStrings = options.correctLayers.split(",").map((s: string) => s.trim());
+        feedback.correctLayers = layerStrings.map((layerStr: string) => {
+          if (!Object.values(MemoryLayer).includes(layerStr as any)) {
+            console.error(pc.red(`\n❌ Invalid layer: ${layerStr}`));
+            console.log(pc.gray("   Valid layers: session, project, user, vector, graph, governance\n"));
+            process.exit(1);
+          }
+          return layerStr;
+        });
+      }
+
+      // Parse correct type if provided
+      if (options.correctType) {
+        if (!Object.values(QueryType).includes(options.correctType as any)) {
+          console.error(pc.red(`\n❌ Invalid query type: ${options.correctType}`));
+          console.log(pc.gray("   Valid types: procedural, factual, architectural, user, historical, general\n"));
+          process.exit(1);
+        }
+        feedback.correctType = options.correctType;
+      }
+
+      await learner.recordFeedback(query, classification, routing, feedback);
+
+      console.log(pc.green("\n✅ Feedback recorded. Thank you!\n"));
+      console.log(pc.gray("   This helps improve routing accuracy over time"));
+      console.log(pc.gray("   View stats with: arela feedback:stats\n"));
+    } catch (error) {
+      console.error(pc.red("\n❌ Feedback recording failed:"));
+      console.error(pc.red((error as Error).message + "\n"));
+      process.exit(1);
+    }
+  });
+
+/**
+ * arela feedback:stats - Show learning statistics
+ */
+program
+  .command("feedback:stats")
+  .description("Show learning statistics and improvement metrics")
+  .action(async () => {
+    try {
+      const { FeedbackLearner } = await import("./learning/index.js");
+
+      const learner = new FeedbackLearner(process.cwd());
+      await learner.init();
+
+      const stats = await learner.getStats();
+
+      console.log(pc.bold(pc.cyan("\n📊 Learning Statistics\n")));
+
+      console.log(pc.bold("Feedback Summary:"));
+      console.log(pc.gray(`   Total Feedback: ${stats.totalFeedback}`));
+      console.log(pc.gray(`   Helpful Rate: ${stats.helpfulRate.toFixed(1)}%`));
+
+      if (stats.accuracyImprovement !== 0) {
+        const improvementColor = stats.accuracyImprovement > 0 ? pc.green : pc.red;
+        console.log(improvementColor(`   Accuracy Improvement: ${stats.accuracyImprovement > 0 ? '+' : ''}${stats.accuracyImprovement.toFixed(1)}%`));
+      }
+
+      if (stats.commonMistakes.length > 0) {
+        console.log(pc.bold("\n🔍 Common Mistakes:"));
+        stats.commonMistakes.forEach((mistake, i) => {
+          console.log(pc.gray(`   ${i + 1}. ${mistake.pattern} (${mistake.frequency}x)`));
+        });
+      }
+
+      console.log(pc.bold("\n⚖️  Layer Weights:"));
+      Object.entries(stats.layerWeights)
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([layer, weight]) => {
+          const bar = "█".repeat(Math.round(weight * 5));
+          const color = weight > 1.0 ? pc.green : weight < 1.0 ? pc.yellow : pc.gray;
+          console.log(color(`   ${layer.padEnd(12)}: ${weight.toFixed(2)} ${bar}`));
+        });
+
+      console.log("");
+
+      if (stats.totalFeedback < 20) {
+        console.log(pc.yellow("💡 Provide more feedback to see accuracy improvement metrics"));
+        console.log(pc.gray("   At least 20 feedback entries are needed\n"));
+      }
+    } catch (error) {
+      console.error(pc.red("\n❌ Failed to load statistics:"));
+      console.error(pc.red((error as Error).message + "\n"));
       process.exit(1);
     }
   });
