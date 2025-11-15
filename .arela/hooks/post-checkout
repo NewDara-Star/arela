@@ -1,0 +1,16 @@
+#!/bin/bash
+# Full refresh on branch switch
+
+# Check if this is a branch switch (not file checkout)
+# $3 = 1 means branch switch, 0 means file checkout
+if [ "$3" == "1" ]; then
+  echo "🔄 Branch changed, refreshing Arela memory..."
+  
+  # Full refresh
+  if command -v npm &> /dev/null; then
+    npm run arela -- index --refresh 2>&1 | grep -v "npm WARN" || true
+    npm run arela -- ingest codebase --refresh 2>&1 | grep -v "npm WARN" || true
+  fi
+  
+  echo "✅ Memory refreshed!"
+fi

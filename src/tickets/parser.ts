@@ -2,6 +2,9 @@ import fs from "fs-extra";
 import path from "path";
 import YAML from "yaml";
 import type { Ticket, TicketComplexity, TicketPriority } from "../types.js";
+import { getDefaultCompressor } from "../compression/index.js";
+
+const defaultCompressor = getDefaultCompressor();
 
 /**
  * Parse a markdown ticket file
@@ -23,8 +26,8 @@ export async function parseMarkdownTicket(filePath: string): Promise<Partial<Tic
     dependencies.push(...depsStr.split(/[,\s]+/).filter(Boolean));
   }
 
-  // Estimate tokens based on content length
-  const estimatedTokens = Math.ceil(content.length / 4);
+  // Estimate tokens using compression abstraction (rough estimate)
+  const estimatedTokens = defaultCompressor.getTokenCount(content);
 
   return {
     id: fileName,
@@ -60,7 +63,8 @@ export async function parseYamlTicket(filePath: string): Promise<Partial<Ticket>
   }
 
   // Estimate tokens if not provided
-  const estimatedTokens = parsed.estimatedCost || Math.ceil(content.length / 4);
+  const estimatedTokens =
+    parsed.estimatedCost ?? defaultCompressor.getTokenCount(content);
 
   return {
     id: parsed.id,

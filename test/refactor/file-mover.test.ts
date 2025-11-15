@@ -24,6 +24,13 @@ describe('FileMover', () => {
 
   describe('planFileMovement', () => {
     it('should create movement plan for slice files', async () => {
+      // Create mock files first
+      const authDir = path.join(testDir, 'src', 'auth');
+      await fs.ensureDir(authDir);
+      await fs.writeFile(path.join(authDir, 'login.ts'), 'export function login() {}');
+      await fs.writeFile(path.join(authDir, 'logout.ts'), 'export function logout() {}');
+      await fs.writeFile(path.join(authDir, 'types.ts'), 'export type User = {};');
+
       const slice: Slice = {
         name: 'Authentication',
         files: ['src/auth/login.ts', 'src/auth/logout.ts', 'src/auth/types.ts'],
@@ -42,6 +49,12 @@ describe('FileMover', () => {
     });
 
     it('should preserve relative file structure', async () => {
+      // Create mock files first
+      const componentsDir = path.join(testDir, 'src', 'components');
+      await fs.ensureDir(componentsDir);
+      await fs.writeFile(path.join(componentsDir, 'Button.tsx'), 'export const Button = () => {};');
+      await fs.writeFile(path.join(componentsDir, 'Input.tsx'), 'export const Input = () => {};');
+
       const slice: Slice = {
         name: 'UI Components',
         files: ['src/components/Button.tsx', 'src/components/Input.tsx'],
@@ -58,6 +71,11 @@ describe('FileMover', () => {
     });
 
     it('should handle files without src/ prefix', async () => {
+      // Create mock file first
+      const helpersDir = path.join(testDir, 'lib', 'helpers');
+      await fs.ensureDir(helpersDir);
+      await fs.writeFile(path.join(helpersDir, 'string.ts'), 'export function capitalize() {}');
+
       const slice: Slice = {
         name: 'Utils',
         files: ['lib/helpers/string.ts'],

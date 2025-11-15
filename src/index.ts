@@ -19,6 +19,7 @@ export * from './tickets/auto-generate.js';
 export * from './mcp/server.js';
 export * from './rag/index.js';
 export * from './memory/index.js';
+export * from './compression/index.js';
 
 // Utils
 export * from './utils/progress.js';

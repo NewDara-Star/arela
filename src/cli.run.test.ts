@@ -25,8 +25,12 @@ describe("arela run command", () => {
       expect.objectContaining({
         platform: "ios",
         flow: "default",
-        device: undefined,
-        app: undefined,
+        url: "http://localhost:3000",
+        headless: false,
+        record: false,
+        analyze: false,
+        aiPilot: false,
+        webFallback: false,
       })
     );
   });

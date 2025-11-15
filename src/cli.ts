@@ -425,28 +425,7 @@ program
     }
   });
 
-/**
- * arela install-hook - Install auto-indexing git hook
- */
-program
-  .command("install-hook")
-  .description("Install post-commit hook for auto-indexing")
-  .option("--cwd <dir>", "Working directory", process.cwd())
-  .action(async (opts) => {
-    console.log(pc.bold(pc.cyan("\n🪝 Installing Auto-Indexing Hook...\n")));
-
-    try {
-      const { installAutoIndexHook } = await import("./utils/auto-index.js");
-      await installAutoIndexHook(opts.cwd);
-      
-      console.log(pc.bold(pc.green("\n✨ Hook installed! Your git is now supercharged\n")));
-      console.log(pc.gray("🤖 Your RAG index will update automatically after each commit."));
-      console.log(pc.gray("⚡ Only changed files are re-indexed (fast & efficient).\n"));
-    } catch (error) {
-      console.error(pc.red(`\n😵‍💫 Installation went sideways: ${(error as Error).message}\n`));
-      process.exit(1);
-    }
-  });
+// install-hook command moved to line ~1230 (comprehensive version with all 3 hooks)
 
 /**
  * arela uninstall-hook - Remove auto-indexing git hook
@@ -1194,6 +1173,103 @@ function isDirectCliExecution(): boolean {
     return true;
   }
 }
+
+/**
+ * arela watch - Start file watcher for automatic memory updates
+ */
+program
+  .command("watch")
+  .description("Start file watcher for automatic memory updates")
+  .option("--debounce <ms>", "Debounce delay in milliseconds", "500")
+  .action(async (opts) => {
+    const { memoryAutoUpdater } = await import("./memory/auto-update.js");
+    
+    console.log(pc.bold(pc.cyan("\n👀 Starting file watcher...\n")));
+    
+    memoryAutoUpdater.start({
+      projectPath: process.cwd(),
+      debounceMs: parseInt(opts.debounce, 10),
+    });
+    
+    console.log(pc.green("\n✨ Watching for file changes... (Ctrl+C to stop)\n"));
+    
+    // Keep process alive
+    process.on("SIGINT", () => {
+      console.log(pc.yellow("\n\n👋 Stopping file watcher..."));
+      memoryAutoUpdater.stop();
+      process.exit(0);
+    });
+    
+    process.on("SIGTERM", () => {
+      memoryAutoUpdater.stop();
+      process.exit(0);
+    });
+  });
+
+/**
+ * arela install-hook - Install git hooks for automatic memory updates
+ */
+program
+  .command("install-hook")
+  .description("Install git hooks for automatic memory updates")
+  .action(async () => {
+    const { existsSync, copyFileSync, chmodSync } = await import("fs");
+    const { join } = await import("path");
+    
+    console.log(pc.bold(pc.cyan("\n🔧 Installing git hooks...\n")));
+    
+    const gitDir = join(process.cwd(), ".git");
+    
+    if (!existsSync(gitDir)) {
+      console.error(pc.red("❌ Not a git repository"));
+      process.exit(1);
+    }
+    
+    const hooksDir = join(gitDir, "hooks");
+    const sourceDir = join(process.cwd(), ".arela", "hooks");
+    
+    if (!existsSync(sourceDir)) {
+      console.error(pc.red("❌ Hooks directory not found: .arela/hooks/"));
+      console.log(pc.gray("   Make sure you're in an Arela project"));
+      process.exit(1);
+    }
+    
+    // Copy hooks
+    const hooks = ["post-commit", "post-checkout", "post-merge"];
+    let installedCount = 0;
+    
+    for (const hook of hooks) {
+      const source = join(sourceDir, hook);
+      const dest = join(hooksDir, hook);
+      
+      if (!existsSync(source)) {
+        console.warn(pc.yellow(`⚠️  Hook not found: ${hook}`));
+        continue;
+      }
+      
+      try {
+        copyFileSync(source, dest);
+        chmodSync(dest, 0o755); // Make executable
+        console.log(pc.green(`✅ Installed ${hook}`));
+        installedCount++;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(pc.red(`❌ Failed to install ${hook}: ${message}`));
+      }
+    }
+    
+    if (installedCount > 0) {
+      console.log(pc.bold(pc.green("\n🎉 Git hooks installed!\n")));
+      console.log(pc.gray("Memory will auto-update on:"));
+      console.log(pc.gray("  - Every commit (incremental)"));
+      console.log(pc.gray("  - Branch switch (full refresh)"));
+      console.log(pc.gray("  - After merge (full refresh)"));
+      console.log("");
+    } else {
+      console.error(pc.red("\n❌ No hooks were installed\n"));
+      process.exit(1);
+    }
+  });
 
 if (isDirectCliExecution()) {
   program.parse();

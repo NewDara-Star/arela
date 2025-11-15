@@ -3,6 +3,7 @@ import fs from "fs-extra";
 import { VectorMemory } from "./vector.js";
 import { GraphMemory } from "./graph.js";
 import { AuditMemory, type AuditFilter } from "./audit.js";
+import { GovernanceMemory } from "./governance.js";
 import type {
   AuditEntry,
   AuditTrail,
@@ -16,6 +17,8 @@ export class TriMemory {
   private readonly vector: VectorMemory;
   private readonly graph: GraphMemory;
   private readonly audit: AuditMemory;
+  // GovernanceMemory is exposed separately; TriMemory currently focuses on
+  // vector + graph + audit for Hexi-Memory orchestration.
 
   constructor(private readonly cwd: string = process.cwd()) {
     this.vector = new VectorMemory(cwd);
@@ -84,5 +87,16 @@ export class TriMemory {
   }
 }
 
+export { SessionMemory } from "./session.js";
+export { ProjectMemory } from "./project.js";
+export { UserMemory } from "./user.js";
+export { GovernanceMemory } from "./governance.js";
+export { HexiMemory, MemoryLayer } from "./hexi-memory.js";
 export type { AuditFilter } from "./audit.js";
+export type {
+  QueryOptions,
+  QueryResult,
+  MultiLayerResult,
+  HexiMemoryStats,
+} from "./hexi-memory.js";
 export * from "./types.js";

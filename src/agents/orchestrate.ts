@@ -3,6 +3,7 @@ import path from "path";
 import { execa } from "execa";
 import type { OrchestrationOptions, Ticket } from "../types.js";
 import { markInProgress, markCompleted, markFailed, canRunTicket, loadTicketStatus } from "./status.js";
+import { getDefaultCompressor } from "../compression/index.js";
 
 interface AgentConfig {
   name: string;
@@ -15,6 +16,8 @@ interface ExecutableTicket {
   ticket: Ticket;
   path: string;
 }
+
+const defaultCompressor = getDefaultCompressor();
 
 /**
  * Load agent configuration
@@ -168,9 +171,9 @@ async function runTicket(
     // Clean up temp file
     await fs.remove(tempPromptPath);
 
-    // Calculate duration and cost (rough estimate)
+    // Calculate duration and cost (rough estimate using compression abstraction)
     const duration = Date.now() - startTime;
-    const estimatedTokens = ticketContent.length / 4; // Rough estimate
+    const estimatedTokens = defaultCompressor.getTokenCount(ticketContent);
     const cost = (estimatedTokens / 1000) * agentConfig.cost_per_1k_tokens;
 
     // Mark as completed

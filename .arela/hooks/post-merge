@@ -1,0 +1,12 @@
+#!/bin/bash
+# Full refresh after merge
+
+echo "🔄 Merge detected, refreshing Arela memory..."
+
+# Full refresh
+if command -v npm &> /dev/null; then
+  npm run arela -- index --refresh 2>&1 | grep -v "npm WARN" || true
+  npm run arela -- ingest codebase --refresh 2>&1 | grep -v "npm WARN" || true
+fi
+
+echo "✅ Memory refreshed!"

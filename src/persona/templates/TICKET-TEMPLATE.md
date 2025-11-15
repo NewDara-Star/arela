@@ -9,39 +9,81 @@
 
 ## 🔍 BEFORE YOU START (Read This First!)
 
-**Use Arela's built-in tools to save 85k+ tokens:**
+**Use Arela's Hexi-Memory System to save 85k+ tokens:**
 
 ### 1. Semantic Search (FASTEST - Use This First!)
-```
+```bash
 arela_search "slice extraction logic"
 arela_search "import path rewriting"  
 arela_search "test runner implementation"
 ```
 - **Cost:** ~1k tokens per search
-- **Finds:** Relevant code semantically
+- **Finds:** Relevant code semantically (Vector Memory)
 - **When:** Always try this FIRST
 
-### 2. Check Architecture Graph
-```
-.arela/memory/graph.db contains:
-- File dependencies
-- Module relationships
-- Slice boundaries
-```
-- Use this to understand relationships
-- No token cost (local file)
+### 2. Check Project Memory
+```bash
+# Get project patterns & conventions
+arela memory project --key auth_patterns
+arela memory project --key testing_strategy
+arela memory project --category decision
 
-### 3. Check RAG Index
+# What's in Project Memory:
+# - Architecture decisions & rationales
+# - Patterns & conventions (observed, not claimed)
+# - Project-scoped todos & tech debt
+# - Component summaries
 ```
-.arela/.rag-index.json contains:
-- Code embeddings
-- Semantic similarity
-- Related files
-```
-- If stale, run: `arela index`
+- **Cost:** 0 tokens (local SQLite)
+- **Finds:** "How we do things in THIS repo"
 
-### 4. grep/find (LAST RESORT)
-- Only use if semantic search fails
+### 3. Check User Memory (Cross-Project Patterns)
+```bash
+# Get your preferences across all projects
+arela memory user --key preferred_db
+arela memory user --key testing_style
+arela memory user --patterns
+
+# What's in User Memory:
+# - Your tech stack preferences
+# - Workflow preferences (PR size, TDD, etc.)
+# - Expertise levels
+# - Patterns you follow (or avoid)
+```
+- **Cost:** 0 tokens (global SQLite)
+- **Finds:** "How YOU typically work"
+
+### 4. Check Architecture Graph
+```bash
+# See dependencies & relationships
+arela graph --from src/auth/login.ts
+arela graph --slice auth
+
+# What's in Graph Memory:
+# - File → file imports
+# - Symbol → symbol calls
+# - Slices / module boundaries
+```
+- **Cost:** 0 tokens (local SQLite)
+- **Finds:** Structural relationships
+
+### 5. Check Governance Log
+```bash
+# See past decisions & why
+arela memory governance --recent 10
+arela memory governance --search "authentication"
+
+# What's in Governance Memory:
+# - Architectural decisions
+# - Tooling choices
+# - Policy/governance rules
+# - Linked artifacts (docs, PRs, ADRs)
+```
+- **Cost:** 0 tokens (append-only log)
+- **Finds:** "What we decided and why"
+
+### 6. grep/find (LAST RESORT)
+- Only use if memory system + semantic search fails
 - **Cost:** 85k+ tokens for large searches
 - Use sparingly!
 
@@ -188,9 +230,14 @@ Summary:
 
 ## Remember
 
-**Search Priority:**
-1. ✅ `arela_search` first (1k tokens)
-2. ✅ Check graph.db (0 tokens)
-3. ❌ grep only if needed (85k+ tokens)
+**Hexi-Memory Search Priority:**
+1. ✅ `arela_search` - Semantic code search (1k tokens)
+2. ✅ `arela memory project` - This repo's patterns (0 tokens)
+3. ✅ `arela memory user` - Your preferences (0 tokens)
+4. ✅ `arela graph` - Dependencies & structure (0 tokens)
+5. ✅ `arela memory governance` - Past decisions (0 tokens)
+6. ❌ `grep`/`find` - Only if memory fails (85k+ tokens)
+
+**The memory system knows more than you think. Use it!** 🧠
 
 **Save tokens, save money, ship faster!** 🚀

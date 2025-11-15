@@ -1,0 +1,19 @@
+#!/bin/bash
+# Auto-update memory after commit (incremental)
+
+echo "🔄 Updating Arela memory (incremental)..."
+
+# Get changed files in last commit
+CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+
+if [ -z "$CHANGED_FILES" ]; then
+  echo "✅ No files changed, skipping update"
+  exit 0
+fi
+
+# Run incremental index (if command exists)
+if command -v npm &> /dev/null; then
+  npm run arela -- auto-index --incremental 2>&1 | grep -v "npm WARN" || true
+fi
+
+echo "✅ Memory updated!"
