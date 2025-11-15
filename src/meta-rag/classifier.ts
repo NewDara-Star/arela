@@ -19,7 +19,7 @@ import { QueryType as QT } from "./types.js";
  * - GENERAL: Fallback
  */
 export class QueryClassifier {
-  private readonly model = "llama3.1:8b"; // Meta's Llama 3.1 8B - best balance of speed and accuracy for classification
+  private readonly model = "llama3.2:3b"; // Meta's Llama 3.2 3B - recommended by Meta-RAG research for <200ms classification
   private ollamaAvailable: boolean = false;
   private useOllama: boolean = true; // Can disable for faster fallback
 
