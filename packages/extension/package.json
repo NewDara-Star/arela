@@ -1,35 +1,102 @@
 {
   "name": "arela-extension",
+  "displayName": "Arela",
   "version": "5.0.0",
-  "description": "Arela VS Code extension entry point",
+  "description": "AI-powered CTO assistant for VS Code",
+  "publisher": "arela",
   "private": true,
   "main": "./out/extension.js",
   "types": "./out/extension.d.ts",
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "assistant",
+    "code",
+    "chat"
+  ],
   "engines": {
     "vscode": "^1.85.0"
   },
   "activationEvents": [
-    "onCommand:arela.openChat"
+    "onStartupFinished"
   ],
   "contributes": {
     "commands": [
       {
         "command": "arela.openChat",
-        "title": "Arela: Open Chat"
+        "title": "Open Chat",
+        "category": "Arela"
       }
-    ]
+    ],
+    "keybindings": [
+      {
+        "command": "arela.openChat",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a"
+      }
+    ],
+    "configuration": {
+      "title": "Arela",
+      "properties": {
+        "arela.provider": {
+          "type": "string",
+          "enum": ["openai", "anthropic", "ollama"],
+          "default": "openai",
+          "description": "AI provider to use"
+        },
+        "arela.model": {
+          "type": "string",
+          "default": "gpt-4-turbo-preview",
+          "description": "AI model to use"
+        },
+        "arela.openai.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI API key"
+        },
+        "arela.anthropic.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Anthropic API key"
+        },
+        "arela.ollama.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Ollama (local models)"
+        },
+        "arela.ollama.baseUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama server URL"
+        }
+      }
+    }
   },
   "scripts": {
-    "build": "tsc -p .",
+    "build": "npm run build:webview && tsc -p .",
+    "build:webview": "cd webview && vite build",
     "watch": "tsc -w -p .",
+    "watch:webview": "cd webview && vite build --watch",
     "lint": "eslint ./src --ext .ts",
     "clean": "rimraf out",
     "test": "echo 'No tests for the extension package yet'"
   },
   "devDependencies": {
-    "@types/vscode": "^1.85.0"
+    "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@tsconfig/svelte": "^5.0.6",
+    "@types/highlight.js": "^9.12.4",
+    "@types/marked": "^5.0.2",
+    "@types/vscode": "^1.85.0",
+    "svelte": "^5.43.6",
+    "vite": "^7.2.2"
   },
   "dependencies": {
+    "highlight.js": "^11.11.1",
+    "marked": "^17.0.0",
     "tslib": "^2.6.2"
   }
 }

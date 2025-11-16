@@ -7,6 +7,11 @@ coverage
 .env
 .vscode
 .idea
+# VS Code extension artifacts
+packages/extension/out
+packages/server/out
+*.vsix
+.vscode-test
 # Arela local-only files
 .arela/memories/*
 .arela/*.new

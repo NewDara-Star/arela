@@ -12,6 +12,25 @@ Arela is that guidance. Not a linter. Not a framework. **A conversational CTO pe
 
 ## ✨ What's New in v4.3.0
 
+### VS Code Extension Monorepo (v5.0.0 Foundation)
+
+The repository now includes the v5.0.0 VS Code extension workspaces under `packages/`. The goal is to keep the lightweight extension sandboxed while a companion Node.js server handles native modules.
+
+```
+packages/
+├─ extension/   # VS Code entry point, commands, WebView host
+└─ server/      # Native helpers (SQLite, Tree-sitter, IPC)
+```
+
+**Workflow**
+- `npm install` (root) – installs/hoists workspace dependencies using npm workspaces.
+- `npm run build` – builds the legacy CLI plus both new packages via `tsconfig.base.json`.
+- `npm run lint` / `npm run test` – run repo + workspace scripts (`--workspaces` under the hood).
+- `npm run build --workspace arela-extension` – compile only the VS Code extension.
+- `npm run build --workspace arela-server` – compile only the native companion server.
+
+Both packages inherit `tsconfig.base.json` (strict mode) and share ESLint/Prettier config. Build outputs live under `packages/*/out` and remain gitignored alongside generated VSIX bundles.
+
 ### 🧠 Learning from Feedback
 
 **Arela now learns from your corrections and continuously improves!**

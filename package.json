@@ -2,6 +2,7 @@
   "name": "arela",
   "version": "4.3.0",
   "description": "AI-powered CTO with multi-agent orchestration, code summarization, visual testing (web + mobile) for blazing fast development.",
+  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
@@ -10,13 +11,20 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "workspaces": [
+    "packages/extension",
+    "packages/server"
+  ],
   "scripts": {
-    "build": "tsc && npm run copy-templates",
+    "build": "npm run build:core && npm run build:packages",
+    "build:core": "tsc && npm run copy-templates",
+    "build:packages": "npm run build --workspaces --if-present",
     "copy-templates": "cp -r src/persona/templates dist/persona/",
     "dev": "tsc --watch",
     "prepublishOnly": "npm run build",
-    "test": "vitest",
-    "lint": "eslint src/",
+    "test": "vitest && npm run test --workspaces --if-present",
+    "lint": "eslint src/ && npm run lint --workspaces --if-present",
+    "clean": "rimraf dist && npm run clean --workspaces --if-present",
     "arela": "node dist/cli.js"
   },
   "keywords": [
@@ -72,6 +80,8 @@
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.56.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
     "tree-sitter": "^0.21.0",
     "tree-sitter-typescript": "^0.23.2",
     "typescript": "^5.3.3",
