@@ -50,6 +50,7 @@ export class ServerDownloader {
       await this.safeUnlink(versionFile);
     }
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         await vscode.window.withProgress(
