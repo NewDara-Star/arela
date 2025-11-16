@@ -1,12 +1,16 @@
 {
   "name": "arela-extension",
-  "displayName": "Arela",
+  "displayName": "Arela - AI CTO Assistant",
   "version": "5.0.0",
-  "description": "AI-powered CTO assistant for VS Code",
+  "description": "AI-powered technical co-founder for VS Code",
   "publisher": "arela",
-  "private": true,
   "main": "./out/extension.js",
   "types": "./out/extension.d.ts",
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
   "categories": [
     "Programming Languages",
     "Machine Learning",
@@ -15,9 +19,18 @@
   "keywords": [
     "ai",
     "assistant",
-    "code",
-    "chat"
+    "cto",
+    "chat",
+    "code"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NewDara-Star/arela.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NewDara-Star/arela/issues"
+  },
+  "homepage": "https://github.com/NewDara-Star/arela#readme",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -29,6 +42,31 @@
       {
         "command": "arela.openChat",
         "title": "Open Chat",
+        "category": "Arela"
+      },
+      {
+        "command": "arela.addWorkspaceContext",
+        "title": "Add Workspace Context",
+        "category": "Arela"
+      },
+      {
+        "command": "arela.newConversation",
+        "title": "New Conversation",
+        "category": "Arela"
+      },
+      {
+        "command": "arela.deleteConversation",
+        "title": "Delete Current Conversation",
+        "category": "Arela"
+      },
+      {
+        "command": "arela.selectModel",
+        "title": "Select AI Model",
+        "category": "Arela"
+      },
+      {
+        "command": "arela.openSettings",
+        "title": "Open Settings",
         "category": "Arela"
       }
     ],
@@ -44,14 +82,18 @@
       "properties": {
         "arela.provider": {
           "type": "string",
-          "enum": ["openai", "anthropic", "ollama"],
+          "enum": [
+            "openai",
+            "anthropic",
+            "ollama"
+          ],
           "default": "openai",
           "description": "AI provider to use"
         },
         "arela.model": {
           "type": "string",
           "default": "gpt-4-turbo-preview",
-          "description": "AI model to use"
+          "description": "AI model to use (use 'Arela: Select AI Model' command to choose)"
         },
         "arela.openai.apiKey": {
           "type": "string",
@@ -77,13 +119,16 @@
     }
   },
   "scripts": {
-    "build": "npm run build:webview && tsc -p .",
+    "build": "npm run build:webview && npm run build:settings && tsc -p .",
     "build:webview": "cd webview && vite build",
+    "build:settings": "cd webview && vite build --config vite.settings.config.ts",
     "watch": "tsc -w -p .",
     "watch:webview": "cd webview && vite build --watch",
     "lint": "eslint ./src --ext .ts",
     "clean": "rimraf out",
-    "test": "echo 'No tests for the extension package yet'"
+    "test": "echo 'No tests for the extension package yet'",
+    "package": "vsce package",
+    "package:all": "node ./scripts/package-all.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
@@ -91,6 +136,7 @@
     "@types/highlight.js": "^9.12.4",
     "@types/marked": "^5.0.2",
     "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.7.0",
     "svelte": "^5.43.6",
     "vite": "^7.2.2"
   },

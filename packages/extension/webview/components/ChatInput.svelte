@@ -3,6 +3,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { postMessage, onMessage } from '../lib/vscode';
+  import { currentSelection, useSelection, workspaceContext } from '../stores/messages';
   import type {
     AttachedFile,
     FileMention,
@@ -28,9 +29,13 @@
 
   const charCount = $derived(input.length);
   const showCharCount = $derived(charCount > 1000);
-  const canSend = $derived(
-    !disabled && (input.trim().length > 0 || attachedFiles.length > 0)
+  const hasContext = $derived(
+    attachedFiles.length > 0 ||
+      mentions.length > 0 ||
+      ($useSelection && Boolean($currentSelection)) ||
+      Boolean($workspaceContext),
   );
+  const canSend = $derived(!disabled && (input.trim().length > 0 || hasContext));
 
   onMount(() => {
     onMessage(handleExtensionMessage);
@@ -115,6 +120,30 @@
     mentions = mentions.filter((m) => m !== mention);
   }
 
+  function removeSelectionContext() {
+    currentSelection.set(null);
+    useSelection.set(false);
+  }
+
+  function handleSelectionToggle(event: Event) {
+    const target = event.currentTarget as HTMLInputElement;
+    useSelection.set(target.checked);
+  }
+
+  function getFilename(path: string) {
+    const parts = path.split(/[/\\]/);
+    return parts[parts.length - 1] || path;
+  }
+
+  function removeWorkspaceContext() {
+    workspaceContext.set(null);
+  }
+
+  function getWorkspaceName(path: string) {
+    const parts = path.split(/[/\\]/);
+    return parts[parts.length - 1] || path;
+  }
+
   function handleKeyDown(event: KeyboardEvent) {
     if (showMentions) {
       if (event.key === 'ArrowDown') {
@@ -154,6 +183,8 @@
 
     const context: MessageContext = {
       files: attachedFiles.length ? attachedFiles : undefined,
+      selection: $useSelection && $currentSelection ? $currentSelection : undefined,
+      workspace: $workspaceContext ?? undefined,
       mentions: mentions.length ? mentions : undefined,
     };
 
@@ -173,6 +204,50 @@
 </script>
 
 <div class="chat-input">
+  {#if $currentSelection}
+    <div class="context-pills selection-pills">
+      <div class="pill selection-pill" class:disabled={!$useSelection}>
+        <span class="pill-icon">📝</span>
+        <span class="pill-label">
+          {getFilename($currentSelection.file)} (lines {$currentSelection.startLine}-{$currentSelection.endLine})
+        </span>
+        {#if $currentSelection.truncated}
+          <span class="pill-warning">truncated</span>
+        {/if}
+        <button
+          type="button"
+          class="pill-remove"
+          onclick={removeSelectionContext}
+          title="Remove selection context"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  {/if}
+
+  {#if $workspaceContext}
+    <div class="context-pills workspace-pills">
+      <div class="pill workspace-pill">
+        <span class="pill-icon">📁</span>
+        <span class="pill-label">
+          {getWorkspaceName($workspaceContext.rootPath)} ({$workspaceContext.totalFiles} files)
+          {#if $workspaceContext.truncated}
+            <span class="badge">Truncated</span>
+          {/if}
+        </span>
+        <button
+          type="button"
+          class="pill-remove"
+          onclick={removeWorkspaceContext}
+          title="Remove workspace context"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  {/if}
+
   {#if attachedFiles.length > 0 || mentions.length > 0}
     <div class="context-pills">
       {#each attachedFiles as file}
@@ -234,6 +309,17 @@
       onkeydown={handleKeyDown}
     ></textarea>
 
+    {#if $currentSelection}
+      <label class="selection-toggle" title="Include selected code">
+        <input
+          type="checkbox"
+          checked={$useSelection}
+          onchange={handleSelectionToggle}
+        />
+        <span>Use selection</span>
+      </label>
+    {/if}
+
     <button
       class="send-btn"
       type="button"
@@ -265,6 +351,14 @@
     margin-bottom: 8px;
   }
 
+  .selection-pills {
+    margin-bottom: 4px;
+  }
+
+  .workspace-pills {
+    margin-bottom: 4px;
+  }
+
   .pill {
     display: inline-flex;
     align-items: center;
@@ -282,6 +376,10 @@
     max-width: 200px;
   }
 
+  .pill-icon {
+    font-size: 1rem;
+  }
+
   .pill-file {
     background: var(--vscode-badge-background);
     color: var(--vscode-badge-foreground);
@@ -292,6 +390,18 @@
     color: var(--vscode-editor-background);
   }
 
+  .selection-pill {
+    background: var(--vscode-inputValidation-infoBackground);
+    color: var(--vscode-inputValidation-infoForeground);
+    border: 1px solid var(--vscode-inputValidation-infoBorder);
+  }
+
+  .workspace-pill {
+    background: var(--vscode-editorWidget-background);
+    color: var(--vscode-editorWidget-foreground, var(--vscode-foreground));
+    border: 1px solid var(--vscode-editorWidget-border);
+  }
+
   .pill button {
     background: transparent;
     border: none;
@@ -300,6 +410,26 @@
     padding: 0;
     font-size: 1rem;
     line-height: 1;
+  }
+
+  .pill-warning {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .pill-remove {
+    font-weight: 600;
+  }
+
+  .badge {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    padding: 0 4px;
+    margin-left: 4px;
+    border-radius: 4px;
+    background: var(--vscode-badge-background);
+    color: var(--vscode-badge-foreground);
   }
 
   .mention-dropdown {
@@ -393,6 +523,20 @@
 
   textarea:focus {
     outline: 1px solid var(--vscode-focusBorder);
+  }
+
+  .selection-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--vscode-descriptionForeground);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .selection-toggle input {
+    cursor: pointer;
   }
 
   .char-count {

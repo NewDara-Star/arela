@@ -1,0 +1,137 @@
+name: Extension CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build & Test (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: darwin-x64
+          - os: macos-latest
+            target: darwin-arm64
+          - os: windows-latest
+            target: win32-x64
+          - os: windows-latest
+            target: win32-arm64
+          - os: ubuntu-latest
+            target: linux-x64
+          - os: ubuntu-latest
+            target: linux-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint extension
+        run: npm run lint --workspace arela-extension
+
+      - name: Build packages
+        run: |
+          npm run build --workspace arela-server
+          npm run build --workspace arela-extension
+
+      - name: Run extension tests
+        run: npm run test --workspace arela-extension
+
+      - name: Capture extension version
+        id: extension_version
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./packages/extension/package.json').version")
+          echo "EXT_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Package VSIX
+        shell: bash
+        env:
+          VSIX_TARGET: ${{ matrix.target }}
+          EXT_VERSION: ${{ steps.extension_version.outputs.value }}
+        run: |
+          mkdir -p packages/extension/dist
+          npm run package --workspace arela-extension -- --target "${VSIX_TARGET}" --out "packages/extension/dist/arela-${EXT_VERSION}-${VSIX_TARGET}.vsix"
+
+      - name: Verify VSIX structure
+        shell: bash
+        env:
+          VSIX_TARGET: ${{ matrix.target }}
+          EXT_VERSION: ${{ steps.extension_version.outputs.value }}
+        run: |
+          VSIX_FILE="packages/extension/dist/arela-${EXT_VERSION}-${VSIX_TARGET}.vsix"
+          export VSIX_FILE
+          python - <<'PY'
+          import os
+          import zipfile
+
+          vsix_path = os.environ.get('VSIX_FILE')
+          if not vsix_path or not os.path.exists(vsix_path):
+              raise SystemExit(f"VSIX not found: {vsix_path}")
+
+          required_entries = {
+              'extension/package.json',
+              'extension/out/extension.js'
+          }
+
+          with zipfile.ZipFile(vsix_path) as archive:
+              names = set(archive.namelist())
+
+          missing = sorted(required_entries - names)
+          if missing:
+              raise SystemExit(f"VSIX missing required entries: {missing}")
+
+          print(f"VSIX {os.path.basename(vsix_path)} verified with {len(names)} files.")
+          PY
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix-${{ matrix.target }}
+          path: packages/extension/dist/arela-${{ steps.extension_version.outputs.value }}-${{ matrix.target }}.vsix
+          if-no-files-found: error
+
+  release:
+    name: Publish Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Download VSIX artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: vsix-*
+          path: release-artifacts
+          merge-multiple: true
+
+      - name: List release assets
+        run: ls -R release-artifacts
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Arela Extension ${{ github.ref_name }}
+          generate_release_notes: true
+          files: release-artifacts/*.vsix

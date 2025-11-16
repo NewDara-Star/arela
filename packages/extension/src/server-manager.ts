@@ -2,6 +2,7 @@ import * as cp from 'child_process';
 import * as readline from 'readline';
 import * as vscode from 'vscode';
 import { getPlatformTarget } from './platform';
+import { SecretManager } from './secret-manager';
 
 interface PendingRequest {
   resolve: (value: unknown) => void;
@@ -27,7 +28,12 @@ export class ServerManager {
   private stopping = false;
   private notificationHandlers = new Map<string, Set<(params: unknown) => void>>();
 
-  constructor(private readonly binaryPath: string, private readonly context: vscode.ExtensionContext) {
+  constructor(
+    private readonly binaryPath: string,
+    private readonly context: vscode.ExtensionContext,
+    private readonly secretManager: SecretManager,
+    private readonly isDev: boolean = false
+  ) {
     this.outputChannel = vscode.window.createOutputChannel('Arela Server');
     this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     this.statusBarItem.command = undefined;
@@ -106,7 +112,12 @@ export class ServerManager {
 
   private async spawnProcess() {
     return new Promise<void>((resolve, reject) => {
-      const child = cp.spawn(this.binaryPath, {
+      // In development, run Node.js directly; in production, run the binary
+      const child = this.isDev
+        ? cp.spawn('node', [this.binaryPath], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      })
+        : cp.spawn(this.binaryPath, {
         stdio: ['pipe', 'pipe', 'pipe'],
       });
 
@@ -305,23 +316,28 @@ export class ServerManager {
   private async initializeServer() {
     try {
       await this.sendRequest('initialize', {
-        ai: this.getAIConfig(),
+        ai: await this.getAIConfig(),
       });
     } catch (error) {
       this.outputChannel.appendLine(`[warn] Failed to initialize AI config: ${String(error)}`);
     }
   }
 
-  private getAIConfig() {
+  private async getAIConfig() {
     const config = vscode.workspace.getConfiguration('arela');
+    const [openaiKey, anthropicKey] = await Promise.all([
+      this.secretManager.getApiKey('openai'),
+      this.secretManager.getApiKey('anthropic'),
+    ]);
+
     return {
       defaultProvider: config.get<string>('provider') || undefined,
       defaultModel: config.get<string>('model') || undefined,
       openai: {
-        apiKey: config.get<string>('openai.apiKey') || undefined,
+        apiKey: openaiKey || undefined,
       },
       anthropic: {
-        apiKey: config.get<string>('anthropic.apiKey') || undefined,
+        apiKey: anthropicKey || undefined,
       },
       ollama: {
         enabled: config.get<boolean>('ollama.enabled') ?? false,

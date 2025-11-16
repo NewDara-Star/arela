@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import type { SelectionContext, WorkspaceContext } from '../../src/types/chat';
 
 export interface Message {
   id: string;
@@ -10,6 +11,9 @@ export interface Message {
 
 export const messages = writable<Message[]>([]);
 export const streamingMessageId = writable<string | null>(null);
+export const currentSelection = writable<SelectionContext | null>(null);
+export const useSelection = writable(true);
+export const workspaceContext = writable<WorkspaceContext | null>(null);
 
 export function addMessage(message: Omit<Message, 'id' | 'timestamp'>) {
   const newMessage: Message = {

@@ -1,0 +1,298 @@
+Phase 1: 4h  (014 || 018)
+Phase 2: 6h  (015 || 016)
+Phase 3: 6h  (017 || 019)
+Phase 4: 4h  (020)
+Total: 20 hours (39% faster!)
+
+
+
+
+
+
+Implement EXTENSION-015: GitHub Actions CI/CD
+
+Context: We need automated builds for 6 platforms (darwin-x64/arm64, win32-x64/arm64, linux-x64/arm64) with testing and VSIX packaging.
+
+Your task: Create GitHub Actions workflow for multi-platform builds, testing, and releases.
+
+What to Build:
+
+1. Workflow File (.github/workflows/extension-ci.yml):
+- Trigger: push to main, PRs, tags (v*)
+- Matrix build: 6 platforms
+- Steps: checkout, setup Node, install deps, build, test, package, upload
+
+2. Build Matrix:
+platforms:
+  - os: macos-latest, target: darwin-x64
+  - os: macos-latest, target: darwin-arm64
+  - os: windows-latest, target: win32-x64
+  - os: windows-latest, target: win32-arm64
+  - os: ubuntu-latest, target: linux-x64
+  - os: ubuntu-latest, target: linux-arm64
+
+3. VSIX Packaging:
+- Use @vscode/vsce
+- Package per platform: arela-{version}-{platform}.vsix
+- Include platform-specific server binaries
+
+4. Testing:
+- Run TypeScript compilation
+- Run linting
+- Run unit tests (if any)
+- Verify VSIX structure
+
+5. Release:
+- On tag push (v*), create GitHub release
+- Upload all 6 VSIX files
+- Generate release notes from commits
+
+6. Scripts (packages/extension/package.json):
+- "package": "vsce package"
+- "package:all": script to package all platforms
+
+Acceptance Criteria:
+- CI runs on every push/PR
+- Builds succeed for all 6 platforms
+- VSIX files generated per platform
+- Tests pass before packaging
+- Releases auto-created on version tags
+- Artifacts uploaded to GitHub releases
+
+Build this now!
+
+
+Implement EXTENSION-016: VS Code Marketplace Publishing
+
+Context: Extension is ready to publish. Need marketplace listing, publisher account, and automated publishing.
+
+Your task: Prepare extension for marketplace, create beautiful README, and set up automated publishing.
+
+What to Build:
+
+1. README.md (packages/extension/README.md):
+- Hero section with logo
+- Features list with screenshots
+- Installation instructions
+- Usage guide with GIFs
+- Configuration section
+- Keyboard shortcuts
+- Requirements
+- Known issues
+- Changelog link
+
+2. Package.json Updates:
+- displayName: "Arela - AI CTO Assistant"
+- description: "AI-powered technical co-founder for VS Code"
+- publisher: "arela" (or your publisher ID)
+- repository, bugs, homepage URLs
+- icon: "icon.png" (128x128)
+- galleryBanner: { color: "#1e1e1e", theme: "dark" }
+- categories: ["Programming Languages", "Machine Learning", "Other"]
+- keywords: ["ai", "assistant", "cto", "chat", "code"]
+
+3. Assets:
+- icon.png (128x128) - Arela logo
+- images/screenshot-*.png - Feature screenshots
+- images/demo.gif - Usage demo
+
+4. CHANGELOG.md:
+- Version history
+- Features, fixes, changes per version
+
+5. Publishing Script (.github/workflows/publish.yml):
+- Trigger: on release published
+- Steps: checkout, setup, build, publish to marketplace
+- Use VSCE_PAT secret for authentication
+
+6. Publisher Setup:
+- Create Azure DevOps account
+- Create publisher
+- Generate Personal Access Token
+- Add VSCE_PAT to GitHub secrets
+
+Acceptance Criteria:
+- Beautiful README with screenshots
+- Icon and banner images
+- Complete package.json metadata
+- CHANGELOG with version history
+- Automated publishing on release
+- Extension visible on marketplace
+
+Build this now!
+
+
+Implement EXTENSION-017: Automated Testing Suite
+
+Context: Extension has no tests. Need comprehensive testing for reliability and confidence in changes.
+
+Your task: Add unit tests, integration tests, and E2E tests for the extension.
+
+What to Build:
+
+1. Test Setup:
+- Install: @vscode/test-electron, mocha, chai
+- Configure: .vscode/launch.json for test debugging
+- Test script: "test": "node ./out/test/runTest.js"
+
+2. Unit Tests (packages/extension/src/test/unit/):
+- chat-provider.test.ts - Test message building, context handling
+- server-manager.test.ts - Test IPC, request/response
+- conversation-storage.test.ts - Test save/load/delete
+- secret-manager.test.ts - Test key storage (mock VS Code API)
+
+3. Integration Tests (packages/extension/src/test/integration/):
+- extension.test.ts - Test extension activation, commands
+- webview.test.ts - Test webview creation, messaging
+- settings.test.ts - Test settings UI, persistence
+
+4. E2E Tests (packages/extension/src/test/e2e/):
+- chat-flow.test.ts - Full chat flow (open, send, receive)
+- workspace-context.test.ts - Add workspace context, verify prompt
+- conversation-history.test.ts - Create/load/delete conversations
+
+5. Test Utilities (packages/extension/src/test/utils/):
+- Mock VS Code API
+- Mock server responses
+- Test fixtures (sample messages, contexts)
+- Helper functions
+
+6. CI Integration (.github/workflows/extension-ci.yml):
+- Add test step before build
+- Fail CI if tests fail
+- Generate coverage report
+
+Acceptance Criteria:
+- >80% code coverage
+- All critical paths tested
+- Tests run in CI
+- Tests pass locally and in CI
+- Mock VS Code API properly
+- E2E tests cover main user flows
+
+Build this now!
+
+
+Implement EXTENSION-019: Advanced Context Features
+
+Context: Basic context (selection, workspace) works. Now add deep IDE context: diagnostics, symbols, type info, references.
+
+Your task: Add advanced context features that leverage VS Code's language services.
+
+What to Build:
+
+1. Diagnostics Context (packages/extension/src/context/diagnostics.ts):
+- Get diagnostics for active file
+- Filter by severity (errors, warnings)
+- Format for AI: file, line, message, severity
+- Command: "Arela: Add Diagnostics Context"
+
+2. Symbol Search (packages/extension/src/context/symbols.ts):
+- Search workspace symbols
+- Find definitions, references
+- Format: name, kind, location, signature
+- Command: "Arela: Find Symbol"
+
+3. Type Information (packages/extension/src/context/types.ts):
+- Get type at cursor position
+- Show type definition
+- Include JSDoc comments
+- Command: "Arela: Show Type Info"
+
+4. Go to Definition (packages/extension/src/context/definition.ts):
+- Find definition of symbol at cursor
+- Include definition code
+- Show file path and line
+- Auto-add to context
+
+5. Find References (packages/extension/src/context/references.ts):
+- Find all references to symbol
+- Group by file
+- Show usage count
+- Command: "Arela: Find References"
+
+6. Context Pills UI:
+- Diagnostics pill (show error/warning count)
+- Symbol pill (show symbol name)
+- Type pill (show type signature)
+- References pill (show reference count)
+
+7. System Prompt Integration:
+- Add diagnostics before code
+- Add type info with code
+- Add references after code
+- Format clearly for AI
+
+Acceptance Criteria:
+- Can add diagnostics to context
+- Can search and add symbols
+- Can show type information
+- Can find and add references
+- All context types show as pills
+- AI receives formatted context
+- Works with TypeScript, JavaScript, Python, Go
+
+Build this now!
+
+
+
+Implement EXTENSION-020: Performance Optimization
+
+Context: Extension works but needs optimization for speed, memory, and bundle size.
+
+Your task: Optimize performance across the board: lazy loading, caching, virtual scrolling, memory management.
+
+What to Build:
+
+1. Lazy Loading (packages/extension/webview/):
+- Lazy load heavy components (Settings, ConversationList)
+- Code split by route
+- Defer non-critical imports
+- Target: <100ms initial load
+
+2. Message Virtualization (packages/extension/webview/components/MessageList.svelte):
+- Use virtual scrolling for long conversations
+- Render only visible messages
+- Recycle DOM nodes
+- Target: 60fps with 1000+ messages
+
+3. Caching (packages/extension/src/chat-provider.ts):
+- Cache workspace context (invalidate on file changes)
+- Cache model lists (TTL: 1 hour)
+- Cache file contents (invalidate on edit)
+- Use LRU cache (max 100 items)
+
+4. Debouncing:
+- Debounce selection updates (300ms)
+- Debounce workspace scans (500ms)
+- Debounce search queries (200ms)
+
+5. Bundle Optimization (packages/extension/webview/vite.config.ts):
+- Tree shaking
+- Minification
+- Code splitting
+- Remove unused dependencies
+- Target: <50KB gzipped per bundle
+
+6. Memory Management:
+- Dispose webview listeners on close
+- Clear message history after 100 messages
+- Limit conversation storage (max 50)
+- Cleanup old conversations (>30 days)
+
+7. Monitoring:
+- Add performance marks
+- Log slow operations (>1s)
+- Track memory usage
+- Report to console in dev mode
+
+Acceptance Criteria:
+- Initial load <100ms
+- Message list renders 1000+ messages at 60fps
+- Workspace scan <500ms
+- Bundle size <50KB gzipped
+- Memory usage <100MB
+- No memory leaks
+- Smooth scrolling and interactions
+
+Build this now!

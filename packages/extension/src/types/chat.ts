@@ -1,14 +1,18 @@
-export interface AttachedFile {
+export interface FileAttachment {
   path: string;
   content: string;
   language: string;
 }
 
-export interface CodeSelection {
+export type AttachedFile = FileAttachment;
+
+export interface SelectionContext {
   file: string;
+  language: string;
   startLine: number;
   endLine: number;
   code: string;
+  truncated?: boolean;
 }
 
 export interface FileMention {
@@ -16,8 +20,23 @@ export interface FileMention {
   type: 'file' | 'folder';
 }
 
+export interface WorkspaceFile {
+  path: string;
+  type: 'file' | 'directory';
+  size?: number;
+}
+
+export interface WorkspaceContext {
+  rootPath: string;
+  files: WorkspaceFile[];
+  recentFiles: string[];
+  totalFiles: number;
+  truncated: boolean;
+}
+
 export interface MessageContext {
-  files?: AttachedFile[];
-  selection?: CodeSelection;
+  files?: FileAttachment[];
+  selection?: SelectionContext;
+  workspace?: WorkspaceContext;
   mentions?: FileMention[];
 }
