@@ -55,3 +55,12 @@ node_modules/**/.github
 ../../**/*
 ../*
 ../server/**
+../preset-cto/**
+../tokens/**
+../.arela/**
+../.github/**
+../dist/**
+../docs/**
+../openapi/**
+../RESEARCH/**
+../test-app/**
