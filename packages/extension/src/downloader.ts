@@ -8,7 +8,7 @@ import { getPlatformTarget } from './platform';
 import { verifyChecksum } from './checksum';
 import type { PlatformTarget } from './platform';
 
-const GITHUB_REPO = 'yourusername/arela'; // TODO: Update before v5.0.0 release
+const GITHUB_REPO = 'NewDara-Star/arela';
 
 const MAX_ATTEMPTS = 3;
 const BASE_DELAY_MS = 1000;

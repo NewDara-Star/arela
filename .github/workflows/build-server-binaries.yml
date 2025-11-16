@@ -1,0 +1,60 @@
+name: Build Server Binaries
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {}
+
+jobs:
+  build-binaries:
+    name: Build Server Binaries
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build server
+        run: npm run build --workspace arela-server
+      
+      - name: Package binaries
+        run: npm run package:all --workspace arela-server
+      
+      - name: Rename binaries
+        run: |
+          cd dist/server
+          mv index-macos-x64 arela-server-darwin-x64
+          mv index-macos-arm64 arela-server-darwin-arm64
+          mv index-win-x64.exe arela-server-win32-x64.exe
+          mv index-win-arm64.exe arela-server-win32-arm64.exe
+          mv index-linux-x64 arela-server-linux-x64
+          mv index-linux-arm64 arela-server-linux-arm64
+      
+      - name: Generate checksums
+        run: |
+          cd dist/server
+          for file in arela-server-*; do
+            sha256sum "$file" > "$file.sha256"
+          done
+      
+      - name: Upload binaries to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/server/arela-server-*
+          tag_name: ${{ github.ref_name }}
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-binaries
+          path: dist/server/arela-server-*
