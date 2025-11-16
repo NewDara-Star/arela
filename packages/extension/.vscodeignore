@@ -54,3 +54,4 @@ node_modules/**/.github
 # CRITICAL: Exclude everything outside extension directory
 ../../**/*
 ../*
+../server/**
