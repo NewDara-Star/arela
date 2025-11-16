@@ -1,19 +1,31 @@
-# Build outputs
-out/test/**
-src/**
+# Source files (keep only compiled output)
+src/**/*.ts
 webview/**/*.ts
 webview/**/*.svelte
 webview-settings/**/*.ts
 webview-settings/**/*.svelte
+
+# Config files
 tsconfig.json
 vite.config.ts
 vite.settings.config.ts
+*.config.ts
+*.config.js
+vitest.config.ts
+.eslintrc.json
+.prettierrc
 
-# Development files
-.vscode/**
-.vscode-test/**
+# Build artifacts
+out/test/**
 **/*.map
 *.vsix
+
+# Development
+.vscode/**
+.vscode-test/**
+.git
+.gitignore
+.github
 
 # Tests
 **/*.test.ts
@@ -21,32 +33,24 @@ vite.settings.config.ts
 **/test/**
 TESTING.md
 
-# Source control
-.git
-.gitignore
-.github
+# Documentation (keep only essential)
+README.md
+CHANGELOG.md
+changelog.md
+readme.md
 
-# Dependencies (keep only necessary runtime deps)
+# Scripts
+scripts/**
+
+# Dependencies cleanup
 node_modules/**/test/**
 node_modules/**/tests/**
 node_modules/**/*.md
 node_modules/**/.github
 
-# Project root files (outside extension)
-../../*
-../**
-*.config.ts
-*.config.js
-vitest.config.ts
-
-# Documentation
-README.md
-CHANGELOG.md
-
-# Scripts
-scripts/**
-
 # Misc
 .DS_Store
-.eslintrc.json
-.prettierrc
+
+# CRITICAL: Exclude everything outside extension directory
+../../**/*
+../*
