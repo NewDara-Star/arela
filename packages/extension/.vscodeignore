@@ -1,0 +1,52 @@
+# Build outputs
+out/test/**
+src/**
+webview/**/*.ts
+webview/**/*.svelte
+webview-settings/**/*.ts
+webview-settings/**/*.svelte
+tsconfig.json
+vite.config.ts
+vite.settings.config.ts
+
+# Development files
+.vscode/**
+.vscode-test/**
+**/*.map
+*.vsix
+
+# Tests
+**/*.test.ts
+**/*.spec.ts
+**/test/**
+TESTING.md
+
+# Source control
+.git
+.gitignore
+.github
+
+# Dependencies (keep only necessary runtime deps)
+node_modules/**/test/**
+node_modules/**/tests/**
+node_modules/**/*.md
+node_modules/**/.github
+
+# Project root files (outside extension)
+../../*
+../**
+*.config.ts
+*.config.js
+vitest.config.ts
+
+# Documentation
+README.md
+CHANGELOG.md
+
+# Scripts
+scripts/**
+
+# Misc
+.DS_Store
+.eslintrc.json
+.prettierrc
