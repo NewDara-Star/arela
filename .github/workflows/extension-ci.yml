@@ -70,7 +70,7 @@ jobs:
           EXT_VERSION: ${{ steps.extension_version.outputs.value }}
         run: |
           mkdir -p packages/extension/dist
-          npm run package --workspace arela-extension -- --target "${VSIX_TARGET}" --out "packages/extension/dist/arela-${EXT_VERSION}-${VSIX_TARGET}.vsix"
+          npm run package --workspace arela-extension -- --target "${VSIX_TARGET}" --out "dist/arela-${EXT_VERSION}-${VSIX_TARGET}.vsix"
 
       - name: Verify VSIX structure
         shell: bash
