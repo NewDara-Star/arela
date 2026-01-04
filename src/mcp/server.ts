@@ -17,6 +17,8 @@ import { startGraphWatcher } from "../../slices/graph/ops.js";
 import { startAutoIndexer, buildVectorIndex, searchVectorIndex } from "../../slices/vector/ops.js";
 import { summarizeScratchpad } from "../../slices/focus/ops.js";
 import { translateVibeToPlan } from "../../slices/translate/ops.js";
+import { listPRDs, getPRD, getPRDStatus, createPRD, getUserStories, updatePRDStatus } from "../../slices/prd/ops.js";
+import { PRDTypeSchema, PRDStatusSchema } from "../../slices/prd/types.js";
 
 const VERSION = "5.0.0";
 
@@ -369,6 +371,132 @@ export function createArelaServer(options: ServerOptions = {}): McpServer {
                 return { content: [{ type: "text" as const, text: planText }] };
             } catch (e: any) {
                 return { content: [{ type: "text" as const, text: `❌ Translation failed: ${e.message}` }] };
+            }
+        }
+    );
+
+    // ===========================================
+    // TOOL: arela_prd
+    // ===========================================
+    server.registerTool(
+        "arela_prd",
+        {
+            title: "Arela PRD Manager",
+            description:
+                "Manage Product Requirement Documents (PRDs). PRDs are the 'source code' of your application - " +
+                "structured Markdown files with YAML frontmatter that define features, user stories, and specs. " +
+                "Use this to list, parse, create, and track PRD status.",
+            inputSchema: {
+                action: z.enum(["list", "parse", "status", "create", "stories", "update-status"])
+                    .describe("Action to perform"),
+                path: z.string().optional()
+                    .describe("Path to PRD file (required for parse, status, stories, update-status)"),
+                id: z.string().optional()
+                    .describe("PRD ID for create action (e.g., REQ-001)"),
+                title: z.string().optional()
+                    .describe("PRD title for create action"),
+                type: PRDTypeSchema.optional()
+                    .describe("PRD type for create action"),
+                outputPath: z.string().optional()
+                    .describe("Output path for create action"),
+                newStatus: PRDStatusSchema.optional()
+                    .describe("New status for update-status action"),
+            },
+        },
+        async ({ action, path: prdPath, id, title, type, outputPath, newStatus }) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+
+            try {
+                switch (action) {
+                    case "list": {
+                        const prds = await listPRDs();
+                        if (prds.length === 0) {
+                            return { content: [{ type: "text" as const, text: "📋 No PRDs found.\n\nCreate one with `arela_prd create`" }] };
+                        }
+                        const list = prds.map(p =>
+                            `- **${p.id}**: ${p.title} [${p.status}] (${p.type}) - ${p.path}`
+                        ).join("\n");
+                        return { content: [{ type: "text" as const, text: `📋 **PRDs Found:**\n\n${list}` }] };
+                    }
+
+                    case "parse": {
+                        if (!prdPath) {
+                            return { content: [{ type: "text" as const, text: "❌ Path required for parse action" }] };
+                        }
+                        const prd = await getPRD(prdPath);
+                        const sections = prd.sections.map(s => `- ${s.header} (L${s.lineStart}-${s.lineEnd})`).join("\n");
+                        const text =
+                            `📄 **PRD: ${prd.title}**\n\n` +
+                            `**ID:** ${prd.frontmatter.id}\n` +
+                            `**Type:** ${prd.frontmatter.type}\n` +
+                            `**Status:** ${prd.frontmatter.status}\n` +
+                            `**Priority:** ${prd.frontmatter.priority}\n` +
+                            `**Context:** ${prd.frontmatter.context.join(", ") || "None"}\n` +
+                            `**Tools:** ${prd.frontmatter.tools.join(", ") || "None"}\n\n` +
+                            `**Sections:**\n${sections}`;
+                        return { content: [{ type: "text" as const, text }] };
+                    }
+
+                    case "status": {
+                        if (!prdPath) {
+                            return { content: [{ type: "text" as const, text: "❌ Path required for status action" }] };
+                        }
+                        const status = await getPRDStatus(prdPath);
+                        const text =
+                            `📊 **PRD Status: ${status.id}**\n\n` +
+                            `**Status:** ${status.status}\n` +
+                            `**Type:** ${status.type}\n` +
+                            `**Priority:** ${status.priority}\n` +
+                            `**User Stories:** ${status.userStoryCount}\n` +
+                            `**Sections:** ${status.sections.join(", ")}`;
+                        return { content: [{ type: "text" as const, text }] };
+                    }
+
+                    case "create": {
+                        if (!id || !title) {
+                            return { content: [{ type: "text" as const, text: "❌ ID and title required for create action" }] };
+                        }
+                        const result = await createPRD({
+                            id,
+                            title,
+                            type: type || "feature",
+                            outputPath
+                        });
+                        return { content: [{ type: "text" as const, text: `✅ ${result}` }] };
+                    }
+
+                    case "stories": {
+                        if (!prdPath) {
+                            return { content: [{ type: "text" as const, text: "❌ Path required for stories action" }] };
+                        }
+                        const stories = await getUserStories(prdPath);
+                        if (stories.length === 0) {
+                            return { content: [{ type: "text" as const, text: "📖 No user stories found in PRD" }] };
+                        }
+                        const storyList = stories.map(s =>
+                            `### ${s.id}: ${s.title}\n` +
+                            `**As a** ${s.asA}\n` +
+                            `**I want** ${s.iWant}\n` +
+                            `**So that** ${s.soThat}\n` +
+                            `**Criteria:** ${s.acceptanceCriteria.length} items`
+                        ).join("\n\n");
+                        return { content: [{ type: "text" as const, text: `📖 **User Stories:**\n\n${storyList}` }] };
+                    }
+
+                    case "update-status": {
+                        if (!prdPath || !newStatus) {
+                            return { content: [{ type: "text" as const, text: "❌ Path and newStatus required for update-status action" }] };
+                        }
+                        const result = await updatePRDStatus(prdPath, newStatus);
+                        return { content: [{ type: "text" as const, text: `✅ ${result}` }] };
+                    }
+
+                    default:
+                        return { content: [{ type: "text" as const, text: `❌ Unknown action: ${action}` }] };
+                }
+            } catch (e: any) {
+                return { content: [{ type: "text" as const, text: `❌ PRD operation failed: ${e.message}` }] };
             }
         }
     );
