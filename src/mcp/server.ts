@@ -37,6 +37,31 @@ export function createArelaServer(options: ServerOptions = {}): McpServer {
         version: VERSION,
     });
 
+    // ============================================
+    // SESSION GUARD - Programmatic Rule Enforcement
+    // ============================================
+    // Tracks if arela_context was called. Other tools are BLOCKED until context is loaded.
+    // This enforces AGENTS.md reading before ANY action.
+    let sessionInitialized = false;
+
+    const requireSession = (): { blocked: boolean; error?: { content: { type: "text"; text: string }[] } } => {
+        if (!sessionInitialized) {
+            return {
+                blocked: true,
+                error: {
+                    content: [{
+                        type: "text" as const,
+                        text: "🚫 SESSION NOT INITIALIZED\n\n" +
+                            "You must call `arela_context` FIRST to read project rules.\n" +
+                            "This is a programmatic enforcement of AGENTS.md governance.\n\n" +
+                            "Call arela_context now, then retry this tool."
+                    }]
+                }
+            };
+        }
+        return { blocked: false };
+    };
+
     // Start background services (Auto-Indexer)
     startAutoIndexer(projectPath);
     startGraphWatcher(projectPath);
@@ -77,6 +102,9 @@ export function createArelaServer(options: ServerOptions = {}): McpServer {
                 contextText += `⚠️ No SCRATCHPAD.md found. Will be created when you update it.\n`;
             }
 
+            // Mark session as initialized - other tools now unblocked
+            sessionInitialized = true;
+
             return { content: [{ type: "text" as const, text: contextText }] };
         }
     );
@@ -97,6 +125,10 @@ export function createArelaServer(options: ServerOptions = {}): McpServer {
             },
         },
         async ({ content, mode }) => {
+            // ENFORCE: Session must be initialized first
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+
             const scratchpadPath = path.join(projectPath, "SCRATCHPAD.md");
             const timestamp = new Date().toISOString();
 
