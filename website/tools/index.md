@@ -2,7 +2,21 @@
 
 Arela provides 10 MCP tools that extend AI capabilities. These tools are automatically available when you connect Arela to your IDE.
 
-## Categories
+### 🛡️ Session Guard & Filesystem
+| Tool | Purpose |
+|------|---------|
+| [arela_log_symptom](/tools/guard) | Start investigation |
+| [arela_register_hypothesis](/tools/guard) | Formalize theory |
+| [arela_confirm_hypothesis](/tools/guard) | Unlock write access |
+| [edit_file](/tools/fs) | Edit code (Guarded) |
+| [write_file](/tools/fs) | Create files (Guarded) |
+| ... and 5 others | See [FS Docs](/tools/fs) |
+
+### 🚀 Feature Management
+| Tool | Purpose |
+|------|---------|
+| [arela_prd](/tools/prd) | Manage PRDs (Specs) |
+| [arela_translate](/tools/translate) | Vibe → Plan |
 
 ### 🔍 Context & Memory
 | Tool | Purpose |
@@ -32,7 +46,6 @@ Arela provides 10 MCP tools that extend AI capabilities. These tools are automat
 | Tool | Purpose |
 |------|---------|
 | [arela_focus](/tools/focus) | Compress long context |
-| [arela_translate](/tools/translate) | Convert vibes to plans |
 
 ## Mandatory Workflows
 

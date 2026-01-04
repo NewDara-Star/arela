@@ -46,6 +46,18 @@ Arela enforces a governance model where AI must use tools before acting:
 | Planning features | `arela_translate` first |
 
 This is encoded in `AGENTS.md` as Rule #7.
+ 
+ ## The Session Guard
+ 
+ **Trust is good, but enforcement is better.**
+ 
+ Arela v5 introduces a programmatic **Session Guard** that prevents "vibe coding" (making changes based on guesses).
+ 
+ - **Blocked by Default:** You cannot write/edit code in `DISCOVERY` mode.
+ - **Investigate First:** You must use tools (`log_symptom` -> `register_hypothesis`) to prove you understand the problem.
+ - **Unlock Access:** Only after `confirm_hypothesis` can you enter `IMPLEMENTATION` mode and edit files.
+ 
+ This forces the AI to behave like a Senior Engineer: Measure twice, cut once.
 
 ## Vertical Slice Architecture
 

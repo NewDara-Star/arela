@@ -101,5 +101,6 @@ npm run test
 
 ## Next Steps
 
+- [View Dashboard](/dashboard) — See your live codebase graph
 - [Core Concepts](/guide/concepts) — Understand the philosophy
 - [Tools Reference](/tools/) — Learn each MCP tool

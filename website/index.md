@@ -31,7 +31,13 @@ features:
     details: Describe what you want in natural language. Arela translates to execution plans.
   - icon: 📜
     title: Self-Governing
-    details: Rules in AGENTS.md bind AI behavior. Your project, your rules.
+    details: Rules in AGENTS.md binding AI behavior. Your project, your rules.
+  - icon: 🛡️
+    title: Session Guard
+    details: Programmatic enforcement. The AI *cannot* write code without verifying its hypothesis first.
+  - icon: 📊
+    title: Live Dashboard
+    details: Visualise your codebase architecture and dependencies in real-time.
 ---
 
 ## Quick Start
@@ -51,17 +57,16 @@ npm run build
 # Add to .mcp.json
 ```
 
-## The 10 MCP Tools
-
-| Tool | Purpose |
-|------|---------|
-| `arela_context` | Load project identity (AGENTS.md + SCRATCHPAD.md) |
-| `arela_update` | Persist session memory |
-| `arela_status` | Quick project health check |
-| `arela_verify` | Fact-check before stating |
-| `arela_graph_impact` | Analyze code dependencies |
-| `arela_graph_refresh` | Re-index the codebase |
-| `arela_vector_search` | Semantic code search |
-| `arela_vector_index` | Build embeddings |
-| `arela_focus` | Summarize long context |
-| `arela_translate` | Convert vibes to plans |
+## Comprehensive Tool Suite
+ 
+ | Tool | Purpose |
+ |------|---------|
+ | `arela_context` | Load project identity |
+ | `arela_update` | Persist session memory |
+ | `arela_verify` | Fact-check before stating |
+ | `arela_graph_impact` | Analyze code dependencies |
+ | `arela_vector_search` | Semantic code search |
+ | `arela_prd` | Manage Product Requirements |
+ | `arela_log_symptom` | Start bug investigation |
+ | `edit_file` (Guarded) | Safe code editing |
+ | ... and 20+ more | [See Full List](/tools/) |
