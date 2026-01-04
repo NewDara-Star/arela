@@ -17,3 +17,15 @@ export function getOpenAIClient(projectPath: string): OpenAI {
 }
 
 export const SMART_MODEL = "gpt-4o-mini";
+
+export async function askOpenAI(system: string, user: string, projectPath: string = process.cwd()): Promise<string> {
+    const openai = getOpenAIClient(projectPath);
+    const completion = await openai.chat.completions.create({
+        model: SMART_MODEL,
+        messages: [
+            { role: "system", content: system },
+            { role: "user", content: user }
+        ]
+    });
+    return completion.choices[0].message.content || "";
+}

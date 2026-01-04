@@ -8,14 +8,18 @@ export async function runTest(projectPath: string, featurePath: string): Promise
         // Construct paths
         // featurePath is relative, e.g. "tests/features/hello.feature"
 
-        // Command: npx cucumber-js [feature] --require [steps] --require-module ts-node/register
-        const result = await execa("npx", [
-            "cucumber-js",
+        // Command: npx tsx node_modules/.bin/cucumber-js [feature] --import [steps]
+        // This wraps the execution in tsx environment
+        const cmd = "npx";
+        const args = [
+            "tsx",
+            path.join("node_modules", ".bin", "cucumber-js"),
             featurePath,
-            "--require", "tests/steps/*.ts",
-            "--require-module", "ts-node/register",
+            "--import", "tests/steps/*.ts",
             "--format", "progress"
-        ], {
+        ];
+
+        const result = await execa(cmd, args, {
             cwd: projectPath,
             reject: false
         });

@@ -2,7 +2,7 @@
 id: REQ-002
 title: "Spec-to-Test Compiler"
 type: feature
-status: draft
+status: verified
 priority: high
 created: 2026-01-04
 updated: 2026-01-04

@@ -2,7 +2,7 @@
 id: REQ-003
 title: "Investigation Enforcement System"
 type: feature
-status: draft
+status: implemented
 priority: high
 created: 2026-01-04
 updated: 2026-01-04
