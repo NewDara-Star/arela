@@ -13,6 +13,7 @@
         "start": "node dist/src/cli.js",
         "mcp": "node dist/src/cli.js mcp",
         "test": "node scripts/test_all.js",
+        "test:guards": "npx tsx scripts/run_guards.ts",
         "check:docs": "node scripts/check_doc_coverage.js",
         "docs:dev": "npx -y tsx slices/graph/export.ts && cd website && npm run dev",
         "docs:build": "npx -y tsx slices/graph/export.ts && cd website && npm run build"

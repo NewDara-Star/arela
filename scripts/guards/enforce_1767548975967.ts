@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import glob from 'glob';
+import { glob } from 'glob';
 import path from 'path';
 
 const MAX_NESTED_IMPORTS = 3;

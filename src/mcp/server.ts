@@ -19,6 +19,7 @@ import { integrationTools } from "./tools/integration.js";
 // For speed, let's create the other files now or inline imports if they existed.
 // Since they don't, I'll create one more "misc.ts" for the rest to ensure we pass the check.
 import { miscTools } from "./tools/misc.js";
+import { checklistTools } from "../slices/checklist/tools.js";
 
 const VERSION = "5.0.0";
 
@@ -65,7 +66,13 @@ export function createArelaServer(options: ServerOptions = {}): McpServer {
     // Register Tool Bundles
     registerTools(toolContext, controlTools);
     registerTools(toolContext, integrationTools);
+    registerTools(toolContext, integrationTools);
     registerTools(toolContext, miscTools);
+
+    // Dynamic Import for Checklist (to avoid huge imports if unnecessary, but standard for now)
+    // Actually, we must import it at top or require it. 
+    // Let's use standard import at top, added via replace.
+    registerTools(toolContext, checklistTools);
 
     // We need to attach the session init hook to arela_context. 
     // Since we extracted it, we need a way to signal back.

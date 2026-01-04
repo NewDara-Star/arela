@@ -169,3 +169,34 @@ export async function listDirectoryOp(dirPath: string): Promise<string[]> {
 
     return results;
 }
+
+export interface DirectoryEntry {
+    name: string;
+    type: 'file' | 'directory';
+    path: string;
+}
+
+export async function listDirectoryStructuredOp(dirPath: string): Promise<DirectoryEntry[]> {
+    const absolutePath = validatePath(dirPath);
+
+    if (!await fs.pathExists(absolutePath)) {
+        throw new Error(`Directory not found: ${absolutePath}`);
+    }
+
+    const entries = await fs.readdir(absolutePath, { withFileTypes: true });
+    return entries.map(entry => ({
+        name: entry.name,
+        type: entry.isDirectory() ? 'directory' : 'file',
+        path: path.join(absolutePath, entry.name)
+    }));
+}
+
+export async function fileExistsOp(filePath: string): Promise<boolean> {
+    const absolutePath = validatePath(filePath);
+    return fs.pathExists(absolutePath);
+}
+
+export async function fileStatOp(filePath: string): Promise<fs.Stats> {
+    const absolutePath = validatePath(filePath);
+    return fs.stat(absolutePath);
+}

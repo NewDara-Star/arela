@@ -5,12 +5,13 @@
  */
 
 import path from 'node:path';
-import fs from 'fs-extra';
 import { GraphDB } from './db.js';
+import { writeFileOp } from "../fs/ops.js";
+import { createDirectoryOp } from "../fs/ops.js";
 
 async function exportGraph() {
     const projectRoot = process.cwd();
-    const db = new GraphDB(projectRoot);
+    const db = await GraphDB.create(projectRoot);
 
     try {
         console.log('📊 Exporting graph data...');
@@ -35,10 +36,10 @@ async function exportGraph() {
         };
 
         const outputDir = path.join(projectRoot, 'website/public');
-        await fs.ensureDir(outputDir);
+        await createDirectoryOp(outputDir);
 
         const outputPath = path.join(outputDir, 'dashboard.json');
-        await fs.writeJSON(outputPath, data, { spaces: 2 });
+        await writeFileOp(outputPath, JSON.stringify(data, null, 2));
 
         console.log(`✅ Graph exported to ${outputPath}`);
         console.log(`   - ${files.length} nodes`);

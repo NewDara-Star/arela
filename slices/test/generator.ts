@@ -1,8 +1,8 @@
-import fs from "fs-extra";
 import path from "path";
 import { askOpenAI } from "../shared/openai.js";
 import { getUserStories, getPRD } from "../prd/ops.js";
 import { GeneratedTest } from "./types.js";
+import { writeFileOp } from "../fs/ops.js";
 
 // Helper to strip markdown code blocks
 function cleanMarkdown(text: string): string {
@@ -37,8 +37,16 @@ Output ONLY the raw Gherkin text.`;
 
     // 2. Generate Steps
     const stepsPrompt = `Generate TypeScript step definitions for this Gherkin feature using '@cucumber/cucumber'.
-Do NOT use Playwright yet, just generic TypeScript steps that log to console.
-Imports: import { Given, When, Then } from '@cucumber/cucumber';
+Rules:
+1. Imports: import { Given, When, Then } from '@cucumber/cucumber';
+2. Output ONLY the raw TypeScript code.
+3. Deduplicate steps: If multiple scenarios use the exact same step text, generate it ONLY ONCE.
+4. Regex Escaping: Cucumber expects regex. Escape special chars like parentheses and slashes.
+   - WRONG: Given('user/pass', ...)
+   - RIGHT: Given('user\\/pass', ...)
+   - WRONG: Then('it works (maybe)', ...)
+   - RIGHT: Then('it works \\(maybe\\)', ...)
+5. Arguments: Use {string} or {int} for captured arguments.
 
 Feature:
 ${featureContent}
@@ -52,8 +60,9 @@ Output ONLY the raw TypeScript code.`;
     const featureFile = `tests/features/${prd.frontmatter.id}.feature`;
     const stepsFile = `tests/steps/${prd.frontmatter.id}.steps.ts`;
 
-    await fs.outputFile(path.join(projectPath, featureFile), featureContent);
-    await fs.outputFile(path.join(projectPath, stepsFile), stepsContent);
+    // Use Guarded Ops
+    await writeFileOp(path.join(projectPath, featureFile), featureContent);
+    await writeFileOp(path.join(projectPath, stepsFile), stepsContent);
 
     return {
         featureContent,

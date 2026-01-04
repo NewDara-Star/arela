@@ -1,97 +1,97 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 
 Given('a PRD with user stories', function () {
-    console.log('Given a PRD with user stories');
+  // Implementation code here
 });
 
 When('I call `arela_test_generate`', function () {
-    console.log('When I call `arela_test_generate`');
+  // Implementation code here
 });
 
-Then('Gherkin `.feature` files are created', function () {
-    console.log('Then Gherkin `.feature` files are created');
+Then('Gherkin \.feature files are created', function () {
+  // Implementation code here
 });
 
-Given('user story acceptance criteria in Given/When/Then format', function () {
-    console.log('Given user story acceptance criteria in Given/When/Then format');
+Given('user story acceptance criteria in Given\/When\/Then format', function () {
+  // Implementation code here
 });
 
 When('generated', function () {
-    console.log('When generated');
+  // Implementation code here
 });
 
 Then('they map directly to Gherkin scenarios', function () {
-    console.log('Then they map directly to Gherkin scenarios');
+  // Implementation code here
 });
 
 Given('a user story without proper format', function () {
-    console.log('Given a user story without proper format');
+  // Implementation code here
 });
 
 Then('the AI infers reasonable scenarios', function () {
-    console.log('Then the AI infers reasonable scenarios');
+  // Implementation code here
 });
 
-Given('a `.feature` file', function () {
-    console.log('Given a `.feature` file');
+Given('a \.feature file', function () {
+  // Implementation code here
 });
 
 When('I call `arela_test_generate` with stepDefs option', function () {
-    console.log('When I call `arela_test_generate` with stepDefs option');
+  // Implementation code here
 });
 
 Then('TypeScript step definitions are created', function () {
-    console.log('Then TypeScript step definitions are created');
+  // Implementation code here
 });
 
 Given('step definitions are generated', function () {
-    console.log('Given step definitions are generated');
+  // Implementation code here
 });
 
 When('I run Playwright', function () {
-    console.log('When I run Playwright');
+  // Implementation code here
 });
 
-Then('tests execute (may fail, but run)', function () {
-    console.log('Then tests execute (may fail, but run)');
+Then('tests execute \(may fail, but run\)', function () {
+  // Implementation code here
 });
 
 Given('accessibility locators exist', function () {
-    console.log('Given accessibility locators exist');
+  // Implementation code here
 });
 
 Then('tests use `getByRole` over CSS selectors', function () {
-    console.log('Then tests use `getByRole` over CSS selectors');
+  // Implementation code here
 });
 
 Given('watch mode is enabled', function () {
-    console.log('Given watch mode is enabled');
+  // Implementation code here
 });
 
 When('PRD user stories change', function () {
-    console.log('When PRD user stories change');
+  // Implementation code here
 });
 
 Then('affected tests regenerate', function () {
-    console.log('Then affected tests regenerate');
+  // Implementation code here
 });
 
 When('code changes', function () {
-    console.log('When code changes');
+  // Implementation code here
 });
 
 Then('affected tests run automatically', function () {
-    console.log('Then affected tests run automatically');
+  // Implementation code here
 });
 
 Given('a test fails', function () {
-    console.log('Given a test fails');
+  // Implementation code here
 });
 
 When('in watch mode', function () {
-    console.log('When in watch mode');
+  // Implementation code here
 });
 
 Then('notification is shown', function () {
-    console.log('Then notification is shown');
+  // Implementation code here
 });

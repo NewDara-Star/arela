@@ -232,6 +232,17 @@ When creating work items, include:
 3. **Stating Facts?** Use `arela_verify` to verify claims.
 4. **Planning?** Use `arela_translate` to convert vibes to specs.
 
+## The Update Protocol (Definition of Done) ✅
+Before declaring a task "Complete", you MUST run this checklist:
+
+1. **Guards:** Run `npm run test:guards`. (Must pass 100%)
+2. **Docs:** Did you create a PRD/README for new features?
+3. **Tests:** Did you generate tests? (`arela_test_generate`)
+4. **Task:** Did you update `task.md`?
+5. **Memory:** Did you update `SCRATCHPAD.md`?
+
+If you skip this, the **Stale Scratchpad Guard** or **No Direct FS Guard** will catch you.
+
 ## MCP Tools Provided
 | Tool | Purpose |
 |------|---------|

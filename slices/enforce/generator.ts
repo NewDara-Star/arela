@@ -1,9 +1,9 @@
 
-import fs from "fs-extra";
 import path from "path";
 import { askOpenAI } from "../shared/openai.js";
 import { GuardScript, EnforcementResult } from "./types.js";
 import { execa } from "execa";
+import { writeFileOp } from "../fs/ops.js";
 
 export async function generateGuard(projectPath: string, issue: string, solution: string): Promise<EnforcementResult> {
 
@@ -31,21 +31,15 @@ Target file path: scripts/guards/[descriptive_name].ts
     const code = response.replace(/```(typescript|ts|javascript|js)?/g, "").replace(/```/g, "").trim();
 
     // Determine filename
-    // Ask LLM or just derive? Let's ask LLM for a filename in a structured way next time. 
-    // For now, heuristic:
     const nameMatch = response.match(/Target file path: (.*)/);
     let filename = nameMatch ? nameMatch[1].trim() : `scripts/guards/enforce_${Date.now()}.ts`;
     if (!filename.endsWith(".ts")) filename += ".ts";
 
     // 2. Save Script
     const fullPath = path.join(projectPath, filename);
-    await fs.outputFile(fullPath, code);
+    await writeFileOp(fullPath, code);
 
-    // 3. Verify (Dry Run)
-    // We run it. If it fails (exit 1), it means it CAUGHT something (or is broken).
-    // Ideally we want to know if it *works*.
-    // For this MVP, we just return the path.
-
+    // 3. Verify (Dry Run) - For MVP we just return path
     return {
         success: true,
         scriptPath: filename,

@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import glob from 'glob-promise';
+import { glob } from 'glob';
 
 const checkAnyTypeUsage = async () => {
   try {

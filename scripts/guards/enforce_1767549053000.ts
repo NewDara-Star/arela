@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import glob from 'glob';
+import { glob } from 'glob';
 
 const isCamelCase = (filename) => /^[A-Z]/.test(path.basename(filename).replace(/[^A-Za-z]/g, ''));
 const isSnakeCaseOrKebabCase = (filename) => /^[a-z0-9_/-]*$/.test(path.basename(filename));

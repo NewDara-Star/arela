@@ -3,16 +3,41 @@
  */
 
 import Database from "better-sqlite3";
-import fs from "fs-extra";
 import path from "node:path";
 import { SCHEMA_SQL } from "./schema.js";
 
 export class GraphDB {
-    private db: Database.Database;
+    private db!: Database.Database;
+    private projectPath: string;
 
     constructor(projectPath: string) {
-        const dbDir = path.join(projectPath, ".arela");
-        fs.ensureDirSync(dbDir);
+        this.projectPath = projectPath;
+    }
+
+    async init() {
+        // Use Guarded Ops for directory creation (can't import ops.ts here due to circular dep? check later)
+        // Wait, DB is low level. We should probably inject the DB path or use a safe method.
+        // But we are in slices/graph. ops.ts is in slices/fs. No circular dependency (fs -> graph is unlikely).
+        // Let's use dynamic import or just fs-extra but guarded?
+        // NO. The guard bans fs-extra imports.
+        // We MUST import { createDirectoryOp } from '../fs/ops.js'
+
+        // This file imports 'fs-extra' currently. We must remove that.
+    }
+
+    // Wait, better to factory method.
+    static async create(projectPath: string): Promise<GraphDB> {
+        const instance = new GraphDB(projectPath);
+        await instance.initialize();
+        return instance;
+    }
+
+    private async initialize() {
+        const dbDir = path.join(this.projectPath, ".arela");
+        // We need to use createDirectoryOp. 
+        // We can't use it directly here if we want to remove 'fs-extra' import.
+        const { createDirectoryOp } = await import('../fs/ops.js');
+        await createDirectoryOp(dbDir);
 
         const dbPath = path.join(dbDir, "graph.db");
         this.db = new Database(dbPath);

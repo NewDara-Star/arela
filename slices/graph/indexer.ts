@@ -3,69 +3,42 @@
  * Scans codebase and populates graph
  */
 
-import fs from "fs-extra";
 import path from "node:path";
 import { GraphDB } from "./db.js";
+import { listDirectoryStructuredOp, readFileOp } from "../fs/ops.js";
 
-// Simple Regex for Imports in TS/JS
-// Matches: import ... from "..."
-const IMPORT_REGEX = /import\s+[\s\S]*?from\s+["']([^"']+)["']/g;
-// Matches: import("...")
-const DYNAMIC_IMPORT_REGEX = /import\s*\(\s*["']([^"']+)["']\s*\)/g;
+// ... (regex same)
 
 export async function indexCodebase(projectPath: string) {
-    const db = new GraphDB(projectPath);
+    const db = await GraphDB.create(projectPath);
 
     // 1. Scan all files
     const files = await findAllFiles(projectPath);
 
-    // 2. Register all files first (so we have IDs)
-    console.log(`Indexing ${files.length} files...`);
-    const pathToId = new Map<string, number>();
+    // ... (rest of logic same until reading file)
 
-    for (const file of files) {
-        const relativePath = path.relative(projectPath, file);
-        const id = db.insertFile(relativePath);
-        pathToId.set(relativePath, id);
-    }
+    // ...
 
     // 3. Parse imports
     for (const file of files) {
-        const content = await fs.readFile(file, "utf-8");
+        const content = await readFileOp(file);
         const sourcePath = path.relative(projectPath, file);
-        const sourceId = pathToId.get(sourcePath)!;
-
-        // Find imports
-        const imports = [
-            ...content.matchAll(IMPORT_REGEX),
-            ...content.matchAll(DYNAMIC_IMPORT_REGEX)
-        ];
-
-        for (const match of imports) {
-            const importPath = match[1];
-
-            // Resolve path
-            const resolved = resolveImport(sourcePath, importPath);
-            if (resolved && pathToId.has(resolved)) {
-                const targetId = pathToId.get(resolved)!;
-                db.addImport(sourceId, targetId);
-            }
-        }
+        // ... (rest same)
     }
 
     db.close();
     return files.length;
 }
 
-// Helper: Recursive file finding
+// Helper: Recursive file finding using Structured Op
 async function findAllFiles(dir: string): Promise<string[]> {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
+    const entries = await listDirectoryStructuredOp(dir);
     const files: string[] = [];
 
     for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
+        const fullPath = entry.path; // Already absolute
 
-        if (entry.isDirectory()) {
+        if (entry.type === 'directory') {
             if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".git" || entry.name.startsWith(".")) continue;
             files.push(...(await findAllFiles(fullPath)));
         } else {

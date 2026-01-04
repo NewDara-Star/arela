@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import glob from 'glob';
+import { glob } from 'glob';
 import path from 'path';
 
 const targetDirectory = path.resolve(process.cwd(), 'src'); // Adjust the source directory as needed

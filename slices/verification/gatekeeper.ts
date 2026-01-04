@@ -2,10 +2,11 @@
  * Verification Slice - Gatekeeper Logic
  */
 
-import fs from "fs-extra";
 import path from "node:path";
+import { fileExistsOp, readFileOp } from "../fs/ops.js";
 
 export type VerificationType = "contains" | "regex" | "file_exists";
+// ... (interfaces same)
 
 export interface VerificationRequest {
     claim: string;        // Human readable claim (for logging)
@@ -31,7 +32,7 @@ export async function verifyClaim(
     const timestamp = new Date().toISOString();
 
     // 1. Check existence
-    const exists = await fs.pathExists(fullPath);
+    const exists = await fileExistsOp(fullPath);
 
     if (request.type === "file_exists") {
         return {
@@ -50,7 +51,7 @@ export async function verifyClaim(
     }
 
     // 2. Read content
-    const content = await fs.readFile(fullPath, "utf-8");
+    const content = await readFileOp(fullPath);
 
     // 3. Verify
     if (request.type === "contains") {

@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import glob from 'glob';
+import { glob } from 'glob';
 
 const checkForLegacyCode = async () => {
     const pattern = 'src/**/*.js'; // Adjust the pattern if needed for other file types

@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
-import glob from 'glob-promise';
+import { glob } from 'glob';
 
 const checkPinnedDependencies = async () => {
   const packageFiles = await glob('**/package.json');

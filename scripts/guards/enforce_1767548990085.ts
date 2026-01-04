@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import glob from 'glob-promise';
+import { glob } from 'glob';
 
 const checkCircularImports = async () => {
   const files = await glob('src/**/*.js'); // Adjust the glob pattern according to your codebase structure

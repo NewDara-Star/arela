@@ -12,7 +12,7 @@ export interface ImpactAnalysis {
 }
 
 export async function analyzeImpact(projectPath: string, relativePath: string): Promise<ImpactAnalysis | null> {
-    const db = new GraphDB(projectPath);
+    const db = await GraphDB.create(projectPath);
 
     const fileId = db.getFileId(relativePath);
     if (!fileId) {

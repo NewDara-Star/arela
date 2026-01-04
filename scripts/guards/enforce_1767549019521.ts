@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import glob from 'glob';
+import { glob } from 'glob';
 import path from 'path';
 
 const checkForEvalUsage = async (filePath) => {

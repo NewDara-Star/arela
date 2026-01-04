@@ -2,7 +2,7 @@
  * Memory Slice - Scratchpad Operations
  */
 
-import fs from "fs-extra";
+import { readFileOp, writeFileOp, fileExistsOp } from "../fs/ops.js";
 import path from "node:path";
 
 export interface UpdateOptions {
@@ -21,8 +21,8 @@ export interface UpdateResult {
 export async function readScratchpad(projectPath: string): Promise<string | null> {
     const scratchpadPath = path.join(projectPath, "SCRATCHPAD.md");
 
-    if (await fs.pathExists(scratchpadPath)) {
-        return fs.readFile(scratchpadPath, "utf-8");
+    if (await fileExistsOp(scratchpadPath)) {
+        return readFileOp(scratchpadPath);
     }
 
     return null;
@@ -41,14 +41,14 @@ export async function updateScratchpad(
 
     let finalContent: string;
 
-    if (options.mode === "append" && await fs.pathExists(scratchpadPath)) {
-        const existing = await fs.readFile(scratchpadPath, "utf-8");
+    if (options.mode === "append" && await fileExistsOp(scratchpadPath)) {
+        const existing = await readFileOp(scratchpadPath);
         finalContent = `${existing}\n\n---\n\n## Update: ${timestamp}\n\n${content}`;
     } else {
         finalContent = `# SCRATCHPAD.md\n\n**Last Updated:** ${timestamp}\n\n${content}`;
     }
 
-    await fs.writeFile(scratchpadPath, finalContent, "utf-8");
+    await writeFileOp(scratchpadPath, finalContent);
 
     return {
         success: true,

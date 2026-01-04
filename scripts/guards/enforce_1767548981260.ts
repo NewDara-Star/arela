@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import glob from 'glob';
+import { glob } from 'glob';
 
 const SLICES_DIR = path.join(process.cwd(), 'slices');
 

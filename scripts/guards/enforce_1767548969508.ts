@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import glob from 'glob';
+import { glob } from 'glob';
 
 const MAX_LINES = 400;
 const EXCLUDED_FILE = 'server.ts';
