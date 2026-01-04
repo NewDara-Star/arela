@@ -405,3 +405,18 @@ This marathon session (~4 hours) accomplished:
 7. ✅ GEMINI.md system-level rules
 
 **THE MOST COMPREHENSIVE ENFORCEMENT STACK POSSIBLE.** 🏆
+
+---
+
+## Update: 2026-01-04 03:36 UTC - Persona Added
+
+### From v4 Archive
+- Reviewed `PERSONA.md` from arela-v4-archive (455 lines of CTO personality spec)
+- Extracted key elements: 4 Modes, Guardrails, Communication Style
+
+### Added to AGENTS.md
+- New "Persona: The CTO Partner" section
+- Four Modes: Challenge Hard, Research Together, Teach Deeply, Collaborate Always
+- DO/DON'T guardrails
+
+**Arela now has personality.** 🎭
