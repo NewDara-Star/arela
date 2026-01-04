@@ -455,3 +455,42 @@ This marathon session (~4 hours) accomplished:
 **Next session:** Update ~/.gemini/GEMINI.md with new AGENTS.md content.
 
 **END OF SESSION** 🌙
+
+---
+
+## Future Work: The Remaining 25% of the PhD Vision
+
+Based on analysis of `PHD_FRAMEWORK_NATURAL_LANGUAGE_PROGRAMMING.md` and `RESEARCH_ANALYSIS_2026-01-03.md`, here's what Arela v5 still needs to fully implement the Natural Language Programming paradigm:
+
+### 1. PRD.md Template & Management
+**What:** Formal Product Requirements Document that generates code
+**Why:** "Specification as Source Code" - the PRD becomes the true source, code is derived
+**MVP:** Template file + arela_prd tool to parse and plan from it
+
+### 2. Spec-to-Test Compiler
+**What:** Auto-generate Playwright/test files FROM specifications
+**Why:** Humans verify behavior, not code. Tests bridge the gap.
+**MVP:** Parse PRD → generate test stubs → run on code changes
+
+### 3. Continuous Verification Agent
+**What:** Background agent that runs tests after every code change
+**Why:** Prevents "dark debt" - code no one understands breaking silently
+**MVP:** File watcher → run tests → block if red → notify
+
+### 4. Intent Version Control
+**What:** Link code changes to specification changes
+**Why:** Git tracks code, but not WHY code changed
+**MVP:** Auto-commit that references which PRD section triggered the change
+
+### 5. Multi-Agent Isolation
+**What:** Sandboxed contexts for different agents
+**Why:** Prevents context pollution between specialized agents
+**MVP:** Tool router that maintains separate contexts per agent type
+
+---
+
+**Arela v5 Status: 75% of PhD Vision Complete**
+- Foundation: ✅ Context, Memory, Verification, Graph, Vector, Translate
+- Remaining: PRD, Spec-to-Test, Continuous Verification, Intent VCS, Multi-Agent
+
+**This is the v5.1+ roadmap.**
