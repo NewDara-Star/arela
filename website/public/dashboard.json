@@ -1,0 +1,175 @@
+{
+  "generated": "2026-01-04T13:26:37.309Z",
+  "stats": {
+    "files": 26,
+    "links": 15
+  },
+  "nodes": [
+    {
+      "id": "slices/context/types.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/graph/db.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/graph/gatekeeper.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/graph/indexer.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/graph/schema.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/memory/logic.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/memory/scratchpad.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/verification/gatekeeper.ts",
+      "group": "slices"
+    },
+    {
+      "id": "src/cli.ts",
+      "group": "src"
+    },
+    {
+      "id": "src/mcp/server.ts",
+      "group": "src"
+    },
+    {
+      "id": "test_graph_rpc.js",
+      "group": "test_graph_rpc.js"
+    },
+    {
+      "id": "verify_graph.js",
+      "group": "verify_graph.js"
+    },
+    {
+      "id": "verify_memory.js",
+      "group": "verify_memory.js"
+    },
+    {
+      "id": "verify_verifier.js",
+      "group": "verify_verifier.js"
+    },
+    {
+      "id": "bootstrap_graph.js",
+      "group": "bootstrap_graph.js"
+    },
+    {
+      "id": "slices/focus/ops.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/graph/ops.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/shared/openai.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/translate/ops.ts",
+      "group": "slices"
+    },
+    {
+      "id": "slices/vector/ops.ts",
+      "group": "slices"
+    },
+    {
+      "id": "test_focus.js",
+      "group": "test_focus.js"
+    },
+    {
+      "id": "test_full_stack.js",
+      "group": "test_full_stack.js"
+    },
+    {
+      "id": "test_translate.js",
+      "group": "test_translate.js"
+    },
+    {
+      "id": "verify_features_via_graph.js",
+      "group": "verify_features_via_graph.js"
+    },
+    {
+      "id": "verify_vibecoding_flow.js",
+      "group": "verify_vibecoding_flow.js"
+    },
+    {
+      "id": "scripts/test_all.js",
+      "group": "scripts"
+    }
+  ],
+  "links": [
+    {
+      "source": "slices/graph/db.ts",
+      "target": "slices/graph/schema.ts"
+    },
+    {
+      "source": "slices/graph/gatekeeper.ts",
+      "target": "slices/graph/db.ts"
+    },
+    {
+      "source": "slices/graph/gatekeeper.ts",
+      "target": "slices/graph/indexer.ts"
+    },
+    {
+      "source": "slices/graph/indexer.ts",
+      "target": "slices/graph/db.ts"
+    },
+    {
+      "source": "src/cli.ts",
+      "target": "src/mcp/server.ts"
+    },
+    {
+      "source": "src/mcp/server.ts",
+      "target": "slices/graph/gatekeeper.ts"
+    },
+    {
+      "source": "src/mcp/server.ts",
+      "target": "slices/memory/logic.ts"
+    },
+    {
+      "source": "src/mcp/server.ts",
+      "target": "slices/verification/gatekeeper.ts"
+    },
+    {
+      "source": "src/mcp/server.ts",
+      "target": "slices/focus/ops.ts"
+    },
+    {
+      "source": "src/mcp/server.ts",
+      "target": "slices/graph/ops.ts"
+    },
+    {
+      "source": "src/mcp/server.ts",
+      "target": "slices/translate/ops.ts"
+    },
+    {
+      "source": "src/mcp/server.ts",
+      "target": "slices/vector/ops.ts"
+    },
+    {
+      "source": "slices/focus/ops.ts",
+      "target": "slices/shared/openai.ts"
+    },
+    {
+      "source": "slices/graph/ops.ts",
+      "target": "slices/graph/indexer.ts"
+    },
+    {
+      "source": "slices/translate/ops.ts",
+      "target": "slices/shared/openai.ts"
+    }
+  ]
+}

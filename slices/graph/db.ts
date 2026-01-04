@@ -63,6 +63,18 @@ export class GraphDB {
     `).all(fileId) as Array<{ path: string }>;
     }
 
+    // Get all imports for visualization
+    getAllImports() {
+        return this.db.prepare(`
+            SELECT 
+                f1.path as source,
+                f2.path as target
+            FROM imports i
+            JOIN files f1 ON f1.id = i.source_file_id
+            JOIN files f2 ON f2.id = i.target_file_id
+        `).all() as Array<{ source: string; target: string }>;
+    }
+
     close() {
         this.db.close();
     }

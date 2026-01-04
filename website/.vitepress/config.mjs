@@ -12,6 +12,7 @@ export default defineConfig({
             { text: 'Home', link: '/' },
             { text: 'Guide', link: '/guide/getting-started' },
             { text: 'Tools', link: '/tools/' },
+            { text: 'Dashboard', link: '/dashboard' },
             { text: 'GitHub', link: 'https://github.com/NewDara-Star/arela' }
         ],
 

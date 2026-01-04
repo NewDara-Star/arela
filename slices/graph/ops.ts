@@ -5,6 +5,8 @@
 import path from "node:path";
 import { indexCodebase } from "./indexer.js";
 
+import { exportGraph } from "./export.js";
+
 // Debounce timer
 let updateTimer: NodeJS.Timeout | null = null;
 
@@ -23,7 +25,10 @@ export function startGraphWatcher(projectPath: string) {
             if (updateTimer) clearTimeout(updateTimer);
             updateTimer = setTimeout(() => {
                 console.error("🕸️  Graph changed. Re-indexing...");
-                indexCodebase(projectPath).catch(e => console.error("Graph update failed", e));
+                indexCodebase(projectPath)
+                    .then(() => exportGraph())
+                    .then(() => console.error("📊 Dashboard JSON updated."))
+                    .catch(e => console.error("Graph update failed", e));
             }, 5000); // 5s debounce to avoid thrashing on massive saves
         };
 
