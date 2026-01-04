@@ -10,8 +10,9 @@
     "scripts": {
         "build": "tsc",
         "dev": "tsc --watch",
-        "start": "node dist/cli.js",
-        "mcp": "node dist/cli.js mcp"
+        "start": "node dist/src/cli.js",
+        "mcp": "node dist/src/cli.js mcp",
+        "test": "node scripts/test_all.js"
     },
     "keywords": [
         "mcp",
