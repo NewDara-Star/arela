@@ -24,4 +24,14 @@ if [ "$STAGED_FILES" -gt 3 ] || [ "$CODE_FILES" -gt 0 ]; then
     fi
 fi
 
+# Auto-sync AGENTS.md to GEMINI.md if AGENTS.md was modified
+AGENTS_MODIFIED=$(git diff --cached --name-only | grep -c "AGENTS.md" || true)
+if [ "$AGENTS_MODIFIED" -gt 0 ]; then
+    GEMINI_PATH="$HOME/.gemini/GEMINI.md"
+    if [ -d "$(dirname "$GEMINI_PATH")" ]; then
+        cp AGENTS.md "$GEMINI_PATH"
+        echo "✅ AGENTS.md synced to $GEMINI_PATH"
+    fi
+fi
+
 exit 0

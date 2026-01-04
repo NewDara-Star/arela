@@ -7,6 +7,23 @@ import { getOpenAIClient, SMART_MODEL } from "../shared/openai.js";
 
 const MAX_LINES_RAW = 500;
 const RETAIN_LINES = 200;
+const ARCHIVE_DIR = ".arela/scratchpad_archive";
+
+/**
+ * Archive the current SCRATCHPAD before summarizing
+ */
+async function archiveScratchpad(projectPath: string, content: string): Promise<string> {
+    const archiveDir = path.join(projectPath, ARCHIVE_DIR);
+    await fs.ensureDir(archiveDir);
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    const archiveFilename = `${timestamp}.md`;
+    const archivePath = path.join(archiveDir, archiveFilename);
+
+    await fs.writeFile(archivePath, content, "utf-8");
+
+    return `${ARCHIVE_DIR}/${archiveFilename}`;
+}
 
 export async function summarizeScratchpad(projectPath: string, dryRun = false): Promise<string> {
     const scratchpadPath = path.join(projectPath, "SCRATCHPAD.md");
@@ -20,6 +37,13 @@ export async function summarizeScratchpad(projectPath: string, dryRun = false): 
     // If short enough, do nothing
     if (lines.length < MAX_LINES_RAW) {
         return `✅ Scratchpad is short (${lines.length} lines). No summarization needed.`;
+    }
+
+    // Archive the full content before summarizing
+    let archivePath = "";
+    if (!dryRun) {
+        archivePath = await archiveScratchpad(projectPath, content);
+        console.error(`📦 Archived full SCRATCHPAD to ${archivePath}`);
     }
 
     // Split into "History to Summarize" and "Recent Context to Keep"
@@ -53,6 +77,10 @@ export async function summarizeScratchpad(projectPath: string, dryRun = false): 
     const newContent = `# SCRATCHPAD.md (Context Rolled)
 
 ## 🧠 Previous History (Summarized)
+
+> **Full context archived at:** \`${archivePath}\`
+> If you need detailed investigation logs or complete history, read the archived file.
+
 ${summary}
 
 ---
@@ -62,9 +90,10 @@ ${recentText}
 `;
 
     if (dryRun) {
-        return `🔍 **Dry Run Summary:**\n\n${summary}\n\n(File not updated)`;
+        return `🔍 **Dry Run Summary:**\n\n${summary}\n\n(File not updated, no archive created)`;
     }
 
     await fs.writeFile(scratchpadPath, newContent, "utf-8");
-    return `✅ Context Rolled! compressed ${lines.length} lines -> ${newContent.split("\n").length} lines.`;
+    return `✅ Context Rolled! ${lines.length} lines → ${newContent.split("\n").length} lines.\n📦 Full history archived at: ${archivePath}`;
 }
+

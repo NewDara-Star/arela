@@ -109,37 +109,29 @@ export function extractSections(body: string): PRDSection[] {
  * Extract user stories from a parsed PRD
  */
 export function extractUserStories(prd: ParsedPRD): UserStory[] {
-    const userStoriesSection = prd.sections.find(
-        s => s.header.toLowerCase().includes("user stories")
+    const stories: UserStory[] = [];
+
+    // Find all sections that start with "US-" (these are parsed as separate sections)
+    const storySections = prd.sections.filter(
+        s => /^US-\d+:/.test(s.header)
     );
 
-    if (!userStoriesSection) {
-        return [];
-    }
-
-    const stories: UserStory[] = [];
-    const content = userStoriesSection.content;
-
-    // Match user story blocks (### US-XXX: Title pattern)
-    const storyBlocks = content.split(/(?=###\s+US-)/);
-
-    for (const block of storyBlocks) {
-        if (!block.trim()) continue;
-
-        // Extract ID and title
-        const headerMatch = block.match(/###\s+(US-\d+):\s*(.+)/);
+    for (const section of storySections) {
+        // Extract ID and title from section header
+        const headerMatch = section.header.match(/^(US-\d+):\s*(.+)/);
         if (!headerMatch) continue;
 
         const id = headerMatch[1];
         const title = headerMatch[2].trim();
+        const content = section.content;
 
         // Extract As a / I want / So that
-        const asAMatch = block.match(/\*\*As a\*\*\s*(.+?)(?:,|\n)/i);
-        const iWantMatch = block.match(/\*\*I want\*\*\s*(.+?)(?:,|\n)/i);
-        const soThatMatch = block.match(/\*\*So that\*\*\s*(.+?)(?:\.|\n)/i);
+        const asAMatch = content.match(/\*\*As a\*\*\s*(.+?)(?:,|\n)/i);
+        const iWantMatch = content.match(/\*\*I want\*\*\s*(.+?)(?:,|\n)/i);
+        const soThatMatch = content.match(/\*\*So that\*\*\s*(.+?)(?:\.|\n)/i);
 
         // Extract acceptance criteria
-        const criteriaMatches = block.matchAll(/- \[[ x]\]\s*(.+)/g);
+        const criteriaMatches = content.matchAll(/- \[[ x]\]\s*(.+)/g);
         const acceptanceCriteria = Array.from(criteriaMatches).map(m => m[1].trim());
 
         stories.push({

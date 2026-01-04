@@ -25,8 +25,9 @@ export const PRDFrontmatterSchema = z.object({
     type: PRDTypeSchema,
     status: PRDStatusSchema,
     priority: PRDPrioritySchema.optional().default("medium"),
-    created: z.string().optional(),
-    updated: z.string().optional(),
+    // gray-matter parses YAML dates as Date objects, so we accept both and coerce to string
+    created: z.union([z.string(), z.date()]).optional().transform(v => v instanceof Date ? v.toISOString().split('T')[0] : v),
+    updated: z.union([z.string(), z.date()]).optional().transform(v => v instanceof Date ? v.toISOString().split('T')[0] : v),
     context: z.array(z.string()).optional().default([]),
     tools: z.array(z.string()).optional().default([]),
     handoff: HandoffSchema,
