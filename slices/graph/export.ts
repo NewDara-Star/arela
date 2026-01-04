@@ -14,7 +14,7 @@ async function exportGraph() {
     const db = await GraphDB.create(projectRoot);
 
     try {
-        console.log('📊 Exporting graph data...');
+        console.error('📊 Exporting graph data...');
 
         const files = db.getFiles();
         const imports = db.getAllImports();
@@ -41,9 +41,9 @@ async function exportGraph() {
         const outputPath = path.join(outputDir, 'dashboard.json');
         await writeFileOp(outputPath, JSON.stringify(data, null, 2));
 
-        console.log(`✅ Graph exported to ${outputPath}`);
-        console.log(`   - ${files.length} nodes`);
-        console.log(`   - ${imports.length} links`);
+        console.error(`✅ Graph exported to ${outputPath}`);
+        console.error(`   - ${files.length} nodes`);
+        console.error(`   - ${imports.length} links`);
 
     } catch (error) {
         console.error('❌ Graph export failed:', error);

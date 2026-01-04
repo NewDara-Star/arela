@@ -66,7 +66,6 @@ export function createArelaServer(options: ServerOptions = {}): McpServer {
     // Register Tool Bundles
     registerTools(toolContext, controlTools);
     registerTools(toolContext, integrationTools);
-    registerTools(toolContext, integrationTools);
     registerTools(toolContext, miscTools);
 
     // Dynamic Import for Checklist (to avoid huge imports if unnecessary, but standard for now)

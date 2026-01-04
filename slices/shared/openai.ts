@@ -6,7 +6,17 @@ import dotenv from "dotenv";
 import path from "node:path";
 
 export function getOpenAIClient(projectPath: string): OpenAI {
-    dotenv.config({ path: path.join(projectPath, ".env") });
+    // Aggressively silence stdout for dotenv
+    const originalWrite = process.stdout.write;
+    process.stdout.write = () => true; // No-op
+    try {
+        const result = dotenv.config({ path: path.join(projectPath, ".env"), debug: false });
+        if (result.error && typeof (process.stdin) === 'undefined') {
+            // silently fail if no env, or log to stderr
+        }
+    } finally {
+        process.stdout.write = originalWrite;
+    }
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {

@@ -119,9 +119,11 @@ export const integrationTools: ToolDef[] = [
                             throw new Error("id, title, type, and outputPath required for create");
                         }
                         await createPRD({
-                            id: args.id, title: args.title, type: args.type,
-                            status: "draft", author: "Arela", created: new Date(), last_updated: new Date()
-                        }, args.outputPath);
+                            id: args.id,
+                            title: args.title,
+                            type: args.type,
+                            outputPath: args.outputPath
+                        });
                         return { content: [{ type: "text", text: `✅ Created PRD at ${args.outputPath}` }] };
                     }
                     case "stories": {

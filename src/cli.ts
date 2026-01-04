@@ -13,6 +13,7 @@ import { listPRDs, getPRDStatus } from "../slices/prd/ops.js";
 import { indexCodebase } from "../slices/graph/indexer.js";
 import { generateTests, runTest } from "../slices/test/ops.js";
 import { generateGuard } from "../slices/enforce/ops.js";
+import { runChecklist } from "../slices/checklist/ops.js";
 import fs from "fs-extra";
 import path from "node:path";
 
@@ -204,6 +205,31 @@ program
             console.log("\nNote: Please add this script to your CI/CD or package.json scripts.");
         } catch (e: any) {
             console.error("❌ Failed:", e.message);
+        }
+    });
+
+// ============================================
+// CHECKLIST (ENFORCEMENT)
+// ============================================
+program
+    .command("check")
+    .description("Run the enforcement checklist")
+    .option("--no-rigorous", "Skip slow checks")
+    .action(async (options) => {
+        console.log("🛑 Running Enforcement Checklist...");
+        const report = await runChecklist(process.cwd(), { rigorous: options.rigorous });
+
+        console.log(`\n${report.summary}\n`);
+
+        // Print table-like output
+        console.table(report.items.map(i => ({
+            Check: i.description,
+            Status: i.status === "pass" ? "✅" : i.status === "fail" ? "❌" : "⚠️",
+            Message: i.message
+        })));
+
+        if (report.overallStatus === "fail") {
+            process.exit(1);
         }
     });
 

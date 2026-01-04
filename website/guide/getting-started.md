@@ -99,7 +99,16 @@ OPENAI_API_KEY=sk-your-key-here
 npm run test
 ```
 
-## Next Steps
+## 6. Start Your First Session
++
++ **CRITICAL:** At the start of every session, you must initialize the context.
++
++ Ask your AI:
++ > "Run `arela_context` to load the project rules."
++
++ This loads `AGENTS.md` and `SCRATCHPAD.md` into the AI's memory.
++
++ ## Next Steps
 
 - [View Dashboard](/dashboard) — See your live codebase graph
 - [Core Concepts](/guide/concepts) — Understand the philosophy
