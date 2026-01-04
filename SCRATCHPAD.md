@@ -437,3 +437,21 @@ This marathon session (~4 hours) accomplished:
 2. User Rules (IDE-specific file) → Personality + Governance
 
 **Committed & Pushed** ✅
+
+---
+
+## Update: 2026-01-04 03:47 UTC - Date Awareness Rule
+
+### Rule #10 Added to AGENTS.md
+**CHECK THE DATE:** When researching, ALWAYS note the current date (ISO 8601 format: YYYY-MM-DD) and verify sources are recent.
+
+### Final Session Stats
+- **Duration:** ~4.5 hours
+- **Rules in AGENTS.md:** 10
+- **MCP Tools:** 10
+- **Doc Pages:** 12+ (VitePress)
+- **Enforcement Layers:** 4 (System Prompt, Session Guard, Pre-commit, Doc Checker)
+
+**Next session:** Update ~/.gemini/GEMINI.md with new AGENTS.md content.
+
+**END OF SESSION** 🌙
