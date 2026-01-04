@@ -26,9 +26,10 @@ export default defineConfig({
                     ]
                 },
                 {
-                    text: 'Architecture',
+                    text: 'Setup',
                     items: [
-                        { text: 'Vertical Slice Architecture', link: '/guide/architecture' },
+                        { text: 'IDE Integration', link: '/guide/ide-integration' },
+                        { text: 'Architecture', link: '/guide/architecture' },
                         { text: 'Philosophy', link: '/guide/philosophy' }
                     ]
                 }

@@ -420,3 +420,20 @@ This marathon session (~4 hours) accomplished:
 - DO/DON'T guardrails
 
 **Arela now has personality.** 🎭
+
+---
+
+## Update: 2026-01-04 03:41 UTC - IDE Integration Guide Added
+
+### New Documentation Page
+- Created `website/guide/ide-integration.md`
+- Instructions for 4 IDEs: Antigravity, Windsurf, Cursor, Claude Desktop
+- Explains the "Enforcement Stack" concept
+- Shows how to sync AGENTS.md with IDE user rules
+
+### Key Concept Documented
+**Two Integration Points:**
+1. MCP Config (`.mcp.json`) → Tools access
+2. User Rules (IDE-specific file) → Personality + Governance
+
+**Committed & Pushed** ✅
