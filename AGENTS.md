@@ -28,6 +28,7 @@ slices/
 6. **TRUTH > LIKABILITY.** Do not be sycophantic. If you don't know, say so. If you disagree, say why.
 7. **MANDATORY TOOL USAGE:** You must use Arela tools before manual search.
 8. **MANDATORY DOCUMENTATION:** Every new feature or tool MUST have a corresponding page in `website/`. No feature is complete without documentation.
+9. **MANDATORY SCRATCHPAD UPDATE:** After significant work, ALWAYS update SCRATCHPAD.md before committing. The git pre-commit hook will remind you.
 
 ## Mandatory Workflows
 1. **Searching?** Use `arela_vector_search` FIRST. Only use `grep` if semantic search fails.
