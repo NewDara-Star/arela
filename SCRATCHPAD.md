@@ -538,3 +538,102 @@ The challenge is wrapping probabilistic LLMs in deterministic harnesses:
 > "The human developer no longer writes code; they write the requirements (PRD) and review the verification (Tests). The AI handles the deterministic translation between the two."
 
 **This document is the blueprint for Arela v5.1+**
+
+---
+
+## Update: 2026-01-04 12:44 UTC - Session Guard & Guarded FS 🛡️
+
+### Architectural Pivot
+We identified that "vibe coding" (probabilistic investigation) is a core problem.
+Instead of relying on an external, unsafe filesystem server, we are building **Guarded Internal FS Tools**.
+
+### Phase 1 & 2: Session Guard Core
+- **Slice:** `slices/guard/`
+- **Logic:** Investigation State Machine (ISM) (Discovery → Analysis → Verification → Implementation)
+- **New Tools:** `arela_log_symptom`, `arela_register_hypothesis`, etc.
+- **Enforcement:** Programmatic gates that block write access until hypothesis is confirmed.
+
+### Phase 3: Guarded File Tools (In Progress)
+- **Slice:** `slices/fs/`
+- **Concept:** Moving standard FS tools (`edit_file`, `write_file`) INSIDE Arela.
+- **Why:** To wrap them with the Guard check. You cannot `edit_file` if you haven't done your homework (Investigation).
+- **Status:** Created ops.ts, about to register in server.ts.
+
+**The AI is now building the jail cell that will force it to be a better engineer.**
+
+---
+
+## Update: 2026-01-04 13:10 UTC - Tool Failure Investigation 🔍
+
+### Incident: `run_command` Silent Failure
+**Problem:** `run_command` reports success (exit 0) but captures NO stdout/stderr and creates NO side effects (files not created).
+**Scope:** Affects `ls`, `tsc`, `node`, `esbuild`.
+**Exceptions:** `write_to_file` and `list_dir` (internal tools) still work.
+
+### Hypothesis
+1. **System Clash:** User suggested the new "Guarded FS" might be clashing with Antigravity's own file guards.
+   - *Analysis:* Unlikely to cause "silent" failure of shell commands unless environment is strictly sandboxed.
+2. **Environment Bug:** The `run_command` tool in strict mode might be suppressing output/execution.
+
+### Resolution
+- **Decision:** Cannot rely on `run_command` for verification.
+- **Action:** Created `VERIFICATION_INSTRUCTIONS.md` for manual user execution.
+- **Status:** Implementation Complete. Verification Blocked (Automated) -> Moving to Manual.
+
+### Verification Update: Guard Logic Verified ✅
+- **User Test Run:** User ran `npx tsx scripts/test_guard.ts`
+- **Result:** Failed at Step 3 (Hypothesis Registration).
+- **Error:** "HALLUCINATED EVIDENCE: You cited files you haven't read"
+- **Significance:** **IT WORKS!** The system successfully prevented the AI from making up evidence.
+- **Next:** Fixed test script to properly read files before citing them.
+
+
+
+
+## Investigation: 2026-01-04T13:10:38.202Z
+
+**Symptom:** Test Error: NullPointerException
+
+**Hypothesis:** The variable user is null because session is not initialized properly in the test setup.
+
+**Evidence:** /tmp/test.ts
+
+**Reasoning:** I saw the stack trace pointing to line 10. The user variable is used there. In the setup block, I see user is declared but never assigned a value before the test runs.
+
+**Confidence:** HIGH
+
+**Verification Plan:** I will Add a console log to check user value and then try ensuring initSession() is called.
+
+---
+
+## Update: 2026-01-04 13:12 UTC - Verification Success 🚀
+
+### Session Guard is Live
+- **Mechanism:** Guarded File System (`slices/fs/`) + State Machine (`slices/guard/state-machine.ts`).
+- **Policy:** Write access requires `CONFIRMED` hypothesis. Evidence must be `FILES READ`.
+- **Outcome:** "Vibe coding" is now programmatically impossible.
+
+### Final Verification Results
+- **Illegal Write:** 🚫 BLOCKED (Correct)
+- **Transitioning:** ✅ S0 -> S1 -> S2 -> S3 (Correct)
+- **Hallucinated Evidence:** 🚫 BLOCKED (Correct)
+- **Valid Investigation:** ✅ GRANTED (Correct)
+- **Persistence:** ✅ Auto-logged to SCRATCHPAD.md
+
+**Arela v5.0 is now fully operational with its own Jail Cell.**
+
+---
+
+## Update: 2026-01-04 13:16 UTC - Policy Shift: Strict Logging 📝
+
+### Rule Change
+- **Context:** User requested that EVERY interaction be recorded, not just "significant work". "If I say hi, record it."
+- **Action:** Updated `AGENTS.md` Rule #9.
+- **Old:** "Update after significant work"
+- **New:** "Update for EVERY interaction"
+
+### Why?
+- **Total Recall:** The AI context is ephemeral. The Scratchpad is the ONLY persistent memory.
+- **Audit Trail:** Every decision, pivot, and chat must be traceable.
+
+**I have logged this update in compliance with the new rule.**

@@ -19,6 +19,26 @@ import { summarizeScratchpad } from "../../slices/focus/ops.js";
 import { translateVibeToPlan } from "../../slices/translate/ops.js";
 import { listPRDs, getPRD, getPRDStatus, createPRD, getUserStories, updatePRDStatus } from "../../slices/prd/ops.js";
 import { PRDTypeSchema, PRDStatusSchema } from "../../slices/prd/types.js";
+import {
+    logSymptomOp,
+    registerHypothesisOp,
+    confirmHypothesisOp,
+    rejectHypothesisOp,
+    escalateOp,
+    guardStatusOp,
+    checkWriteAccessOp,
+    trackFileReadOp,
+} from "../../slices/guard/ops.js";
+import { HypothesisSchema, SymptomSchema } from "../../slices/guard/types.js";
+import {
+    editFileOp,
+    writeFileOp,
+    readFileOp,
+    deleteFileOp,
+    createDirectoryOp,
+    moveFileOp,
+    listDirectoryOp,
+} from "../../slices/fs/ops.js";
 
 const VERSION = "5.0.0";
 
@@ -497,6 +517,320 @@ export function createArelaServer(options: ServerOptions = {}): McpServer {
                 }
             } catch (e: any) {
                 return { content: [{ type: "text" as const, text: `❌ PRD operation failed: ${e.message}` }] };
+            }
+        }
+    );
+
+    // ===========================================
+    // TOOL: arela_log_symptom (Session Guard)
+    // ===========================================
+    server.registerTool(
+        "arela_log_symptom",
+        {
+            title: "Log Investigation Symptom",
+            description:
+                "Log an error or issue you're investigating. This starts the investigation process " +
+                "and transitions from DISCOVERY to ANALYSIS state. Required before you can fix code.",
+            inputSchema: {
+                error_message: z.string().min(5, "Provide the error message"),
+                context: z.string().optional().describe("Additional context about when/where the error occurred"),
+                reproduction_steps: z.array(z.string()).optional().describe("Steps to reproduce"),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+
+            const result = await logSymptomOp(input);
+            return { content: [{ type: "text" as const, text: result }] };
+        }
+    );
+
+    // ===========================================
+    // TOOL: arela_register_hypothesis (Session Guard)
+    // ===========================================
+    server.registerTool(
+        "arela_register_hypothesis",
+        {
+            title: "Register Investigation Hypothesis",
+            description:
+                "Submit a hypothesis about the root cause of the issue. " +
+                "Requires evidence (files you've read) and reasoning. " +
+                "Transitions from ANALYSIS to VERIFICATION state.",
+            inputSchema: {
+                symptom_summary: z.string().min(10, "Summarize the symptom"),
+                suspected_root_cause: z.string().min(30, "Explain the root cause (10+ words)"),
+                evidence_files: z.array(z.string()).min(1, "List files that support your hypothesis"),
+                reasoning_chain: z.string().min(100, "Provide step-by-step reasoning (20+ words)"),
+                confidence: z.enum(["LOW", "MEDIUM", "HIGH"]),
+                verification_plan: z.string().min(20, "How will you test this before fixing?"),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+
+            const result = await registerHypothesisOp(input);
+            return { content: [{ type: "text" as const, text: result }] };
+        }
+    );
+
+    // ===========================================
+    // TOOL: arela_confirm_hypothesis (Session Guard)
+    // ===========================================
+    server.registerTool(
+        "arela_confirm_hypothesis",
+        {
+            title: "Confirm Hypothesis",
+            description:
+                "Confirm your hypothesis after verification. " +
+                "This grants WRITE ACCESS so you can fix the code. " +
+                "Transitions from VERIFICATION to IMPLEMENTATION state.",
+            inputSchema: {
+                verification_result: z.string().min(10, "Describe what test confirmed your hypothesis"),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+
+            const result = await confirmHypothesisOp(input);
+            return { content: [{ type: "text" as const, text: result }] };
+        }
+    );
+
+    // ===========================================
+    // TOOL: arela_reject_hypothesis (Session Guard)
+    // ===========================================
+    server.registerTool(
+        "arela_reject_hypothesis",
+        {
+            title: "Reject Hypothesis",
+            description:
+                "Reject your hypothesis if verification disproved it. " +
+                "This returns you to ANALYSIS state to form a new hypothesis. " +
+                "After 3 failed hypotheses, you'll need to escalate to human.",
+            inputSchema: {
+                rejection_reason: z.string().min(10, "Explain why the hypothesis was disproven"),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+
+            const result = await rejectHypothesisOp(input);
+            return { content: [{ type: "text" as const, text: result }] };
+        }
+    );
+
+    // ===========================================
+    // TOOL: arela_escalate (Session Guard)
+    // ===========================================
+    server.registerTool(
+        "arela_escalate",
+        {
+            title: "Escalate to Human",
+            description:
+                "Request human assistance when you're stuck. " +
+                "This documents your investigation attempts and resets the session. " +
+                "Required after 3 failed hypotheses.",
+            inputSchema: {
+                summary: z.string().min(20, "Summarize what you need help with"),
+                attempts_made: z.array(z.string()).min(1, "List what you tried"),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+
+            const result = await escalateOp(input);
+            return { content: [{ type: "text" as const, text: result }] };
+        }
+    );
+
+    // ===========================================
+    // TOOL: arela_guard_status (Session Guard)
+    // ===========================================
+    server.registerTool(
+        "arela_guard_status",
+        {
+            title: "Check Investigation Status",
+            description:
+                "Check the current investigation state and whether write access is granted. " +
+                "Use this to understand where you are in the investigation process.",
+            inputSchema: {},
+        },
+        async () => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+
+            const result = await guardStatusOp();
+            return { content: [{ type: "text" as const, text: result }] };
+        }
+    );
+
+    // ===========================================
+    // GUARDED FILESYSTEM TOOLS (NEW)
+    // ===========================================
+
+    // TOOL: edit_file (Guarded)
+    server.registerTool(
+        "edit_file",
+        {
+            title: "Edit File (Guarded)",
+            description: "Apply edits to a file. BLOCKED unless investigation hypothesis is confirmed.",
+            inputSchema: {
+                path: z.string(),
+                edits: z.array(z.object({
+                    oldText: z.string(),
+                    newText: z.string(),
+                })),
+                dryRun: z.boolean().optional(),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+
+            try {
+                const result = await editFileOp(input);
+                return { content: [{ type: "text" as const, text: result }] };
+            } catch (e: any) {
+                return { content: [{ type: "text" as const, text: `❌ ${e.message}` }], isError: true };
+            }
+        }
+    );
+
+    // TOOL: write_file (Guarded)
+    server.registerTool(
+        "write_file",
+        {
+            title: "Write File (Guarded)",
+            description: "Create or overwrite a file. BLOCKED unless investigation hypothesis is confirmed.",
+            inputSchema: {
+                path: z.string(),
+                content: z.string(),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+            try {
+                const result = await writeFileOp(input.path, input.content);
+                return { content: [{ type: "text" as const, text: result }] };
+            } catch (e: any) {
+                return { content: [{ type: "text" as const, text: `❌ ${e.message}` }], isError: true };
+            }
+        }
+    );
+
+    // TOOL: read_file (Unguarded but Tracked)
+    server.registerTool(
+        "read_file",
+        {
+            title: "Read File (Tracked)",
+            description: "Read file content. Tracks usage for 'Evidence' in investigation.",
+            inputSchema: {
+                path: z.string(),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+            try {
+                const result = await readFileOp(input.path);
+                return { content: [{ type: "text" as const, text: result }] };
+            } catch (e: any) {
+                return { content: [{ type: "text" as const, text: `❌ ${e.message}` }], isError: true };
+            }
+        }
+    );
+
+    // TOOL: list_directory
+    server.registerTool(
+        "list_directory",
+        {
+            title: "List Directory",
+            description: "List files and directories.",
+            inputSchema: {
+                path: z.string(),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+            try {
+                const result = await listDirectoryOp(input.path);
+                return { content: [{ type: "text" as const, text: result.join('\n') }] };
+            } catch (e: any) {
+                return { content: [{ type: "text" as const, text: `❌ ${e.message}` }], isError: true };
+            }
+        }
+    );
+
+    // TOOL: create_directory (Guarded)
+    server.registerTool(
+        "create_directory",
+        {
+            title: "Create Directory (Guarded)",
+            description: "Create a new directory tree. BLOCKED unless hypothesis confirmed.",
+            inputSchema: {
+                path: z.string(),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+            try {
+                const result = await createDirectoryOp(input.path);
+                return { content: [{ type: "text" as const, text: result }] };
+            } catch (e: any) {
+                return { content: [{ type: "text" as const, text: `❌ ${e.message}` }], isError: true };
+            }
+        }
+    );
+
+    // TOOL: delete_file (Guarded)
+    server.registerTool(
+        "delete_file",
+        {
+            title: "Delete File (Guarded)",
+            description: "Delete a file. BLOCKED unless hypothesis confirmed.",
+            inputSchema: {
+                path: z.string(),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+            try {
+                const result = await deleteFileOp(input.path);
+                return { content: [{ type: "text" as const, text: result }] };
+            } catch (e: any) {
+                return { content: [{ type: "text" as const, text: `❌ ${e.message}` }], isError: true };
+            }
+        }
+    );
+
+    // TOOL: move_file (Guarded)
+    server.registerTool(
+        "move_file",
+        {
+            title: "Move File (Guarded)",
+            description: "Move or rename a file. BLOCKED unless hypothesis confirmed.",
+            inputSchema: {
+                source: z.string(),
+                destination: z.string(),
+            },
+        },
+        async (input) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+            try {
+                const result = await moveFileOp(input.source, input.destination);
+                return { content: [{ type: "text" as const, text: result }] };
+            } catch (e: any) {
+                return { content: [{ type: "text" as const, text: `❌ ${e.message}` }], isError: true };
             }
         }
     );

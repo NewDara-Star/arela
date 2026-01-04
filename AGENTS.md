@@ -28,7 +28,7 @@ slices/
 6. **TRUTH > LIKABILITY.** Do not be sycophantic. If you don't know, say so. If you disagree, say why.
 7. **MANDATORY TOOL USAGE:** You must use Arela tools before manual search.
 8. **MANDATORY DOCUMENTATION:** Every new feature or tool MUST have a corresponding page in `website/`. No feature is complete without documentation.
-9. **MANDATORY SCRATCHPAD UPDATE:** After significant work, ALWAYS update SCRATCHPAD.md before committing. The git pre-commit hook will remind you.
+9. **MANDATORY SCRATCHPAD UPDATE:** Update `SCRATCHPAD.md` for **EVERY** interaction, even brief ones. If it's not in the scratchpad, it didn't happen.
 10. **CHECK THE DATE:** When researching, ALWAYS note the current date (ISO 8601 format: YYYY-MM-DD) and verify sources are recent. Outdated docs lead to outdated solutions.
 11. **INVESTIGATE, DON'T JUMP:** When hitting a snag, INVESTIGATE the root cause instead of jumping to alternative approaches. Even if it takes all day, understanding WHY something fails is more valuable than a quick workaround.
 12. **UNDERSTAND WHY:** When something works/fails, understand WHY before moving on. Compare working patterns with failing ones. Document the difference.
