@@ -1,0 +1,316 @@
+# SCRATCHPAD.md
+
+**Last Updated:** 2026-01-04T02:44:00Z
+
+---
+
+## Session Start: 2026-01-03 ~22:00 UTC
+
+### Initial Discovery
+- Explored existing **Arela v4.3.0** in archive
+- Found: Sophisticated Hexi-Memory system, 6-perspective context management
+- Problem: Wrong form factor. Too complex. Not MCP-native.
+
+### Deep Research Phase
+- Conducted research on "vibecoding" challenges
+- Key Insight: AI loses context between sessions → needs persistent memory
+- Key Insight: AI hallucinates when context is incomplete → needs verification
+
+### PhD Framework Created
+- Wrote `PHD_FRAMEWORK_NATURAL_LANGUAGE_PROGRAMMING.md`
+- Defined theoretical paradigm for natural language software development
+- Core Thesis: Code is the "compiled output" of natural language specifications
+
+### Key Decision: Archive v4, Build v5
+- **Architecture:** Vertical Slice Architecture (VSA) - each feature is self-contained
+- **Form Factor:** MCP-first (AI calls Arela tools automatically via IDE)
+- **Philosophy:** Minimal dependencies, maximum clarity
+- Archived `/Users/Star/arela` → `/Users/Star/arela-v4-archive`
+
+---
+
+## Update: 2026-01-04 00:15 UTC - Core Slices Built
+
+### Context Slice
+- **Tool:** `arela_context`
+- **Function:** Reads `AGENTS.md` + `SCRATCHPAD.md` and returns to AI
+- **Purpose:** Identity and State
+
+### Memory Slice
+- **Tool:** `arela_update`
+- **Function:** Appends/replaces content in `SCRATCHPAD.md`
+- **Feature:** Smart JSON merge for structured updates
+- **File:** `slices/memory/logic.ts`
+
+### Status Slice
+- **Tool:** `arela_status`
+- **Function:** Quick project health check
+
+---
+
+## Update: 2026-01-04 00:27 UTC - Context Teleportation Confirmed! 🚀
+
+### The Test
+- User opened a **new chat** with a different AI model
+- That AI read this scratchpad via MCP tools
+- It understood the full project context and continued work seamlessly
+
+### Significance
+- **Validates core hypothesis:** Context persists in repo, not in AI memory
+- **Implication:** Any AI can pick up where another left off
+- **This is the "teleportation" we wanted.**
+
+---
+
+## Update: 2026-01-04 00:41 UTC - The Grounding Incident 🔴
+
+### What Happened
+- AI stated: "Rule #5 says don't reinvent the wheel"
+- **Problem:** That rule existed in v4 `AGENTS.md` but NOT in v5
+- **Cause:** AI hallucinated from training data, not from actual file content
+
+### The Fix
+- Added **Rule #5** and **Rule #6** to v5 `AGENTS.md`
+  - Rule #5: "Do NOT recreate what already exists (check archive first)"
+  - Rule #6: "TRUTH > LIKABILITY"
+
+### The Lesson
+- Trust needs verification
+- Proposed: **Verification Slice** to force AI to check files before stating facts
+
+---
+
+## Update: 2026-01-04 00:50 UTC - Verification Slice Completed ✅
+
+### New Tool: `arela_verify`
+- **Capabilities:**
+  - `contains`: Check if substring exists in file
+  - `regex`: Check if pattern matches
+  - `file_exists`: Check if file exists
+- **File:** `slices/verification/gatekeeper.ts`
+- **Purpose:** Programmatic enforcement of truth to prevent hallucinations
+
+### Test Result
+- Independent AI session verified the tool works
+- Can now ground claims in reality before stating them
+
+---
+
+## Update: 2026-01-04 01:05 UTC - Graph Slice Completed 🕸️
+
+### Features
+- **Engine:** SQLite database at `.arela/graph.db`
+- **Library:** `better-sqlite3`
+- **Indexer:** Regex-based scan of TypeScript imports/exports
+- **Schema:** `files`, `imports`, `symbols` tables
+
+### New Tools
+- `arela_graph_refresh`: Re-index the codebase
+- `arela_graph_impact`: "If I change this file, what breaks?"
+
+### Test Result
+- Graph correctly identified `src/mcp/server.ts` depends on `slices/memory/logic.ts`
+- **Impact Analysis works.**
+
+---
+
+## Update: 2026-01-04 01:20 UTC - Bug Fix: ESM Resolution
+
+### Issue
+- Indexer failed to track imports like `./logic.js` → `./logic.ts`
+- TypeScript ESM uses `.js` extensions even for `.ts` files
+
+### Fix
+- Updated `slices/graph/indexer.ts` to try `.ts` fallback when `.js` not found
+- Graph now correctly resolves cross-slice dependencies
+
+---
+
+## Update: 2026-01-04 01:25 UTC - Vector Slice (RAG) Completed 🧠
+
+### Features
+- **Engine:** Ollama running locally
+- **Model:** `nomic-embed-text` for embeddings
+- **Storage:** JSON file at `.arela/.rag-index.json`
+- **Logic:** Cosine similarity search
+
+### New Tools
+- `arela_vector_index`: Scan codebase → Generate embeddings
+- `arela_vector_search`: "Find code about X" (semantic search)
+
+### Key Design
+- **Auto-start:** If Ollama not running, Arela starts it
+- **Auto-pull:** If model not installed, Arela pulls it
+
+---
+
+## Update: 2026-01-04 01:40 UTC - Auto-Index Activated ⚡️
+
+### Feature
+- **Watcher:** `chokidar` watches for file changes
+- **Behavior:**
+  - On file add/change: Re-embed that specific file
+  - On file delete: Remove from index
+  - Debounced saves to avoid thrashing
+
+### Also Added: Graph Auto-Update
+- Same watcher pattern for Graph slice
+- Changes to `.ts/.js` files trigger re-indexing
+
+### Files
+- `slices/vector/ops.ts`: `startAutoIndexer()`
+- `slices/graph/ops.ts`: `startGraphWatcher()`
+
+---
+
+## Update: 2026-01-04 01:50 UTC - LLM Selection Journey
+
+### The Problem
+- Focus Slice (summarization) and Translation Slice (vibecoding) need an LLM
+- Options: Local (Ollama), Anthropic Claude, OpenAI
+
+### Decision Path
+1. **First try:** Local Ollama - User concerned about speed
+2. **Second try:** Anthropic Claude Haiku - User had low credits
+3. **Final decision:** OpenAI `gpt-4o-mini` - User has $7 credits, best balance
+
+### Files Created
+- `slices/shared/openai.ts`: Shared OpenAI client
+- `slices/focus/ops.ts`: Summarization logic
+- `slices/translate/ops.ts`: Vibe-to-plan logic
+
+---
+
+## Update: 2026-01-04 02:05 UTC - Focus & Translation Complete 🎯
+
+### Focus Slice
+- **Tool:** `arela_focus`
+- **Function:** When SCRATCHPAD > 500 lines, summarize old content
+- **Keep:** Most recent 200 lines raw
+- **Engine:** OpenAI `gpt-4o-mini`
+
+### Translation Slice
+- **Tool:** `arela_translate`
+- **Function:** Convert "vibes" to structured execution plans
+- **Persona:** "Senior Software Architect"
+- **Output:** JSON with summary, files to create/edit, steps
+- **Engine:** OpenAI `gpt-4o-mini`
+
+### Verification
+- `test_focus.js` and `test_translate.js` both passed
+- OpenAI API confirmed working
+
+---
+
+## Update: 2026-01-04 02:10 UTC - Dinosaur Extinction Event 🦖
+
+### Cleanup
+- **Deleted:** `slices/shared/anthropic.ts` (unused)
+- **Deleted:** `slices/shared/ollama.ts` (unused for LLM, Vector uses direct fetch)
+- **Removed:** `@anthropic-ai/sdk` from `package.json`
+- **Verified:** `npm run build` passed
+
+### README Updates
+- Fixed `slices/focus/README.md`: Changed "Claude Haiku" → "OpenAI gpt-4o-mini"
+- Fixed `slices/translate/README.md`: Same
+
+---
+
+## Update: 2026-01-04 02:15 UTC - Governance Update 📜
+
+### New Rule Added to AGENTS.md
+- **Rule #7:** "MANDATORY TOOL USAGE: You must use Arela tools before manual search."
+
+### Mandatory Workflows Section
+1. **Searching?** Use `arela_vector_search` FIRST
+2. **Refactoring?** Use `arela_graph_impact` FIRST
+3. **Stating Facts?** Use `arela_verify` FIRST
+4. **Planning?** Use `arela_translate` FIRST
+
+### Purpose
+- Enforce that AI actually uses the tools we built
+- Create a "constitution" that binds AI behavior
+
+---
+
+## Update: 2026-01-04 02:24 UTC - Graph Verification
+
+### Test
+- Ran `verify_features_via_graph.js`
+- Queried SQLite to list all known slices
+
+### Result
+- **8 slices verified in Graph DB:**
+  - CONTEXT, MEMORY, VERIFICATION, GRAPH, VECTOR, FOCUS, TRANSLATE, SHARED
+
+### Significance
+- The system is fully self-aware
+- Graph knows about all its own components
+
+---
+
+## Update: 2026-01-04 02:30 UTC - The Magic Prompt Test
+
+### User Action
+- Copied "Magic Prompt" to new chat with different AI model
+- Prompt instructed AI to run full Protocol Initialization
+
+### AI Response
+- Successfully read context
+- Successfully ran semantic search
+- Successfully checked graph impact
+- Added `complexity_score` column to `slices/graph/schema.ts`
+
+### Problem
+- AI called `arela_update` with default mode (which was "replace")
+- **This nuked the entire SCRATCHPAD.md**
+- 290 lines reduced to 6 lines
+
+---
+
+## Update: 2026-01-04 02:44 UTC - The Overwrite Incident ⚠️
+
+### Root Cause
+- `arela_update` tool had `mode` default to `replace` (line 96 in server.ts)
+- When AI didn't specify mode, it replaced instead of appending
+
+### Data Lost
+- Full session history from ~8 hours of development
+- Recovered from in-session conversation memory (this reconstruction)
+
+### Fix Implemented
+- Changed default mode from `replace` to `append`
+- `replace` now requires explicit specification
+
+### Lesson
+- Memory systems need safeguards against accidental destruction
+- Consider adding "confirm before replace" in future
+
+---
+
+## Arela v5 Final Architecture 🏛️
+
+| Slice | Tool | Purpose | Engine |
+|-------|------|---------|--------|
+| Context | `arela_context` | Read AGENTS.md + SCRATCHPAD.md | File I/O |
+| Memory | `arela_update` | Write to SCRATCHPAD.md | File I/O |
+| Status | `arela_status` | Project health check | File I/O |
+| Verification | `arela_verify` | Check facts before stating | Regex/FS |
+| Graph | `arela_graph_impact` | Dependency analysis | SQLite |
+| Graph | `arela_graph_refresh` | Re-index codebase | SQLite |
+| Vector | `arela_vector_search` | Semantic code search | Ollama |
+| Vector | `arela_vector_index` | Build embeddings | Ollama |
+| Focus | `arela_focus` | Summarize long scratchpad | OpenAI |
+| Translate | `arela_translate` | Vibe → Execution plan | OpenAI |
+
+---
+
+## Current Status: OPERATIONAL ✅
+
+- **All 10 MCP tools functional**
+- **Auto-indexing active** (Vector + Graph)
+- **Governance enforced** (AGENTS.md Rule #7)
+- **Self-aware** (Graph tracks all slices)
+- **Bug fixed** (arela_update now defaults to append)
+
+**READY FOR VIBECODING.**

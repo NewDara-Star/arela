@@ -1,0 +1,47 @@
+{
+    "name": "arela",
+    "version": "5.0.0",
+    "description": "The AI's Memory Layer for Vibecoding - Context persistence via MCP",
+    "type": "module",
+    "main": "dist/src/index.js",
+    "bin": {
+        "arela": "dist/src/cli.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "start": "node dist/cli.js",
+        "mcp": "node dist/cli.js mcp"
+    },
+    "keywords": [
+        "mcp",
+        "context",
+        "vibecoding",
+        "ai",
+        "memory"
+    ],
+    "author": "Star",
+    "license": "MIT",
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.0.0",
+        "better-sqlite3": "^12.5.0",
+        "chokidar": "^5.0.0",
+        "commander": "^12.0.0",
+        "dotenv": "^17.2.3",
+        "execa": "^9.6.1",
+        "fs-extra": "^11.2.0",
+        "glob": "^13.0.0",
+        "openai": "^6.15.0",
+        "picocolors": "^1.1.1",
+        "zod": "^3.23.0"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.13",
+        "@types/fs-extra": "^11.0.4",
+        "@types/node": "^20.0.0",
+        "typescript": "^5.4.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}

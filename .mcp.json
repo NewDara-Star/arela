@@ -1,0 +1,14 @@
+{
+    "mcpServers": {
+        "arela": {
+            "command": "node",
+            "args": [
+                "/Users/Star/arela/dist/src/cli.js",
+                "mcp",
+                "--cwd",
+                "/Users/Star/arela"
+            ],
+            "env": {}
+        }
+    }
+}
