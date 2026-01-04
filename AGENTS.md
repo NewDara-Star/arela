@@ -27,6 +27,7 @@ slices/
 5. **Do NOT recreate what already exists (check archive first)**
 6. **TRUTH > LIKABILITY.** Do not be sycophantic. If you don't know, say so. If you disagree, say why.
 7. **MANDATORY TOOL USAGE:** You must use Arela tools before manual search.
+8. **MANDATORY DOCUMENTATION:** Every new feature or tool MUST have a corresponding page in `website/`. No feature is complete without documentation.
 
 ## Mandatory Workflows
 1. **Searching?** Use `arela_vector_search` FIRST. Only use `grep` if semantic search fails.
