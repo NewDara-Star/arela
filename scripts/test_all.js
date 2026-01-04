@@ -7,6 +7,14 @@
  */
 
 import { spawn } from "child_process";
+import fs from "fs-extra";
+
+const REPORT_FILE = "test_report.txt";
+
+function log(msg) {
+    console.log(msg);
+    fs.appendFileSync(REPORT_FILE, msg + "\n");
+}
 
 const TESTS = [
     { name: "Status (warmup)", tool: "arela_status", args: {} },
@@ -22,8 +30,9 @@ const TESTS = [
 ];
 
 async function runTests() {
-    console.log("🧪 ARELA v5 TEST SUITE\n");
-    console.log("=".repeat(50));
+    await fs.writeFile(REPORT_FILE, "");
+    log("🧪 ARELA v5 TEST SUITE\n");
+    log("=".repeat(50));
 
     const serverProcess = spawn("node", ["dist/src/cli.js", "mcp"], {
         stdio: ["pipe", "pipe", "pipe"],
@@ -38,14 +47,26 @@ async function runTests() {
         for (const line of lines) {
             if (!line.trim()) continue;
             try {
-                const response = JSON.parse(line);
-                if (response.id !== undefined && pendingRequests.has(response.id)) {
-                    const { resolve } = pendingRequests.get(response.id);
-                    resolve(response);
-                    pendingRequests.delete(response.id);
+                // Check if it's a JSONRPC response
+                if (line.trim().startsWith("{")) {
+                    const response = JSON.parse(line);
+                    if (response.id !== undefined && pendingRequests.has(response.id)) {
+                        const { resolve } = pendingRequests.get(response.id);
+                        resolve(response);
+                        pendingRequests.delete(response.id);
+                    }
+                } else {
+                    // Log non-JSON output from server
+                    log(`[SERVER STDOUT] ${line}`);
                 }
-            } catch (e) { /* ignore non-JSON */ }
+            } catch (e) {
+                log(`[SERVER STDOUT RAW] ${line}`);
+            }
         }
+    });
+
+    serverProcess.stderr.on("data", (data) => {
+        log(`[SERVER STDERR] ${data}`);
     });
 
     async function callTool(toolName, args = {}) {
@@ -62,8 +83,14 @@ async function runTests() {
         serverProcess.stdin.write(JSON.stringify(request) + "\n");
 
         return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                reject(new Error("Timeout"));
+                pendingRequests.delete(id);
+            }, 10000);
+
             pendingRequests.set(id, {
                 resolve: (res) => {
+                    clearTimeout(timeout);
                     resolve(res);
                 }
             });
@@ -71,34 +98,40 @@ async function runTests() {
     }
 
     // Wait for server to start (Vector + Graph auto-indexers need time)
+    log("Waiting for server startup...");
     await new Promise(r => setTimeout(r, 5000));
 
     let passed = 0;
     let failed = 0;
 
     for (const test of TESTS) {
-        process.stdout.write(`Testing ${test.name.padEnd(25)} `);
+        log(`Testing ${test.name.padEnd(25)}... `);
         try {
             const result = await callTool(test.tool, test.args);
             if (result.error) {
-                console.log(`❌ ${result.error.message}`);
+                log(`❌ FAIL: ${result.error.message}`);
+                if (result.error.data) log(`   Data: ${JSON.stringify(result.error.data)}`);
                 failed++;
             } else {
-                console.log(`✅ PASS`);
+                log(`✅ PASS`);
+                // log(`   Result: ${JSON.stringify(result.result)}`);
                 passed++;
             }
         } catch (e) {
-            console.log(`❌ ${e.message}`);
+            log(`❌ CRASH: ${e.message}`);
             failed++;
         }
     }
 
-    console.log("\n" + "=".repeat(50));
-    console.log(`Results: ${passed} passed, ${failed} failed`);
-    console.log("=".repeat(50));
+    log("\n" + "=".repeat(50));
+    log(`Results: ${passed} passed, ${failed} failed`);
+    log("=".repeat(50));
 
     serverProcess.kill();
     process.exit(failed > 0 ? 1 : 0);
 }
 
-runTests().catch(console.error);
+runTests().catch((e) => {
+    console.error(e);
+    fs.appendFileSync(REPORT_FILE, `FATAL: ${e.message}\n`);
+});
