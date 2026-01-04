@@ -11,6 +11,8 @@ import { checkOllama, startAutoIndexer, searchVectorIndex, buildVectorIndex } fr
 import { summarizeScratchpad } from "../slices/focus/ops.js";
 import { listPRDs, getPRDStatus } from "../slices/prd/ops.js";
 import { indexCodebase } from "../slices/graph/indexer.js";
+import { generateTests, runTest } from "../slices/test/ops.js";
+import { generateGuard } from "../slices/enforce/ops.js";
 import fs from "fs-extra";
 import path from "node:path";
 
@@ -61,6 +63,15 @@ program
         const index = await fs.pathExists(path.join(root, ".rag-index.json")); // OLD NAME, check slice?
         const ragIndex = await fs.pathExists(path.join(root, ".arela/.rag-index.json"));
         console.log(`👁️  Vector Index:    ${ragIndex || index ? "✅ Found" : "❌ Missing"}`);
+
+        // 4. Check Test Suit
+        const cucumber = await fs.pathExists(path.join(root, "node_modules/.bin/cucumber-js"));
+        console.log(`🥒 Cucumber:        ${cucumber ? "✅ Installed" : "❌ Missing"}`);
+
+        // 5. Check Guards
+        const guards = await fs.pathExists(path.join(root, "scripts/guards"));
+        const guardCount = guards ? (await fs.readdir(path.join(root, "scripts/guards"))).length : 0;
+        console.log(`🛡️  Enforce Guards:  ${guards ? `✅ Found (${guardCount})` : "❌ Missing"}`);
     });
 
 // ============================================
@@ -140,6 +151,60 @@ prd
         prds.forEach((p: any) => {
             console.log(`- [${p.id}] ${p.title} (${p.status})`);
         });
+    });
+
+// ============================================
+// TEST ENGINE
+// ============================================
+const testCmd = program.command("test").description("Manage generated tests");
+
+testCmd
+    .command("generate <prdPath>")
+    .description("Generate tests from a PRD")
+    .action(async (prdPath) => {
+        const root = process.cwd();
+        console.log(`🧪 Generating tests for: ${prdPath}...`);
+        try {
+            const result = await generateTests(root, prdPath);
+            console.log("✅ Generation Complete!");
+            console.log(`📂 Feature: ${result.featurePath}`);
+            console.log(`📂 Steps:   ${result.stepsPath}`);
+        } catch (e: any) {
+            console.error("❌ Failed:", e.message);
+        }
+    });
+
+testCmd
+    .command("run <featurePath>")
+    .description("Run a specific feature test")
+    .action(async (featurePath) => {
+        const root = process.cwd();
+        console.log(`🏃 Running test: ${featurePath}...`);
+        const result = await runTest(root, featurePath);
+        console.log(result.output);
+        console.log(`\nResult: ${result.success ? "✅ PASSED" : "❌ FAILED"}`);
+        console.log(`Duration: ${result.durationMs}ms`);
+    });
+
+// ============================================
+// ENFORCE ENGINE (ANTI-FRAGILITY)
+// ============================================
+program
+    .command("enforce")
+    .description("Create a permanent regression guard")
+    .argument("<issue>", "Description of the failure")
+    .argument("<solution>", "Strategy to prevent it")
+    .action(async (issue, solution) => {
+        const root = process.cwd();
+        console.log("🛡️  Creating Guardrail...");
+        try {
+            const result = await generateGuard(root, issue, solution);
+            console.log("✅ Guard Created!");
+            console.log(`📂 Path: ${result.scriptPath}`);
+            console.log("\nNote: Please add this script to your CI/CD or package.json scripts.");
+        } catch (e: any) {
+            console.error("❌ Failed:", e.message);
+        }
     });
 
 program.parse();
