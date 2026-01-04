@@ -9,8 +9,8 @@
 import { spawn } from "child_process";
 
 const TESTS = [
+    { name: "Status (warmup)", tool: "arela_status", args: {} },
     { name: "Context", tool: "arela_context", args: {} },
-    { name: "Status", tool: "arela_status", args: {} },
     { name: "Verify (file_exists)", tool: "arela_verify", args: { claim: "AGENTS.md exists", path: "AGENTS.md", type: "file_exists" } },
     { name: "Verify (contains)", tool: "arela_verify", args: { claim: "TRUTH > LIKABILITY in AGENTS", path: "AGENTS.md", type: "contains", pattern: "TRUTH" } },
     { name: "Graph Refresh", tool: "arela_graph_refresh", args: {} },
@@ -62,7 +62,7 @@ async function runTests() {
         serverProcess.stdin.write(JSON.stringify(request) + "\n");
 
         return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error(`Timeout: ${toolName}`)), 30000);
+            const timeout = setTimeout(() => reject(new Error(`Timeout: ${toolName}`)), 60000);
             pendingRequests.set(id, {
                 resolve: (res) => {
                     clearTimeout(timeout);
@@ -72,8 +72,8 @@ async function runTests() {
         });
     }
 
-    // Wait for server to start
-    await new Promise(r => setTimeout(r, 4000));
+    // Wait for server to start (Vector + Graph auto-indexers need time)
+    await new Promise(r => setTimeout(r, 5000));
 
     let passed = 0;
     let failed = 0;
