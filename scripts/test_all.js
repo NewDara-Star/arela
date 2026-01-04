@@ -73,7 +73,7 @@ async function runTests() {
     }
 
     // Wait for server to start
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 4000));
 
     let passed = 0;
     let failed = 0;
