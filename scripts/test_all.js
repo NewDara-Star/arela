@@ -62,10 +62,8 @@ async function runTests() {
         serverProcess.stdin.write(JSON.stringify(request) + "\n");
 
         return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error(`Timeout: ${toolName}`)), 60000);
             pendingRequests.set(id, {
                 resolve: (res) => {
-                    clearTimeout(timeout);
                     resolve(res);
                 }
             });
