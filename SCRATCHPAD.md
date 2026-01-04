@@ -338,3 +338,32 @@ Test Suite Run Complete
 ## Update: 2026-01-04T03:02:08.997Z
 
 Test Suite Run Complete
+---
+
+## Update: 2026-01-04 03:26 UTC - VitePress Docs & Enforcement
+
+### Documentation Website
+- **Created:** VitePress site in `website/`
+- **Pages:** Home, Getting Started, Core Concepts, 10 Tool Reference pages
+- **Commands:** `npm run docs:dev`, `npm run docs:build`
+- **Live at:** http://localhost:5173/arela/
+
+### Programmatic Enforcement
+- **Rule #8 Added:** "MANDATORY DOCUMENTATION" - Every feature needs a doc page
+- **Doc Coverage Checker:** `npm run check:docs` verifies all tools are documented
+- **Session Guard Implemented:** ALL tools blocked until `arela_context` is called first
+  - Ensures AI **must** read AGENTS.md before any action
+  - Returns clear error message if tried
+
+### Files Changed
+- `src/mcp/server.ts` - Session Guard (sessionInitialized flag + requireSession())
+- `AGENTS.md` - Rule #8 added
+- `website/*` - Full VitePress documentation site
+- `scripts/check_doc_coverage.js` - Programmatic doc enforcement
+
+### Current Status
+- **10/10 tools documented**
+- **Session Guard active** (context reading enforced by code)
+- **VitePress dev server running**
+
+**READY FOR USE.**
