@@ -29,6 +29,7 @@ Arela provides 10 MCP tools that extend AI capabilities. These tools are automat
 | Tool | Purpose |
 |------|---------|
 | [arela_verify](/tools/verify) | Fact-check claims |
+| [arela_checklist](/tools/checklist) | **Enforcement Gatekeeper** |
 
 ### 🕸️ Code Analysis
 | Tool | Purpose |

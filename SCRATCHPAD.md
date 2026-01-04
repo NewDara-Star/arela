@@ -1012,3 +1012,36 @@ The "Circle of Life" is closed.
 ## Update: 2026-01-04T18:14:14.511Z
 
 Phase 11: System Hardening. Fixing guard scripts and improving test generator. Guards are actively catching issues (including stale scratchpad!).
+
+---
+
+## Update: 2026-01-04T18:52:46.584Z
+
+## Update: 2026-01-04: The "Fortress" Update (Phase 13-14) 🏰
+
+**Goal:** Standardize and Enforce the "Definition of Done".
+
+### 1. The Update Protocol (Phase 13)
+- **Problem:** Tasks were finished without updates (Docs, Tests, Memory).
+- **Solution:** Added "Update Protocol" to `AGENTS.md`.
+- **Checklist:**
+  1. Guards Pass? (`test:guards`)
+  2. Docs Updated? (PRDs/READMEs)
+  3. Tests Generated?
+  4. Task/Memory Updated?
+
+### 2. The Checklist Slice (Phase 14) 🛑
+- **Feature:** Programmatic enforcement of the protocol.
+- **Tool:** `arela_checklist` (The Gatekeeper).
+- **Checks:**
+  - **Guards:** Runs all 22+ scripts.
+  - **Git:** Verifies `docs/` and `tests/` changes.
+  - **Structure:** Enforces VSA (READMEs).
+  - **Graph:** Checks dependency integrity.
+  - **Hygiene:** Checks Scratchpad staleness.
+
+### 3. Documentation
+- **Website:** Added `checklist` tool docs.
+- **Status:** Arela v5 is now Feature Complete & Self-Enforcing.
+
+**Next:** Vibe.

@@ -87,25 +87,24 @@ async function checkMemory(projectPath: string): Promise<CheckItem> {
 }
 
 async function checkTask(projectPath: string): Promise<CheckItem> {
-    const taskPath = path.join(projectPath, ".gemini/antigravity/brain/08b35f06-c05a-4eba-89e6-024453a91e1c/task.md");
-    // We try the standard location first, then the user root one if exists
-    // Actually, we should check `task.md` in the artifacts dir.
-    // Since we don't have the artifact ID easily here without hardcoding or passing it,
-    // we'll assume the agent keeps task.md updated.
-    // Let's check if the file was modified in the last 20 mins.
+    // We check the absolute artifact path first (for this environment)
+    const artifactTaskPath = "/Users/Star/.gemini/antigravity/brain/08b35f06-c05a-4eba-89e6-024453a91e1c/task.md";
+    const localTaskPath = path.join(projectPath, "task.md");
 
-    // Simplification: Check that `task.md` exists.
-    // A better check would be git status, but let's assume existence is the baseline.
-    if (await fileExistsOp(taskPath)) {
-        return { id: "task", description: "Task Tracker", status: "pass", required: true, message: "task.md found." };
+    if (await fileExistsOp(artifactTaskPath)) {
+        return { id: "task", description: "Task Tracker", status: "pass", required: true, message: "task.md found (Artifact)." };
+    }
+
+    if (await fileExistsOp(localTaskPath)) {
+        return { id: "task", description: "Task Tracker", status: "pass", required: true, message: "task.md found (Local)." };
     }
 
     return {
         id: "task",
         description: "Task Tracker",
-        status: "warn", // Warn because it might be in a different path
+        status: "warn",
         required: false,
-        message: "Could not find task.md at expected path."
+        message: "Could not find task.md."
     };
 }
 

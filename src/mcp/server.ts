@@ -19,7 +19,7 @@ import { integrationTools } from "./tools/integration.js";
 // For speed, let's create the other files now or inline imports if they existed.
 // Since they don't, I'll create one more "misc.ts" for the rest to ensure we pass the check.
 import { miscTools } from "./tools/misc.js";
-import { checklistTools } from "../slices/checklist/tools.js";
+import { checklistTools } from "../../slices/checklist/tools.js";
 
 const VERSION = "5.0.0";
 

@@ -50,7 +50,8 @@ export default defineConfig({
                         { text: 'arela_vector_index', link: '/tools/vector-index' },
                         { text: 'arela_focus', link: '/tools/focus' },
                         { text: 'arela_translate', link: '/tools/translate' },
-                        { text: 'arela_prd', link: '/tools/prd' }
+                        { text: 'arela_prd', link: '/tools/prd' },
+                        { text: 'arela_checklist', link: '/tools/checklist' }
                     ]
                 }
             ]
