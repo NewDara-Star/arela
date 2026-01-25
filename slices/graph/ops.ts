@@ -6,17 +6,19 @@ import path from "node:path";
 import { indexCodebase } from "./indexer.js";
 
 import { exportGraph } from "./export.js";
+import { getIgnoreGlobs } from "../shared/ignore.js";
 
 // Debounce timer
 let updateTimer: NodeJS.Timeout | null = null;
 
 export function startGraphWatcher(projectPath: string) {
-    import("chokidar").then(({ watch }) => {
+    import("chokidar").then(async ({ watch }) => {
         console.error("🕸️  Starting Graph Auto-Indexer...");
 
-        const watcher = watch("**/*.{ts,js}", {
+        const ignoreGlobs = await getIgnoreGlobs(projectPath);
+        const watcher = watch("**/*.{ts,js,tsx,jsx,mts,cts,mjs,cjs}", {
             cwd: projectPath,
-            ignored: ["**/node_modules/**", "**/dist/**", "**/.arela/**", "**/.git/**"],
+            ignored: ignoreGlobs,
             ignoreInitial: true,
             persistent: true
         });

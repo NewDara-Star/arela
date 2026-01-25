@@ -1,8 +1,12 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { withBase } from 'vitepress'
 
-const data = ref(null)
+const props = defineProps({
+  data: { type: Object, default: null }
+})
+
+const data = ref(props.data)
 const loading = ref(true)
 const error = ref(null)
 const mode = ref('mindmap') // 'mindmap' | 'graph'
@@ -10,10 +14,12 @@ const container = ref(null)
 
 onMounted(async () => {
   try {
-    // Load Data (with cache buster for live updates)
-    const res = await fetch(withBase(`/dashboard.json?t=${Date.now()}`))
-    if (!res.ok) throw new Error(`Failed to load dashboard data: ${res.status} ${res.statusText}`)
-    data.value = await res.json()
+    if (!data.value) {
+      // Load Data (with cache buster for live updates)
+      const res = await fetch(withBase(`/dashboard.json?t=${Date.now()}`))
+      if (!res.ok) throw new Error(`Failed to load dashboard data: ${res.status} ${res.statusText}`)
+      data.value = await res.json()
+    }
 
     // Load Mermaid
     const mermaid = (await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs')).default
@@ -25,6 +31,14 @@ onMounted(async () => {
     error.value = e.message
   } finally {
     loading.value = false
+  }
+})
+
+watch(() => props.data, (val) => {
+  if (val) {
+    data.value = val
+    loading.value = false
+    renderChart()
   }
 })
 

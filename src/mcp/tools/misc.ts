@@ -82,7 +82,13 @@ export const miscTools: ToolDef[] = [
         handler: async () => guardStatusOp()
     },
     {
-        name: "escalate", title: "Escalate Issue", description: "Escalate to user or high-level reasoning.", schema: { reason: z.string() },
+        name: "escalate",
+        title: "Escalate Issue",
+        description: "Escalate to user or high-level reasoning.",
+        schema: {
+            summary: z.string().min(10, "Provide a brief summary"),
+            attempts_made: z.array(z.string()).min(1, "List attempts made")
+        },
         handler: async (args) => escalateOp(args)
     },
 

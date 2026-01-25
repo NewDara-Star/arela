@@ -5,7 +5,7 @@
 - Node.js 18+
 - An MCP-compatible IDE (Cursor, Windsurf, Claude Desktop, etc.)
 - Optional: Ollama (for semantic search)
-- Optional: OpenAI API key (for Focus & Translate)
+- Optional: OpenAI API key (for Focus; Translate is internal-only)
 
 ## Installation
 
@@ -46,6 +46,13 @@ Create or edit `.mcp.json` in your project root:
 }
 ```
 
+Or run:
+```bash
+arela init
+```
+
+This bootstraps the repo (MCP config, AGENTS, prompts, scratchpad, task.md, and indexing).
+
 ### 5. Create Project Files
 
 Create `AGENTS.md` in your project root:
@@ -84,7 +91,7 @@ ollama serve
 # Arela will auto-pull the embedding model
 ```
 
-### Focus & Translate (OpenAI)
+### Focus (OpenAI)
 
 Create `.env` in the arela folder:
 
@@ -100,16 +107,26 @@ npm run test
 ```
 
 ## 6. Start Your First Session
-+
-+ **CRITICAL:** At the start of every session, you must initialize the context.
-+
-+ Ask your AI:
-+ > "Run `arela_context` to load the project rules."
-+
-+ This loads `AGENTS.md` and `SCRATCHPAD.md` into the AI's memory.
-+
-+ ## Next Steps
 
-- [View Dashboard](/dashboard) — See your live codebase graph
+**CRITICAL:** At the start of every session, you must initialize the context.
+
+Ask your AI:
+> "Run `arela_context` to load the project rules."
+
+This loads `AGENTS.md` and `SCRATCHPAD.md` into the AI's memory.
+
+### Optional: External Specs Folder
+If you use JSON specs, place them under `spec/`:
+- `spec/prd.json` (supported by `arela_prd` via `parse-json`, `json-features`, `json-feature`)
+- `spec/stack.json`
+
+Treat these as source-of-truth inputs for planning and tickets.
+
+## Next Steps
+
+- [View Dashboard](/dashboard) — Live repo dashboard (requires `website/` scaffold + `dashboard.json` export)
 - [Core Concepts](/guide/concepts) — Understand the philosophy
 - [Tools Reference](/tools/) — Learn each MCP tool
+
+### Privacy Defaults
+`arela init` creates a `.arelaignore` file (like `.gitignore`) with safe defaults for secrets and build output. Add any private docs there to exclude them from indexing.

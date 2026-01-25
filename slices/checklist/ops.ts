@@ -130,7 +130,12 @@ async function checkDocs(projectPath: string): Promise<CheckItem> {
 async function checkTests(projectPath: string): Promise<CheckItem> {
     // Check if test files modified
     try {
-        const { stdout } = await execa("git", ["status", "--porcelain", "tests/"], { cwd: projectPath });
+        const specTests = path.join(projectPath, "spec", "tests");
+        const legacyTests = path.join(projectPath, "tests");
+        const pathspec = await fileExistsOp(specTests)
+            ? "spec/tests/"
+            : (await fileExistsOp(legacyTests) ? "tests/" : "spec/tests/");
+        const { stdout } = await execa("git", ["status", "--porcelain", pathspec], { cwd: projectPath });
         if (stdout.trim().length > 0) {
             return { id: "tests", description: "Test Updates", status: "pass", required: false, message: "Test changes detected." };
         }

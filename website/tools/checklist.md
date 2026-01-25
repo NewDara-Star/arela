@@ -22,7 +22,7 @@ Runs `npm run test:guards` to execute all 20+ barrier scripts.
 ### 2. Git Awareness 📝
 Checks the Git status of documentation and test folders.
 - **Ensures:** You didn't just write code without updating docs or tests.
-- **Pass:** Changes detected in `*.md` and `tests/`.
+- **Pass:** Changes detected in `*.md` and `spec/tests/`.
 
 ### 3. VSA Validation 🏗️
 Enforces the Vertical Slice Architecture structure.

@@ -43,7 +43,7 @@ Arela enforces a governance model where AI must use tools before acting:
 | Searching for code | `arela_vector_search` first |
 | Refactoring | `arela_graph_impact` first |
 | Stating facts | `arela_verify` first |
-| Planning features | `arela_translate` first |
+| Planning features | Use `arela_prd` if a PRD exists |
 
 This is encoded in `AGENTS.md` as Rule #7.
  
@@ -70,8 +70,9 @@ slices/
 ├── verification/ # Fact-checking
 ├── graph/        # Dependency analysis
 ├── vector/       # Semantic search
+├── dashboard/    # Repo dashboard export
 ├── focus/        # Context compression
-├── translate/    # Vibe → Plan
+├── translate/    # Vibe → Plan (internal-only)
 └── shared/       # Common utilities
 ```
 
@@ -88,7 +89,7 @@ Each slice has:
 │   User gives "Vibe"                      │
 │         │                                │
 │         ▼                                │
-│   Arela Translates → Plan                │
+│   Plan (PRD or external)                 │
 │         │                                │
 │         ▼                                │
 │   AI Executes (using Arela tools)        │

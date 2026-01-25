@@ -80,3 +80,29 @@ export interface PRDSummary {
     priority: PRDPriority;
     updated: string | undefined;
 }
+
+// ============================================================
+// JSON PRD (spec/prd.json) - Minimal Schema
+// ============================================================
+
+export const JsonPRDFeatureSchema = z.object({
+    id: z.string(),
+    priority: z.string(),
+    name: z.string(),
+    status: z.string().optional(),
+    alignment: z.string().optional(),
+    user_story: z.string(),
+    acceptance_criteria: z.array(z.string()),
+    negative_constraints: z.array(z.string()).optional().default([]),
+    dependencies: z.array(z.string()).optional().default([]),
+}).passthrough();
+export type JsonPRDFeature = z.infer<typeof JsonPRDFeatureSchema>;
+
+export const JsonPRDSchema = z.object({
+    meta: z.record(z.any()).optional(),
+    product_vision: z.record(z.any()).optional(),
+    clarification_log: z.array(z.any()).optional(),
+    non_functional_requirements: z.record(z.any()).optional(),
+    features: z.array(JsonPRDFeatureSchema),
+}).passthrough();
+export type JsonPRD = z.infer<typeof JsonPRDSchema>;

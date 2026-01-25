@@ -3,6 +3,18 @@
 ## What This Project Is
 Arela is **The AI's Memory Layer for Vibecoding** - a minimal MCP-based system that solves context persistence for natural language software development.
 
+## How to Use AGENTS.md (Operator)
+- This file is **written by you** to control agent behavior.
+- Keep it short and direct; if you want a rule to change, change it here.
+- Agents must treat this file as a binding contract.
+
+## Product POV (for the Operator)
+Arela turns your product intent into an executable workflow:
+- **You define truth** (PRD + stack), and agents execute inside those boundaries.
+- **Everything is traceable**: decisions go to SCRATCHPAD, tickets map to features, tests prove behavior.
+- **VSA keeps products clean**: each feature is isolated, so messy legacy systems get de-risked fast.
+- **Guardrails prevent drift**: agents must verify, ask questions, and avoid scope creep.
+
 ## Architecture: Vertical Slice Architecture (VSA)
 Each feature is a self-contained slice with its own README, types, and implementation.
 
@@ -35,6 +47,12 @@ slices/
 13. **LOG INVESTIGATIONS:** ALWAYS document debugging sessions in SCRATCHPAD.md. Include: what failed, what you tried, what worked, and WHY.
 14. **ASK FOR HELP:** This is a human-AI synergy. When blocked (e.g., tool issues, unclear requirements), ASK the user. They are always there. Don't struggle alone.
 15. **DON'T WORK FOR THE SAKE OF WORKING:** If nothing needs to be done, do nothing. Don't add features, refactor code, or make changes just to appear productive. Sometimes the answer is "no action needed."
+16. **SCRATCHPAD = SOURCE OF TRUTH.** If unsure, read it and/or ask the operator. Prefer `arela_vector_search` + `arela_graph_impact` over summarization.
+17. **DECISIONS REQUIRE QUESTIONS.** When blocked or at a decision point, ask the operator, offer 2-3 options, and label it **Type 1** or **Type 2**.
+18. **SPEC PATHS ARE CANONICAL.** PRD + stack live in `spec/` (`spec/prd.json`, `spec/stack.json`), tickets in `spec/tickets/`, tests in `spec/tests/`.
+
+## Workflow
+See `website/guide/workflow.md` for the numbered 11-step flow.
 
 ---
 
@@ -230,7 +248,7 @@ When creating work items, include:
 1. **Searching?** Use `arela_vector_search` FIRST. Only use `grep` if semantic search fails.
 2. **Refactoring?** Use `arela_graph_impact` FIRST to check dependencies.
 3. **Stating Facts?** Use `arela_verify` to verify claims.
-4. **Planning?** Use `arela_translate` to convert vibes to specs.
+4. **Planning?** Use `arela_prd` if a PRD exists, and log the plan in `SCRATCHPAD.md`.
 
 ## The Update Protocol (Definition of Done) ✅
 Before declaring a task "Complete", you MUST run this checklist:
@@ -244,19 +262,19 @@ Before declaring a task "Complete", you MUST run this checklist:
 If you skip this, the **Stale Scratchpad Guard** or **No Direct FS Guard** will catch you.
 
 ## MCP Tools Provided
-| Tool | Purpose |
-|------|---------|
-| `arela_context` | Read AGENTS.md + SCRATCHPAD.md. **Call this FIRST every session.** |
-| `arela_update` | Update SCRATCHPAD.md with structured session logs |
-| `arela_status` | Project status overview (files, slices, health) |
-| `arela_verify` | Verify claims against codebase (fact-check before stating) |
-| `arela_graph_impact` | Analyze dependency impact before refactoring |
-| `arela_graph_refresh` | Rebuild the project dependency graph |
-| `arela_vector_search` | Semantic search across codebase (use before grep!) |
-| `arela_vector_index` | Rebuild the vector search index |
-| `arela_focus` | Summarize/compress long SCRATCHPAD (context rolling) |
-| `arela_translate` | Convert high-level "vibes" into concrete execution plans |
-| `arela_prd` | Manage PRDs - list, parse, create, status, extract user stories |
+### Core
+- `arela_context`, `arela_update`, `arela_status`, `arela_verify`
+- `arela_vector_search`, `arela_vector_index`
+- `arela_graph_impact`, `arela_graph_refresh`
+- `arela_prd`, `arela_focus`, `arela_ticket_generate`
+- `arela_test_generate`, `arela_test_run`
+- `arela_enforce`, `arela_checklist`
+
+### Guard (Session Investigation)
+- `log_symptom`, `register_hypothesis`, `confirm_hypothesis`, `reject_hypothesis`, `guard_status`, `escalate`
+
+### Filesystem (Guarded)
+- `read_file`, `list_dir`, `edit_file`, `write_file`, `delete_file`, `create_dir`, `move_file`
 
 ## Context Rolling Behavior
 
@@ -303,4 +321,3 @@ Arela is a **brutally honest, deeply knowledgeable technical co-founder** who:
 - ❌ Pretend to know when uncertain
 - ❌ Enable tech debt without discussion
 - ❌ Be sycophantic (Rule #6 applies)
-

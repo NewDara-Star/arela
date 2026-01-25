@@ -6,6 +6,8 @@ Manage Product Requirement Documents (PRDs) - the "source code" of your applicat
 
 PRDs are structured Markdown files with YAML frontmatter that define features, user stories, and specifications. In the Natural Language Programming paradigm, PRDs function as the Abstract Syntax Tree (AST) from which code is generated.
 
+**Note:** JSON PRDs are supported. Use `parse-json`, `json-features`, or `json-feature` with `spec/prd.json` (or another JSON path). Markdown PRDs under `prds/` are still supported.
+
 ## Actions
 
 ### `list`
@@ -81,6 +83,40 @@ Update the status of a PRD.
 }
 ```
 
+### `parse-json`
+
+Parse a JSON PRD (e.g., `spec/prd.json`).
+
+```json
+{
+  "action": "parse-json",
+  "path": "spec/prd.json"
+}
+```
+
+### `json-features`
+
+List features from a JSON PRD.
+
+```json
+{
+  "action": "json-features",
+  "path": "spec/prd.json"
+}
+```
+
+### `json-feature`
+
+Get a single feature from a JSON PRD by ID.
+
+```json
+{
+  "action": "json-feature",
+  "path": "spec/prd.json",
+  "featureId": "FEAT-001"
+}
+```
+
 ## Frontmatter Schema
 
 | Field | Type | Description |
@@ -127,6 +163,6 @@ tools:
 
 ## Related Tools
 
-- [`arela_translate`](./translate.md) - Convert vibes to PRD content
+- (No MCP translate tool exposed yet) Use PRD files directly or external drafting tools.
 - [`arela_verify`](./verify.md) - Verify PRD claims against codebase
 - [`arela_graph_impact`](./graph-impact.md) - Check PRD context dependencies

@@ -1,4 +1,6 @@
-# arela_translate
+# Translate (internal)
+
+**Status:** Not exposed as an MCP tool or CLI command yet. This slice is internal-only.
 
 Convert natural language "vibes" into execution plans.
 
@@ -41,21 +43,12 @@ Structured JSON plan:
 }
 ```
 
-## Example Usage
+## Example Usage (planned)
 
 You say:
 > "I want a button that plays a sound when clicked and looks premium"
 
-AI calls:
-
-```json
-{
-  "name": "arela_translate",
-  "arguments": {
-    "vibe": "Premium button with sound effect on click"
-  }
-}
-```
+There is no MCP tool name for translate yet. Use external drafting or call the internal API in `slices/translate/ops.ts`.
 
 ## The Architect Persona
 

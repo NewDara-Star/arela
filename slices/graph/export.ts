@@ -1,55 +1,20 @@
 
 /**
- * Graph Export Script
- * Generates dashboard.json for the documentation site.
+ * Graph Export Script (legacy)
+ * Delegates to the full dashboard exporter.
  */
 
-import path from 'node:path';
-import { GraphDB } from './db.js';
-import { writeFileOp } from "../fs/ops.js";
-import { createDirectoryOp } from "../fs/ops.js";
+import { exportDashboard } from "../dashboard/export.js";
 
 async function exportGraph() {
     const projectRoot = process.cwd();
-    const db = await GraphDB.create(projectRoot);
-
     try {
-        console.error('📊 Exporting graph data...');
-
-        const files = db.getFiles();
-        const imports = db.getAllImports();
-
-        const data = {
-            generated: new Date().toISOString(),
-            stats: {
-                files: files.length,
-                links: imports.length
-            },
-            nodes: files.map(f => ({
-                id: f.path,
-                group: f.path.split('/')[0] || 'root' // Top-level folder as group
-            })),
-            links: imports.map(i => ({
-                source: i.source,
-                target: i.target
-            }))
-        };
-
-        const outputDir = path.join(projectRoot, 'website/public');
-        await createDirectoryOp(outputDir);
-
-        const outputPath = path.join(outputDir, 'dashboard.json');
-        await writeFileOp(outputPath, JSON.stringify(data, null, 2));
-
-        console.error(`✅ Graph exported to ${outputPath}`);
-        console.error(`   - ${files.length} nodes`);
-        console.error(`   - ${imports.length} links`);
-
+        console.error("📊 Exporting dashboard data...");
+        await exportDashboard(projectRoot);
+        console.error("✅ Dashboard exported.");
     } catch (error) {
-        console.error('❌ Graph export failed:', error);
+        console.error("❌ Dashboard export failed:", error);
         process.exit(1);
-    } finally {
-        db.close();
     }
 }
 

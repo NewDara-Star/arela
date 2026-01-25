@@ -20,8 +20,11 @@ import { integrationTools } from "./tools/integration.js";
 // Since they don't, I'll create one more "misc.ts" for the rest to ensure we pass the check.
 import { miscTools } from "./tools/misc.js";
 import { checklistTools } from "../../slices/checklist/tools.js";
+import { startAutoIndexer } from "../../slices/vector/ops.js";
+import { startGraphWatcher } from "../../slices/graph/ops.js";
+import { startDashboardWatcher } from "../../slices/dashboard/ops.js";
 
-const VERSION = "5.0.0";
+const VERSION = "5.1.0";
 
 export interface ServerOptions {
     cwd?: string;
@@ -85,6 +88,11 @@ export function createArelaServer(options: ServerOptions = {}): McpServer {
     // Let's blindly assume the tool sets a global or we pass a setter.
     // For now, let's export a setter in the context.
     (toolContext as any).setSessionInitialized = () => { sessionInitialized = true; };
+
+    // Start background indexers to keep memory fresh
+    startAutoIndexer(projectPath);
+    startGraphWatcher(projectPath);
+    startDashboardWatcher(projectPath);
 
     return server;
 }

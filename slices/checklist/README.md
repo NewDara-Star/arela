@@ -7,7 +7,7 @@ To programmatically verify that the agent has performed all necessary hygiene st
 
 ## Features
 - **Guard Verification:** Runs `npm run test:guards`.
-- **Git Awareness:** Checks if `docs/` and `tests/` are updated.
+- **Git Awareness:** Checks if `docs/` and `spec/tests/` are updated.
 - **Graph Awareness:** Checks for cascading dependency impacts.
 - **Hygiene:** Checks `SCRATCHPAD.md` and `task.md` freshness.
 

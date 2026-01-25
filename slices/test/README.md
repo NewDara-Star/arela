@@ -10,7 +10,7 @@ This slice implements the "Vibecoding Engine" — the ability to translate natur
   1. Reads PRD and extracts User Stories.
   2. Uses LLM to generate Gherkin `.feature` file.
   3. Uses LLM to generate Playwright `.ts` step definitions.
-- **Output:** Files in `tests/features` and `tests/steps`.
+- **Output:** Files in `spec/tests/features` and `spec/tests/steps`.
 
 ### `arela_test_run`
 - **Input:** PRD Path (maps to feature file)

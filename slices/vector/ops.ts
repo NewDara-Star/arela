@@ -7,6 +7,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import { execa } from "execa";
 import { glob } from "glob";
+import { getIgnoreGlobs, shouldIgnorePath } from "../shared/ignore.js";
 
 const INDEX_FILE = ".rag-index.json";
 const DEFAULT_MODEL = "nomic-embed-text";
@@ -153,12 +154,13 @@ async function saveIndex(projectPath: string, immediate = false) {
 /**
  * Upsert a single file into the index
  */
-export async function upsertFileIndex(projectPath: string, filePath: string) {
+export async function upsertFileIndex(projectPath: string, filePath: string, ignoreGlobs?: string[]) {
     const fullPath = path.isAbsolute(filePath) ? filePath : path.join(projectPath, filePath);
     const relativePath = path.relative(projectPath, fullPath);
 
     // Skip ignored files
-    if (relativePath.includes("node_modules") || relativePath.includes(".arela") || relativePath.includes("dist")) return;
+    const ignores = ignoreGlobs ?? await getIgnoreGlobs(projectPath);
+    if (shouldIgnorePath(relativePath, ignores)) return;
 
     try {
         const content = await fs.readFile(fullPath, "utf-8");
@@ -191,7 +193,10 @@ export async function upsertFileIndex(projectPath: string, filePath: string) {
 /**
  * Index the codebase (Bulk) -- Now uses upsert logic
  */
-export async function buildVectorIndex(projectPath: string): Promise<number> {
+export async function buildVectorIndex(
+    projectPath: string,
+    onProgress?: (current: number, total: number, file: string) => void
+): Promise<number> {
     if (!(await checkOllama())) {
         throw new Error("Ollama is not reachable");
     }
@@ -199,9 +204,10 @@ export async function buildVectorIndex(projectPath: string): Promise<number> {
     const entries: VectorEntry[] = [];
 
     // Find files
+    const ignoreGlobs = await getIgnoreGlobs(projectPath);
     const files = await glob("**/*.{ts,md,json}", {
         cwd: projectPath,
-        ignore: ["**/node_modules/**", "**/dist/**", "**/.arela/**"]
+        ignore: ignoreGlobs
     });
 
     console.error(`Embedding ${files.length} files...`); // Stderr for logs
@@ -210,8 +216,11 @@ export async function buildVectorIndex(projectPath: string): Promise<number> {
 
     // For a full rebuild, we might strictly want to start fresh?
     // But for safety let's just upsert all.
+    let i = 0;
     for (const file of files) {
-        await upsertFileIndex(projectPath, file);
+        i += 1;
+        if (onProgress) onProgress(i, files.length, file);
+        await upsertFileIndex(projectPath, file, ignoreGlobs);
     }
 
     await saveIndex(projectPath, true);
@@ -223,7 +232,7 @@ export async function buildVectorIndex(projectPath: string): Promise<number> {
  */
 export function startAutoIndexer(projectPath: string) {
     // Lazy import chokidar to avoid slow startup for CLI commands that don't need it
-    import("chokidar").then(({ watch }) => {
+    import("chokidar").then(async ({ watch }) => {
         console.error("👁️  Starting Vector Auto-Indexer...");
 
         // Initial scan happen via 'add' events if we don't ignoreInitial
@@ -238,15 +247,16 @@ export function startAutoIndexer(projectPath: string) {
         // Let's use ignoreInitial: true to be safe and fast on startup. 
         // The user can run `arela_vector_index` once. 
 
+        const ignoreGlobs = await getIgnoreGlobs(projectPath);
         const watcher = watch("**/*.{ts,md,json}", {
             cwd: projectPath,
-            ignored: ["**/node_modules/**", "**/dist/**", "**/.arela/**", "**/.git/**"],
+            ignored: ignoreGlobs,
             ignoreInitial: true,
             persistent: true
         });
 
-        watcher.on("add", file => upsertFileIndex(projectPath, file));
-        watcher.on("change", file => upsertFileIndex(projectPath, file));
+        watcher.on("add", file => upsertFileIndex(projectPath, file, ignoreGlobs));
+        watcher.on("change", file => upsertFileIndex(projectPath, file, ignoreGlobs));
         watcher.on("unlink", async file => {
             const index = await getIndex(projectPath);
             index.entries = index.entries.filter(e => e.file !== file);

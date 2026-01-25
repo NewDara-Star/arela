@@ -37,8 +37,10 @@ The index auto-updates on file changes, so you rarely need manual reindexing.
 Excluded:
 - `node_modules/`
 - `dist/`
+- `build/`
 - `.arela/`
 - `.git/`
+- Anything listed in `.arelaignore`
 
 ## Engine
 

@@ -9,7 +9,10 @@ import {
     UserStory,
     PRDType,
     PRDStatus,
-    PRDPriority
+    PRDPriority,
+    JsonPRDSchema,
+    JsonPRD,
+    JsonPRDFeature,
 } from "./types.js";
 
 const CWD = process.env.CWD || process.cwd();
@@ -190,4 +193,26 @@ export async function updatePRDStatus(
     await fs.writeFile(fullPath, updated, "utf-8");
 
     return `PRD status updated to ${newStatus}`;
+}
+
+// ============================================================
+// JSON PRD (spec/prd.json) helpers
+// ============================================================
+
+export async function getJsonPRD(prdPath: string): Promise<JsonPRD> {
+    const fullPath = path.resolve(CWD, prdPath);
+    const content = await fs.readFile(fullPath, "utf-8");
+    const parsed = JSON.parse(content);
+    return JsonPRDSchema.parse(parsed);
+}
+
+export async function listJsonPRDFeatures(prdPath: string): Promise<JsonPRDFeature[]> {
+    const prd = await getJsonPRD(prdPath);
+    return prd.features;
+}
+
+export async function getJsonPRDFeature(prdPath: string, featureId: string): Promise<JsonPRDFeature | null> {
+    const prd = await getJsonPRD(prdPath);
+    const feature = prd.features.find(f => f.id === featureId);
+    return feature || null;
 }

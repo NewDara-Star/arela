@@ -2,8 +2,10 @@ import { ToolDef } from "./types.js";
 import { z } from "zod";
 import * as test from "../../../slices/test/ops.js";
 import * as enforce from "../../../slices/enforce/ops.js";
+import * as ticket from "../../../slices/ticket/ops.js";
+import { exportDashboard } from "../../../slices/dashboard/export.js";
 import { verifyClaim } from "../../../slices/verification/gatekeeper.js";
-import { listPRDs, getPRD, getPRDStatus, createPRD, getUserStories, updatePRDStatus } from "../../../slices/prd/ops.js";
+import { listPRDs, getPRD, getPRDStatus, createPRD, getUserStories, updatePRDStatus, getJsonPRD, listJsonPRDFeatures, getJsonPRDFeature } from "../../../slices/prd/ops.js";
 import { PRDTypeSchema, PRDStatusSchema } from "../../../slices/prd/types.js";
 
 export const integrationTools: ToolDef[] = [
@@ -13,15 +15,56 @@ export const integrationTools: ToolDef[] = [
         name: "arela_test_generate",
         title: "Generate Tests from PRD",
         description: "Generate Gherkin features and TypeScript step definitions from a PRD.",
-        schema: { prdPath: z.string().describe("Path to the PRD file") },
-        handler: async ({ prdPath }, { projectPath, requireSession }) => {
+        schema: {
+            prdPath: z.string().describe("Path to the PRD file"),
+            featureId: z.string().optional().describe("Feature ID (required for JSON PRDs)")
+        },
+        handler: async ({ prdPath, featureId }, { projectPath, requireSession }) => {
             const guard = requireSession();
             if (guard.blocked) return guard.error!;
             try {
-                const result = await test.generateTests(projectPath, prdPath);
+                const result = await test.generateTests(projectPath, prdPath, featureId);
+                await exportDashboard(projectPath);
                 return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
             } catch (e: any) {
                 return { content: [{ type: "text", text: `❌ Test Generation Failed: ${e.message}` }] };
+            }
+        }
+    },
+    {
+        name: "arela_ticket_generate",
+        title: "Generate Implementation Ticket",
+        description: "Generate a ticket for a single feature from a JSON PRD.",
+        schema: {
+            prdPath: z.string().describe("Path to the JSON PRD file (e.g., spec/prd.json)"),
+            featureId: z.string().describe("Feature ID (e.g., FEAT-001)"),
+            outputDir: z.string().optional().describe("Output directory (default: spec/tickets)"),
+        },
+        handler: async ({ prdPath, featureId, outputDir }, { projectPath, requireSession }) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+            try {
+                const result = await ticket.generateTicket(projectPath, prdPath, featureId, outputDir);
+                await exportDashboard(projectPath);
+                return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+            } catch (e: any) {
+                return { content: [{ type: "text", text: `❌ Ticket Generation Failed: ${e.message}` }] };
+            }
+        }
+    },
+    {
+        name: "arela_dashboard_export",
+        title: "Export Dashboard Data",
+        description: "Export dashboard.json to .arela and website/public for the current repo.",
+        schema: {},
+        handler: async (_args, { projectPath, requireSession }) => {
+            const guard = requireSession();
+            if (guard.blocked) return guard.error!;
+            try {
+                const result = await exportDashboard(projectPath);
+                return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+            } catch (e: any) {
+                return { content: [{ type: "text", text: `❌ Dashboard Export Failed: ${e.message}` }] };
             }
         }
     },
@@ -89,8 +132,9 @@ export const integrationTools: ToolDef[] = [
         title: "Product Requirements (PRD) Manager",
         description: "Manage Product Requirement Documents (PRDs).",
         schema: {
-            action: z.enum(["list", "parse", "status", "create", "stories", "update-status"]).describe("Action to perform"),
+            action: z.enum(["list", "parse", "status", "create", "stories", "update-status", "parse-json", "json-features", "json-feature"]).describe("Action to perform"),
             path: z.string().optional().describe("Path to PRD file (required for parse, status, stories, update-status)"),
+            featureId: z.string().optional().describe("Feature ID (required for json-feature)"),
             id: z.string().optional().describe("PRD ID for create action (e.g., REQ-001)"),
             title: z.string().optional().describe("PRD title for create action"),
             type: PRDTypeSchema.optional().describe("PRD type for create action"),
@@ -135,6 +179,22 @@ export const integrationTools: ToolDef[] = [
                         if (!args.path || !args.newStatus) throw new Error("path and newStatus required");
                         await updatePRDStatus(args.path, args.newStatus);
                         return { content: [{ type: "text", text: `✅ Updated status to ${args.newStatus}` }] };
+                    }
+                    case "parse-json": {
+                        if (!args.path) throw new Error("path required for parse-json");
+                        const prd = await getJsonPRD(args.path);
+                        return { content: [{ type: "text", text: JSON.stringify(prd, null, 2) }] };
+                    }
+                    case "json-features": {
+                        if (!args.path) throw new Error("path required for json-features");
+                        const features = await listJsonPRDFeatures(args.path);
+                        return { content: [{ type: "text", text: JSON.stringify(features, null, 2) }] };
+                    }
+                    case "json-feature": {
+                        if (!args.path || !args.featureId) throw new Error("path and featureId required");
+                        const feature = await getJsonPRDFeature(args.path, args.featureId);
+                        if (!feature) throw new Error(`Feature not found: ${args.featureId}`);
+                        return { content: [{ type: "text", text: JSON.stringify(feature, null, 2) }] };
                     }
                     default:
                         return { content: [{ type: "text", text: `Unknown action: ${args.action}` }] };

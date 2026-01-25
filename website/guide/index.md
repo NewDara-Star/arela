@@ -12,7 +12,7 @@ When you chat with an AI about your codebase:
 
 ## The Solution
 
-Arela provides 10 MCP tools that give AI:
+Arela provides an MCP tool suite that gives AI:
 
 1. **Memory** — Persistent storage in `SCRATCHPAD.md`
 2. **Identity** — Project rules in `AGENTS.md`
@@ -20,7 +20,7 @@ Arela provides 10 MCP tools that give AI:
 4. **Understanding** — Graph analysis of code dependencies
 5. **Discovery** — Semantic search to find relevant code
 6. **Focus** — Summarization to manage context window
-7. **Translation** — Convert natural language to execution plans
+7. **Translation (internal)** — Convert natural language to execution plans
 
 ## How It Works
 
@@ -40,9 +40,10 @@ Arela provides 10 MCP tools that give AI:
 │  │  Graph  │ │ Vector  │ │  Focus  │           │
 │  └─────────┘ └─────────┘ └─────────┘           │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐           │
-│  │Translate│ │ Status  │ │   ...   │           │
+│  │Translate*│ │ Status  │ │   ...   │           │
 │  └─────────┘ └─────────┘ └─────────┘           │
 └─────────────────────────────────────────────────┘
+*Translate is internal-only (not exposed as an MCP tool yet).
                       │
                       ▼
               Your Codebase
@@ -52,4 +53,6 @@ Arela provides 10 MCP tools that give AI:
 
 - [Getting Started](/guide/getting-started) — Install and configure Arela
 - [Core Concepts](/guide/concepts) — Understand the philosophy
+- [Workflow (11 Steps)](/guide/workflow) — How you run Arela end-to-end
+- [Agent Prompts](/guide/prompts) — Identity prompts for each role
 - [Tools Reference](/tools/) — Learn each MCP tool

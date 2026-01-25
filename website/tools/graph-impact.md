@@ -52,6 +52,7 @@ Before refactoring a utility:
 
 - SQLite database at `.arela/graph.db`
 - Updated automatically when files change
+- Tracks static imports, dynamic `import()`/`require()`, and `tsconfig` path aliases
 
 ## Implementation
 

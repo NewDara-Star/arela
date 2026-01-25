@@ -1,6 +1,6 @@
 {
     "name": "arela",
-    "version": "5.0.0",
+    "version": "5.1.0",
     "description": "The AI's Memory Layer for Vibecoding - Context persistence via MCP",
     "type": "module",
     "main": "dist/src/index.js",
@@ -15,8 +15,8 @@
         "test": "node scripts/test_all.js",
         "test:guards": "npx tsx scripts/run_guards.ts",
         "check:docs": "node scripts/check_doc_coverage.js",
-        "docs:dev": "npx -y tsx slices/graph/export.ts && cd website && npm run dev",
-        "docs:build": "npx -y tsx slices/graph/export.ts && cd website && npm run build"
+        "docs:dev": "npx -y tsx slices/dashboard/export.ts && cd website && npm run dev",
+        "docs:build": "npx -y tsx slices/dashboard/export.ts && cd website && npm run build"
     },
     "keywords": [
         "mcp",

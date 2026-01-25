@@ -64,8 +64,8 @@ export class GraphDB {
         return info.lastInsertRowid as number;
     }
 
-    addImport(sourceId: number, targetId: number) {
-        this.db.prepare("INSERT OR IGNORE INTO imports (source_file_id, target_file_id) VALUES (?, ?)").run(sourceId, targetId);
+    addImport(sourceId: number, targetId: number, type: "static" | "dynamic" = "static") {
+        this.db.prepare("INSERT OR IGNORE INTO imports (source_file_id, target_file_id, type) VALUES (?, ?, ?)").run(sourceId, targetId, type);
     }
 
     // Find what imports this file (Upstream)
@@ -93,14 +93,19 @@ export class GraphDB {
         return this.db.prepare(`
             SELECT 
                 f1.path as source,
-                f2.path as target
+                f2.path as target,
+                i.type as type
             FROM imports i
             JOIN files f1 ON f1.id = i.source_file_id
             JOIN files f2 ON f2.id = i.target_file_id
-        `).all() as Array<{ source: string; target: string }>;
+        `).all() as Array<{ source: string; target: string; type: string }>;
     }
 
     close() {
         this.db.close();
+    }
+
+    reset() {
+        this.db.exec("DELETE FROM imports; DELETE FROM symbols; DELETE FROM files;");
     }
 }

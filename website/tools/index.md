@@ -1,13 +1,13 @@
 # MCP Tools Reference
 
-Arela provides 10 MCP tools that extend AI capabilities. These tools are automatically available when you connect Arela to your IDE.
+Arela provides a suite of MCP tools that extend AI capabilities. These tools are automatically available when you connect Arela to your IDE.
 
 ### 🛡️ Session Guard & Filesystem
 | Tool | Purpose |
 |------|---------|
-| [arela_log_symptom](/tools/guard) | Start investigation |
-| [arela_register_hypothesis](/tools/guard) | Formalize theory |
-| [arela_confirm_hypothesis](/tools/guard) | Unlock write access |
+| [log_symptom](/tools/guard) | Start investigation |
+| [register_hypothesis](/tools/guard) | Formalize theory |
+| [confirm_hypothesis](/tools/guard) | Unlock write access |
 | [edit_file](/tools/fs) | Edit code (Guarded) |
 | [write_file](/tools/fs) | Create files (Guarded) |
 | ... and 5 others | See [FS Docs](/tools/fs) |
@@ -16,7 +16,7 @@ Arela provides 10 MCP tools that extend AI capabilities. These tools are automat
 | Tool | Purpose |
 |------|---------|
 | [arela_prd](/tools/prd) | Manage PRDs (Specs) |
-| [arela_translate](/tools/translate) | Vibe → Plan |
+| [arela_ticket_generate](/tools/ticket-generate) | Generate implementation tickets |
 
 ### 🔍 Context & Memory
 | Tool | Purpose |
@@ -43,10 +43,27 @@ Arela provides 10 MCP tools that extend AI capabilities. These tools are automat
 | [arela_vector_search](/tools/vector-search) | Search by meaning |
 | [arela_vector_index](/tools/vector-index) | Build embeddings |
 
+### 📊 Dashboard
+| Tool | Purpose |
+|------|---------|
+| [arela_dashboard_export](/tools/dashboard-export) | Export dashboard data |
+
 ### 🎯 AI Enhancement
 | Tool | Purpose |
 |------|---------|
 | [arela_focus](/tools/focus) | Compress long context |
+
+### 🧰 CLI Helpers
+| Tool | Purpose |
+|------|---------|
+| [arela init](/tools/init) | Create or update .mcp.json for the current repo |
+
+### 🧪 Tests & Enforcement
+| Tool | Purpose |
+|------|---------|
+| [arela_test_generate](/tools/test-generate) | Generate tests from PRDs |
+| [arela_test_run](/tools/test-run) | Run generated tests |
+| [arela_enforce](/tools/enforce) | Generate regression guards |
 
 ## Mandatory Workflows
 
@@ -56,7 +73,7 @@ As defined in `AGENTS.md`, AI must use certain tools before taking action:
 1. Searching?     → arela_vector_search FIRST
 2. Refactoring?   → arela_graph_impact FIRST
 3. Stating Facts? → arela_verify FIRST
-4. Planning?      → arela_translate FIRST
+4. Planning?      → use arela_prd if a PRD exists
 ```
 
 This governance model ensures AI behavior is grounded and verified.

@@ -22,6 +22,10 @@ This connects Arela's **tools** to your IDE. Add to `.mcp.json` in your project:
 }
 ```
 
+Or run `arela init` inside the repo to generate `.mcp.json` automatically.
+
+Some IDEs (Codex extension, Claude Code) manage MCP servers via their own CLI/config files. See the IDE-specific sections below for those setups.
+
 ### 2. User Rules (Personality + Governance)
 
 This injects Arela's **rules and persona** into every AI session. **Copy the contents of `AGENTS.md` into your IDE's user rules file.**
@@ -60,6 +64,35 @@ cp AGENTS.md .windsurfrules
 1. Create a project in Claude
 2. Add `AGENTS.md` as a file in the project
 3. Claude will reference it in conversations
+
+### VS Code (Codex extension)
+
+Codex stores MCP config in `~/.codex/config.toml`, shared between the CLI and IDE extension.
+
+**CLI (recommended):**
+```bash
+codex mcp add arela --env CWD=/path/to/your/project -- node /path/to/arela/dist/src/cli.js mcp
+```
+
+**Manual config (`~/.codex/config.toml`):**
+```toml
+[mcp_servers.arela]
+command = "node"
+args = ["/path/to/arela/dist/src/cli.js", "mcp"]
+[mcp_servers.arela.env]
+CWD = "/path/to/your/project"
+```
+
+To open the config from the Codex extension: gear icon → Codex Settings → Open config.toml.
+
+### Claude Code
+
+**CLI (recommended):**
+```bash
+claude mcp add arela node /path/to/arela/dist/src/cli.js mcp
+```
+
+Claude Desktop can also connect MCP servers via Settings > Developer.
 
 ## Why This Matters
 

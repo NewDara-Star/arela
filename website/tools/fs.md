@@ -7,11 +7,11 @@ Arela v5 replaces standard unsafe filesystem operations with **Guarded Tools**. 
 | Tool | State Requirement | Description |
 |------|-------------------|-------------|
 | `read_file` | None (Tracked) | Read file content. Logs usage as evidence. |
-| `list_directory` | None | List files in a folder. |
+| `list_dir` | None | List files in a folder. |
 | `edit_file` | `IMPLEMENTATION` | Apply patch edits. **Blocked** in Discovery/Analysis. |
 | `write_file` | `IMPLEMENTATION` | Create/Overwrite file. **Blocked** in Discovery/Analysis. |
 | `delete_file` | `IMPLEMENTATION` | Delete file. **Blocked** in Discovery/Analysis. |
-| `create_directory` | `IMPLEMENTATION` | Create folder. **Blocked** in Discovery/Analysis. |
+| `create_dir` | `IMPLEMENTATION` | Create folder. **Blocked** in Discovery/Analysis. |
 | `move_file` | `IMPLEMENTATION` | Move/Rename. **Blocked** in Discovery/Analysis. |
 
 ## Why these are special
@@ -49,7 +49,7 @@ Read a file's content.
 }
 ```
 
-### `list_directory`
+### `list_dir`
 See what's in a folder.
 ```json
 {

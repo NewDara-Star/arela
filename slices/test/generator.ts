@@ -1,6 +1,6 @@
 import path from "path";
 import { askOpenAI } from "../shared/openai.js";
-import { getUserStories, getPRD } from "../prd/ops.js";
+import { getUserStories, getPRD, getJsonPRDFeature } from "../prd/ops.js";
 import { GeneratedTest } from "./types.js";
 import { writeFileOp } from "../fs/ops.js";
 
@@ -9,25 +9,55 @@ function cleanMarkdown(text: string): string {
     return text.replace(/```(gherkin|typescript|ts|javascript|js)?/g, "").replace(/```/g, "").trim();
 }
 
-export async function generateTests(projectPath: string, prdPath: string): Promise<GeneratedTest> {
-    const prd = await getPRD(prdPath);
-    const stories = await getUserStories(prdPath);
+export async function generateTests(projectPath: string, prdPath: string, featureId?: string): Promise<GeneratedTest> {
+    const isJson = prdPath.endsWith(".json");
 
-    if (stories.length === 0) throw new Error("No user stories found in PRD.");
+    let featureName = "";
+    let featureKey = "";
+    let featureContext = "";
 
-    const featureContext = stories.map(s =>
-        `Story ID: ${s.id}\nTitle: ${s.title}\nActor: ${s.asA}\nGoal: ${s.iWant}\nBenefit: ${s.soThat}\nCriteria: ${s.acceptanceCriteria.join("; ")}`
-    ).join("\n\n");
+    if (isJson) {
+        if (!featureId) {
+            throw new Error("featureId is required when using a JSON PRD (spec/prd.json).");
+        }
+        const feature = await getJsonPRDFeature(prdPath, featureId);
+        if (!feature) throw new Error(`Feature not found in JSON PRD: ${featureId}`);
+
+        featureName = feature.name;
+        featureKey = feature.id;
+        featureContext = [
+            `Feature ID: ${feature.id}`,
+            `Priority: ${feature.priority}`,
+            `Name: ${feature.name}`,
+            `User Story: ${feature.user_story}`,
+            `Acceptance Criteria: ${feature.acceptance_criteria.join("; ")}`,
+            feature.negative_constraints.length > 0
+                ? `Negative Constraints: ${feature.negative_constraints.join("; ")}`
+                : ""
+        ].filter(Boolean).join("\n");
+    } else {
+        const prd = await getPRD(prdPath);
+        const stories = await getUserStories(prdPath);
+
+        if (stories.length === 0) throw new Error("No user stories found in PRD.");
+
+        featureName = prd.title;
+        featureKey = prd.frontmatter.id;
+        featureContext = stories.map(s =>
+            `Story ID: ${s.id}\nTitle: ${s.title}\nActor: ${s.asA}\nGoal: ${s.iWant}\nBenefit: ${s.soThat}\nCriteria: ${s.acceptanceCriteria.join("; ")}`
+        ).join("\n\n");
+    }
 
     const systemPrompt = "You are a Senior QA Automation Engineer. You write Gherkin feature files and TypeScript step definitions.";
 
     // 1. Generate Gherkin
-    const featurePrompt = `Convert these User Stories into a single Gherkin .feature file content.
+    const featurePrompt = `Convert this feature into a single Gherkin .feature file content.
 Use strict Gherkin syntax (Feature, Scenario, Given, When, Then).
-Feature Name: ${prd.title}
-Feature ID: ${prd.frontmatter.id}
+Include 1 happy-path scenario and 2-4 pessimistic (negative) scenarios.
+Feature Name: ${featureName}
+Feature ID: ${featureKey}
 
-User Stories:
+Context:
 ${featureContext}
 
 Output ONLY the raw Gherkin text.`;
@@ -57,8 +87,8 @@ Output ONLY the raw TypeScript code.`;
     stepsContent = cleanMarkdown(stepsContent);
 
     // 3. Save Files
-    const featureFile = `tests/features/${prd.frontmatter.id}.feature`;
-    const stepsFile = `tests/steps/${prd.frontmatter.id}.steps.ts`;
+    const featureFile = `spec/tests/features/${featureKey}.feature`;
+    const stepsFile = `spec/tests/steps/${featureKey}.steps.ts`;
 
     // Use Guarded Ops
     await writeFileOp(path.join(projectPath, featureFile), featureContent);

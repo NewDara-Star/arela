@@ -9,6 +9,14 @@ Rebuilds the dependency graph from scratch. Use when:
 - After major refactoring
 - After pulling new code
 
+## What It Indexes
+
+- Static imports/exports
+- Dynamic `import()` and CommonJS `require()`
+- TypeScript `baseUrl` + `paths` aliases from `tsconfig.json`
+- Common file resolution (`.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`, plus `index.*`)
+- Respects `.arelaignore`
+
 ## Parameters
 
 None.

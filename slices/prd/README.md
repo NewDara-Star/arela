@@ -8,6 +8,8 @@ The **PRD Slice** manages Product Requirement Documents - the "source code" of t
 
 In Arela v5, Markdown PRDs function as Abstract Syntax Trees (ASTs). The YAML frontmatter carries compilation state, and the structured sections map to specialized agents.
 
+If you keep JSON PRDs (e.g., `spec/prd.json`), treat them as external source-of-truth artifacts. The PRD slice can now parse JSON PRDs for feature extraction.
+
 ## MCP Tools
 
 | Tool | Action | Purpose |
@@ -16,6 +18,9 @@ In Arela v5, Markdown PRDs function as Abstract Syntax Trees (ASTs). The YAML fr
 | `arela_prd` | `parse` | Parse PRD and extract sections |
 | `arela_prd` | `status` | Get PRD status and progress |
 | `arela_prd` | `create` | Create new PRD from template |
+| `arela_prd` | `parse-json` | Parse JSON PRD (`spec/prd.json`) |
+| `arela_prd` | `json-features` | List features in JSON PRD |
+| `arela_prd` | `json-feature` | Get a feature by ID |
 
 ## Frontmatter Schema
 

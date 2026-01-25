@@ -28,7 +28,7 @@ features:
     details: Find code by meaning, not just keywords. "Where's the login logic?"
   - icon: 🎯
     title: Vibecoding Interface
-    details: Describe what you want in natural language. Arela translates to execution plans.
+    details: Describe what you want in natural language. Translate slice exists (internal-only).
   - icon: 📜
     title: Self-Governing
     details: Rules in AGENTS.md binding AI behavior. Your project, your rules.
@@ -67,6 +67,6 @@ npm run build
  | `arela_graph_impact` | Analyze code dependencies |
  | `arela_vector_search` | Semantic code search |
  | `arela_prd` | Manage Product Requirements |
- | `arela_log_symptom` | Start bug investigation |
+ | `log_symptom` | Start bug investigation |
  | `edit_file` (Guarded) | Safe code editing |
  | ... and 20+ more | [See Full List](/tools/) |
